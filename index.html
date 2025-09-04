@@ -1,89 +1,855 @@
 <!DOCTYPE html>
-<html>
-  <head>
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Welcome to Firebase Hosting</title>
-
-    <!-- update the version number as needed -->
-    <script defer src="/__/firebase/12.2.1/firebase-app-compat.js"></script>
-    <!-- include only the Firebase features as you need -->
-    <script defer src="/__/firebase/12.2.1/firebase-auth-compat.js"></script>
-    <script defer src="/__/firebase/12.2.1/firebase-database-compat.js"></script>
-    <script defer src="/__/firebase/12.2.1/firebase-firestore-compat.js"></script>
-    <script defer src="/__/firebase/12.2.1/firebase-functions-compat.js"></script>
-    <script defer src="/__/firebase/12.2.1/firebase-messaging-compat.js"></script>
-    <script defer src="/__/firebase/12.2.1/firebase-storage-compat.js"></script>
-    <script defer src="/__/firebase/12.2.1/firebase-analytics-compat.js"></script>
-    <script defer src="/__/firebase/12.2.1/firebase-remote-config-compat.js"></script>
-    <script defer src="/__/firebase/12.2.1/firebase-performance-compat.js"></script>
-    <!-- 
-      initialize the SDK after all desired features are loaded, set useEmulator to false
-      to avoid connecting the SDK to running emulators.
-    -->
-    <script defer src="/__/firebase/init.js?useEmulator=true"></script>
-
-    <style media="screen">
-      body { background: #ECEFF1; color: rgba(0,0,0,0.87); font-family: Roboto, Helvetica, Arial, sans-serif; margin: 0; padding: 0; }
-      #message { background: white; max-width: 360px; margin: 100px auto 16px; padding: 32px 24px; border-radius: 3px; }
-      #message h2 { color: #ffa100; font-weight: bold; font-size: 16px; margin: 0 0 8px; }
-      #message h1 { font-size: 22px; font-weight: 300; color: rgba(0,0,0,0.6); margin: 0 0 16px;}
-      #message p { line-height: 140%; margin: 16px 0 24px; font-size: 14px; }
-      #message a { display: block; text-align: center; background: #039be5; text-transform: uppercase; text-decoration: none; color: white; padding: 16px; border-radius: 4px; }
-      #message, #message a { box-shadow: 0 1px 3px rgba(0,0,0,0.12), 0 1px 2px rgba(0,0,0,0.24); }
-      #load { color: rgba(0,0,0,0.4); text-align: center; font-size: 13px; }
-      @media (max-width: 600px) {
-        body, #message { margin-top: 0; background: white; box-shadow: none; }
-        body { border-top: 16px solid #ffa100; }
-      }
-    </style>
-  </head>
-  <body>
-    <div id="message">
-      <h2>Welcome</h2>
-      <h1>Firebase Hosting Setup Complete</h1>
-      <p>You're seeing this because you've successfully setup Firebase Hosting. Now it's time to go build something extraordinary!</p>
-      <a target="_blank" href="https://firebase.google.com/docs/hosting/">Open Hosting Documentation</a>
-    </div>
-    <p id="load">Firebase SDK Loading&hellip;</p>
-
-    <script>
-      document.addEventListener('DOMContentLoaded', function() {
-        const loadEl = document.querySelector('#load');
-        // // 🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥
-        // // The Firebase SDK is initialized and available here!
-        //
-        // firebase.auth().onAuthStateChanged(user => { });
-        // firebase.database().ref('/path/to/ref').on('value', snapshot => { });
-        // firebase.firestore().doc('/foo/bar').get().then(() => { });
-        // firebase.functions().httpsCallable('yourFunction')().then(() => { });
-        // firebase.messaging().requestPermission().then(() => { });
-        // firebase.storage().ref('/path/to/ref').getDownloadURL().then(() => { });
-        // firebase.analytics(); // call to activate
-        // firebase.analytics().logEvent('tutorial_completed');
-        // firebase.performance(); // call to activate
-        //
-        // // 🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥
-
-        try {
-          let app = firebase.app();
-          let features = [
-            'auth', 
-            'database', 
-            'firestore',
-            'functions',
-            'messaging', 
-            'storage', 
-            'analytics', 
-            'remoteConfig',
-            'performance',
-          ].filter(feature => typeof app[feature] === 'function');
-          loadEl.textContent = `Firebase SDK loaded with ${features.join(', ')}`;
-        } catch (e) {
-          console.error(e);
-          loadEl.textContent = 'Error loading the Firebase SDK, check the console.';
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Calculadora de Vendas Avançada</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f3f4f6;
+            color: #1f2937;
         }
-      });
+        .container {
+            max-width: 1000px;
+            margin: 2rem auto;
+            padding: 2rem;
+            background-color: #ffffff;
+            border-radius: 12px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        .progress-bar {
+            height: 1.5rem;
+            background-color: #e5e7eb;
+            border-radius: 9999px;
+            overflow: hidden;
+        }
+        .progress-fill {
+            height: 100%;
+            border-radius: 9999px;
+            transition: width 0.5s ease-in-out;
+        }
+        /* Spinner */
+        .spinner {
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #3498db;
+            border-radius: 50%;
+            width: 24px;
+            height: 24px;
+            animation: spin 1s linear infinite;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body class="bg-gray-100 flex items-center justify-center min-h-screen p-4">
+
+    <!-- Login/Register Section -->
+    <div id="auth-section" class="container w-full max-w-md p-6 bg-white rounded-lg shadow-md hidden">
+        <h2 class="text-2xl font-bold text-center mb-6 text-gray-800">Acesso do Consultor</h2>
+        <div id="auth-message" class="hidden p-4 mb-4 text-sm rounded-lg" role="alert"></div>
+        <form id="auth-form" class="space-y-4">
+            <div>
+                <label for="auth-email" class="block text-sm font-medium text-gray-700">E-mail</label>
+                <input type="email" id="auth-email" required class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
+            </div>
+            <div>
+                <label for="auth-password" class="block text-sm font-medium text-gray-700">Senha</label>
+                <input type="password" id="auth-password" required class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
+            </div>
+            <button type="submit" id="auth-btn" class="w-full px-4 py-2 bg-blue-600 text-white font-medium rounded-lg shadow-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2">
+                Entrar
+            </button>
+            <button type="button" id="toggle-auth-btn" class="w-full text-center text-blue-600 hover:text-blue-800 text-sm mt-2">Não tem uma conta? Registrar</button>
+        </form>
+    </div>
+
+    <!-- Main App Section -->
+    <div id="app-section" class="container hidden">
+        <div class="flex justify-between items-center mb-4">
+            <h1 class="text-3xl font-bold text-gray-800">Calculadora de Metas</h1>
+            <button id="logout-btn" class="px-4 py-2 bg-red-600 text-white font-medium rounded-lg shadow-md hover:bg-red-700">Sair</button>
+        </div>
+        <p class="text-gray-500 mb-8">Acompanhe seu desempenho e comissão em tempo real!</p>
+        
+        <!-- Dashboard de Desempenho -->
+        <div>
+            <h2 class="text-xl font-semibold mb-4">Seu Desempenho</h2>
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+                <div class="bg-indigo-50 p-6 rounded-lg shadow-sm">
+                    <p class="text-sm font-medium text-indigo-700">Receita Total</p>
+                    <p id="total-revenue" class="mt-1 text-2xl font-bold text-indigo-900">R$ 0,00</p>
+                </div>
+                <div class="bg-purple-50 p-6 rounded-lg shadow-sm">
+                    <p class="text-sm font-medium text-purple-700">Comissão Estimada</p>
+                    <p id="estimated-commission" class="mt-1 text-2xl font-bold text-purple-900">R$ 0,00</p>
+                </div>
+                <div class="bg-pink-50 p-6 rounded-lg shadow-sm">
+                    <p id="current-tier-text" class="text-sm font-medium text-pink-700">Sua Faixa Atual</p>
+                    <p id="current-tier" class="mt-1 text-2xl font-bold text-pink-900">Faixa 0</p>
+                </div>
+            </div>
+            
+            <!-- Progresso para a Próxima Faixa -->
+            <div class="mt-8">
+                <h3 id="progress-text" class="text-lg font-medium text-gray-700 mb-2"></h3>
+                <div class="progress-bar">
+                    <div id="progress-fill" class="progress-fill bg-blue-500" style="width: 0%;"></div>
+                </div>
+            </div>
+        </div>
+
+        <hr class="my-8">
+
+        <!-- Detalhes da Comissão -->
+        <div class="mb-8">
+            <h2 class="text-xl font-semibold mb-4">Detalhes da Comissão</h2>
+            <div class="overflow-x-auto">
+                <table class="min-w-full text-left border-collapse">
+                    <thead>
+                        <tr class="bg-gray-200">
+                            <th class="p-4 rounded-tl-lg">Item</th>
+                            <th class="p-4">Valor</th>
+                            <th class="p-4 rounded-tr-lg">Faixa de Comissão</th>
+                        </tr>
+                    </thead>
+                    <tbody id="commission-details-body">
+                        <!-- Commission details will be populated here -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <hr class="my-8">
+
+        <!-- Formulário de Registro de Venda -->
+        <div class="mb-8">
+            <h2 class="text-xl font-semibold mb-4">Registrar Nova Venda</h2>
+            <div id="sales-message" class="hidden p-4 mb-4 text-sm rounded-lg" role="alert"></div>
+            <form id="sale-form" class="space-y-4">
+                <div>
+                    <label for="consultant-name" class="block text-sm font-medium text-gray-700">Nome do Consultor</label>
+                    <input type="text" id="consultant-name" required class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
+                </div>
+                <div>
+                    <label for="company-name" class="block text-sm font-medium text-gray-700">Nome da Empresa</label>
+                    <input type="text" id="company-name" required class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
+                </div>
+                <div>
+                    <label for="cnpj" class="block text-sm font-medium text-gray-700">CNPJ</label>
+                    <input type="text" id="cnpj" required class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
+                </div>
+                <div>
+                    <label for="crm" class="block text-sm font-medium text-gray-700">CRM (Opcional)</label>
+                    <input type="text" id="crm" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
+                </div>
+                
+                <div id="products-container" class="space-y-4">
+                    <!-- Products will be added here dynamically -->
+                </div>
+                
+                <button type="button" id="add-product-btn" class="w-full sm:w-auto px-4 py-2 bg-green-500 text-white font-medium rounded-lg shadow-md hover:bg-green-600 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2">
+                    Adicionar Produto
+                </button>
+                
+                <button type="submit" id="save-sale-btn" class="w-full px-4 py-2 bg-blue-600 text-white font-medium rounded-lg shadow-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 flex justify-center items-center space-x-2">
+                    <span id="save-sale-btn-text">Salvar Venda</span>
+                    <div id="save-sale-spinner" class="spinner hidden"></div>
+                </button>
+            </form>
+        </div>
+
+        <hr class="my-8">
+
+        <!-- Lista de Vendas Registradas -->
+        <div class="mb-8">
+            <h2 class="text-xl font-semibold mb-4">Vendas Registradas</h2>
+            <div class="overflow-x-auto">
+                <table class="min-w-full text-left border-collapse">
+                    <thead>
+                        <tr class="bg-gray-200">
+                            <th class="p-4 rounded-tl-lg">Consultor</th>
+                            <th class="p-4">Empresa</th>
+                            <th class="p-4">Produtos</th>
+                            <th class="p-4">Data</th>
+                            <th class="p-4">Receita</th>
+                            <th class="p-4 rounded-tr-lg">Ações</th>
+                        </tr>
+                    </thead>
+                    <tbody id="sales-list-body">
+                        <!-- Sales will be populated here -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        
+        <hr class="my-8">
+
+        <!-- Acompanhamento de Metas -->
+        <div class="mb-8">
+            <h3 class="text-lg font-semibold mb-4">Metas de Receita</h3>
+            <div class="overflow-x-auto">
+                <table class="w-full text-left border-collapse">
+                    <thead>
+                        <tr class="bg-gray-200">
+                            <th class="p-4 rounded-tl-lg">Meta</th>
+                            <th class="p-4 rounded-tr-lg">Status</th>
+                        </tr>
+                    </thead>
+                    <tbody id="revenue-goals-body">
+                        <!-- Revenue goals will be populated here -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        
+        <hr class="my-8">
+
+        <div>
+            <h3 class="text-lg font-semibold mb-4">Metas de Produto por Faixa</h3>
+            <div class="overflow-x-auto">
+                <table class="w-full text-left border-collapse">
+                    <thead>
+                        <tr class="bg-gray-200">
+                            <th class="p-4 rounded-tl-lg">Produto</th>
+                            <th class="p-4">Vendido</th>
+                            <th class="p-4">Meta Faixa 75</th>
+                            <th class="p-4">Meta Faixa 150</th>
+                            <th class="p-4 rounded-tr-lg">Meta Faixa 200</th>
+                        </tr>
+                    </thead>
+                    <tbody id="product-goals-body">
+                        <!-- Product goals will be populated here -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- Modal de Confirmação de Exclusão -->
+    <div id="delete-modal" class="fixed inset-0 bg-gray-600 bg-opacity-50 hidden overflow-y-auto h-full w-full">
+        <div class="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-md bg-white">
+            <div class="mt-3 text-center">
+                <h3 class="text-lg leading-6 font-medium text-gray-900">Confirmar Exclusão</h3>
+                <div class="mt-2 px-7 py-3">
+                    <p class="text-sm text-gray-500">Tem certeza que deseja excluir esta venda? Esta ação não pode ser desfeita.</p>
+                </div>
+                <div class="items-center px-4 py-3">
+                    <button id="confirm-delete-btn" class="px-4 py-2 bg-red-600 text-white text-base font-medium rounded-md w-full shadow-sm hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2">
+                        Excluir
+                    </button>
+                    <button id="cancel-delete-btn" class="mt-3 px-4 py-2 bg-gray-200 text-gray-800 text-base font-medium rounded-md w-full shadow-sm hover:bg-gray-300 focus:outline-none focus:ring-2 focus:ring-gray-400 focus:ring-offset-2">
+                        Cancelar
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script type="module">
+        // Importa os módulos necessários do Firebase
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+        import { getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import { getFirestore, collection, addDoc, onSnapshot, query, deleteDoc, doc, setDoc, getDoc, setLogLevel, serverTimestamp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+
+        // Variáveis globais fornecidas pelo ambiente
+        const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
+        const firebaseConfig = JSON.parse(typeof __firebase_config !== 'undefined' ? __firebase_config : '{}');
+        const initialAuthToken = typeof __initial_auth_token !== 'undefined' ? __initial_auth_token : null;
+
+        // Inicializa o Firebase
+        let app, db, auth, userId;
+        setLogLevel('debug');
+
+        // Dados para comissão, receita e metas
+        const commissionData = {
+            'Migração Up': [8, 8, 9, 10, 11, 12, 13, 14],
+            'Migração Mid': [4, 4, 5, 7, 7, 8, 9, 10],
+            'Migração Down': [2, 2, 3, 4, 5, 6, 7, 8],
+            'GPON': [20, 22, 25, 28, 31, 35, 40],
+            'Altas Portadas': [6, 8, 10, 12, 14, 16, 20],
+            'Altas Novas': [3, 4, 5, 6, 7, 8, 10],
+            'VVN': [10, 12, 14, 16, 18, 20, 22],
+            'Avançados': [15, 17, 19, 21, 23, 25, 28],
+            'Produtos de TI': [10, 11, 12, 13, 14, 15, 16],
+        };
+
+        const revenuePercentages = [11, 13, 16, 19, 22, 28, 35];
+
+        const goalData = {
+            'Receita (R$)': [750, 1500, 3000],
+            'GPON': [3, 6, 9],
+            'Altas Portadas': [5, 15, 30],
+            'Altas Novas': [5, 15, 30],
+            'Contratos (CNPJ\'s)': [1, 1.5, 2],
+            'VVN': [5, 15, 25],
+            'Aparelhos (R$)': [8000, 20000, 30000],
+            'Migração': [75, 150, 200],
+        };
+        
+        const productsForGoals = ['Migração', 'GPON', 'Altas Portadas', 'Altas Novas', 'VVN', 'Aparelhos (R$)'];
+
+        // Elementos DOM
+        const totalRevenueEl = document.getElementById('total-revenue');
+        const estimatedCommissionEl = document.getElementById('estimated-commission');
+        const currentTierEl = document.getElementById('current-tier');
+        const progressFillEl = document.getElementById('progress-fill');
+        const progressTextEl = document.getElementById('progress-text');
+        const salesForm = document.getElementById('sale-form');
+        const salesListBodyEl = document.getElementById('sales-list-body');
+        const addProductBtn = document.getElementById('add-product-btn');
+        const productsContainer = document.getElementById('products-container');
+        const salesMessageEl = document.getElementById('sales-message');
+        const productGoalsBodyEl = document.getElementById('product-goals-body');
+        const revenueGoalsBodyEl = document.getElementById('revenue-goals-body');
+        const commissionDetailsBodyEl = document.getElementById('commission-details-body');
+        const consultantNameInput = document.getElementById('consultant-name');
+        const cnpjInput = document.getElementById('cnpj');
+        const deleteModal = document.getElementById('delete-modal');
+        const confirmDeleteBtn = document.getElementById('confirm-delete-btn');
+        const cancelDeleteBtn = document.getElementById('cancel-delete-btn');
+        const saveSaleBtn = document.getElementById('save-sale-btn');
+        const saveSaleBtnText = document.getElementById('save-sale-btn-text');
+        const saveSaleSpinner = document.getElementById('save-sale-spinner');
+        const authSection = document.getElementById('auth-section');
+        const appSection = document.getElementById('app-section');
+        const authForm = document.getElementById('auth-form');
+        const authEmailInput = document.getElementById('auth-email');
+        const authPasswordInput = document.getElementById('auth-password');
+        const authMessageEl = document.getElementById('auth-message');
+        const authBtn = document.getElementById('auth-btn');
+        const toggleAuthBtn = document.getElementById('toggle-auth-btn');
+        const logoutBtn = document.getElementById('logout-btn');
+
+        let isRegisterMode = false;
+
+        // Variável para armazenar o ID da venda a ser excluída
+        let saleIdToDelete = null;
+
+        function displayMessage(message, type) {
+            salesMessageEl.textContent = message;
+            salesMessageEl.className = `p-4 mb-4 text-sm rounded-lg ${type === 'success' ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'}`;
+            salesMessageEl.style.display = 'block';
+            setTimeout(() => {
+                salesMessageEl.style.display = 'none';
+            }, 5000);
+        }
+
+        function displayAuthMessage(message, type) {
+            authMessageEl.textContent = message;
+            authMessageEl.className = `p-4 mb-4 text-sm rounded-lg ${type === 'success' ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'}`;
+            authMessageEl.style.display = 'block';
+        }
+
+        // Função para mostrar ou esconder o spinner de salvamento
+        function setSaveLoading(isLoading) {
+            if (isLoading) {
+                saveSaleBtnText.textContent = 'Salvando...';
+                saveSaleSpinner.classList.remove('hidden');
+                saveSaleBtn.disabled = true;
+            } else {
+                saveSaleBtnText.textContent = 'Salvar Venda';
+                saveSaleSpinner.classList.add('hidden');
+                saveSaleBtn.disabled = false;
+            }
+        }
+        
+        // --- Firebase Functions ---
+        async function initializeFirebase() {
+            try {
+                if (Object.keys(firebaseConfig).length === 0) {
+                    displayMessage("Erro: A configuração do Firebase está faltando.", "error");
+                    console.error("Firebase config is missing.");
+                    return;
+                }
+                
+                app = initializeApp(firebaseConfig);
+                auth = getAuth(app);
+                db = getFirestore(app);
+
+                onAuthStateChanged(auth, async (user) => {
+                    if (user) {
+                        userId = user.uid;
+                        // Mostra a UI principal do aplicativo
+                        authSection.classList.add('hidden');
+                        appSection.classList.remove('hidden');
+
+                        // Carrega o nome do consultor do Firestore
+                        loadConsultantName();
+                        listenToSales();
+                    } else {
+                        // Mostra a UI de login/registro
+                        authSection.classList.remove('hidden');
+                        appSection.classList.add('hidden');
+                        salesListBodyEl.innerHTML = ''; // Limpa a lista de vendas ao fazer logout
+                        // Limpa os dados do dashboard
+                        updateDashboard([]);
+                    }
+                });
+
+            } catch (e) {
+                console.error("Erro ao inicializar Firebase: ", e);
+                displayMessage("Erro ao inicializar o aplicativo. Por favor, tente novamente.", "error");
+            }
+        }
+
+        async function saveSale(saleData) {
+            setSaveLoading(true);
+            try {
+                // Salva a venda na coleção pública
+                const salesRef = collection(db, `artifacts/${appId}/public/sales`);
+                await addDoc(salesRef, { ...saleData, consultantId: userId, consultantName: consultantNameInput.value });
+                displayMessage("Venda salva com sucesso!", "success");
+                // Limpa o formulário após o salvamento
+                salesForm.reset();
+                productsContainer.innerHTML = '';
+                createProductInputGroup();
+            } catch (e) {
+                console.error("Erro ao salvar a venda: ", e);
+                displayMessage("Erro ao salvar a venda. Verifique sua conexão.", "error");
+            } finally {
+                setSaveLoading(false);
+            }
+        }
+
+        async function deleteSale(saleId) {
+            try {
+                const saleRef = doc(db, `artifacts/${appId}/public/sales`, saleId);
+                await deleteDoc(saleRef);
+                displayMessage("Venda excluída com sucesso!", "success");
+            } catch (e) {
+                console.error("Erro ao excluir a venda: ", e);
+                displayMessage("Erro ao excluir a venda. Por favor, tente novamente.", "error");
+            }
+        }
+
+        async function saveConsultantName(name) {
+            if (!name || !userId) return; // Garante que o userId está disponível
+            try {
+                const profileRef = doc(db, `artifacts/${appId}/users/${userId}/profile`, 'info');
+                await setDoc(profileRef, { consultantName: name });
+            } catch (e) {
+                console.error("Erro ao salvar o nome do consultor: ", e);
+            }
+        }
+
+        async function loadConsultantName() {
+            if (!userId) return; // Garante que o userId está disponível
+            try {
+                const profileRef = doc(db, `artifacts/${appId}/users/${userId}/profile`, 'info');
+                const profileSnap = await getDoc(profileRef);
+                if (profileSnap.exists()) {
+                    consultantNameInput.value = profileSnap.data().consultantName || '';
+                }
+            } catch (e) {
+                console.error("Erro ao carregar o nome do consultor: ", e);
+            }
+        }
+
+        function listenToSales() {
+            const salesRef = collection(db, `artifacts/${appId}/public/sales`);
+            onSnapshot(query(salesRef), (snapshot) => {
+                const sales = [];
+                snapshot.forEach((doc) => {
+                    sales.push({ id: doc.id, ...doc.data() });
+                });
+                updateDashboard(sales);
+                renderSalesList(sales);
+            }, (error) => {
+                console.error("Erro ao ouvir atualizações do Firestore: ", error);
+                displayMessage("Erro de conexão com o banco de dados. Os dados podem não estar atualizados.", "error");
+            });
+        }
+        
+        // --- Funções de UI e Lógica ---
+        function updateDashboard(sales) {
+            let totalRevenue = 0;
+            const productsSoldSummary = {};
+            let totalMigracaoSold = 0;
+            let totalAparelhosSoldValue = 0;
+
+            const mySales = sales.filter(s => s.consultantId === userId);
+
+            mySales.forEach(sale => {
+                const saleProducts = JSON.parse(sale.products);
+                saleProducts.forEach(p => {
+                    const productNameKey = p.name.includes('Migração') ? 'Migração' : p.name;
+                    if (productNameKey in productsSoldSummary) {
+                        productsSoldSummary[productNameKey] = (productsSoldSummary[productNameKey] || 0) + p.quantity;
+                    } else {
+                        productsSoldSummary[productNameKey] = p.quantity;
+                    }
+                    if (['Migração Up', 'Migração Mid', 'Migração Down'].includes(p.name)) {
+                        totalMigracaoSold += p.quantity;
+                    }
+                    if (p.name === 'Aparelhos (R$)') {
+                        totalAparelhosSoldValue += p.revenue;
+                    } else {
+                        totalRevenue += p.revenue;
+                    }
+                });
+            });
+
+            productsSoldSummary['Migração'] = totalMigracaoSold;
+            productsSoldSummary['Aparelhos (R$)'] = totalAparelhosSoldValue;
+            totalRevenue += totalAparelhosSoldValue * 0.01;
+
+            let currentTier = 0;
+            const revenueGoals = goalData['Receita (R$)'];
+            
+            if (totalRevenue >= revenueGoals[0]) currentTier++;
+            if (totalRevenue >= revenueGoals[1]) currentTier++;
+            if (totalRevenue >= revenueGoals[2]) currentTier++;
+
+            productsForGoals.forEach(product => {
+                const sold = productsSoldSummary[product] || 0;
+                const goals = goalData[product] || [];
+                if (goals.length > 0 && sold >= goals[0]) currentTier++;
+                if (goals.length > 1 && sold >= goals[1]) currentTier++;
+                if (goals.length > 2 && sold >= goals[2]) currentTier++;
+            });
+            
+            let totalCommission = 0;
+            const commissionDetails = {};
+            
+            let tierIndexForCommission = currentTier;
+            if (currentTier > 0) tierIndexForCommission = currentTier - 1;
+            tierIndexForCommission = Math.min(tierIndexForCommission, commissionData['Migração Mid'].length - 1);
+
+            mySales.forEach(sale => {
+                const saleProducts = JSON.parse(sale.products);
+                saleProducts.forEach(p => {
+                    const commissionRate = commissionData[p.name] ? commissionData[p.name][tierIndexForCommission] : 0;
+                    const productCommission = (p.quantity || 0) * commissionRate;
+                    
+                    if (commissionDetails[p.name]) {
+                        commissionDetails[p.name].value += productCommission;
+                        commissionDetails[p.name].quantity += (p.quantity || 0);
+                    } else {
+                        commissionDetails[p.name] = {
+                            value: productCommission,
+                            quantity: (p.quantity || 0),
+                            rate: commissionRate
+                        };
+                    }
+                });
+            });
+            
+            const revenueCommission = totalRevenue * (revenuePercentages[tierIndexForCommission] / 100);
+            commissionDetails['Receita Total'] = {
+                value: revenueCommission,
+                rate: revenuePercentages[tierIndexForCommission] + '%'
+            };
+
+            totalCommission = Object.values(commissionDetails).reduce((sum, item) => sum + item.value, 0);
+
+            totalRevenueEl.textContent = `R$ ${totalRevenue.toFixed(2).replace('.', ',')}`;
+            estimatedCommissionEl.textContent = `R$ ${totalCommission.toFixed(2).replace('.', ',')}`;
+            currentTierEl.textContent = `Faixa ${currentTier}`;
+            
+            let nextTierGoal = 0;
+            let progressPercentage = 0;
+
+            const nextRevenueGoalIndex = revenueGoals.findIndex(goal => totalRevenue < goal);
+            if (nextRevenueGoalIndex !== -1) {
+                nextTierGoal = revenueGoals[nextRevenueGoalIndex];
+                progressPercentage = Math.min(100, (totalRevenue / nextTierGoal) * 100);
+                progressTextEl.textContent = `Progresso para a Faixa ${currentTier + 1}:`;
+            } else {
+                progressPercentage = 100;
+                progressTextEl.textContent = 'Parabéns! Você alcançou a Faixa mais alta!';
+            }
+
+            progressFillEl.style.width = `${progressPercentage}%`;
+            progressFillEl.className = `progress-fill ${progressPercentage >= 100 ? 'bg-green-500' : 'bg-blue-500'}`;
+            
+            renderRevenueGoals(totalRevenue);
+            renderProductGoals(productsSoldSummary);
+            renderCommissionDetails(commissionDetails, currentTier);
+        }
+        
+        function renderSalesList(sales) {
+            salesListBodyEl.innerHTML = '';
+            if (sales.length === 0) {
+                salesListBodyEl.innerHTML = `<tr><td colspan="6" class="p-4 text-center text-gray-500">Nenhuma venda registrada ainda.</td></tr>`;
+                return;
+            }
+
+            sales.forEach(sale => {
+                const saleProducts = JSON.parse(sale.products);
+                const productsText = saleProducts.map(p => {
+                    const description = p.description ? ` - ${p.description}` : '';
+                    return `${p.name}${description}: ${p.quantity} (R$ ${p.revenue.toFixed(2).replace('.', ',')})`;
+                }).join(', ');
+
+                const date = sale.timestamp ? new Date(sale.timestamp.seconds * 1000).toLocaleString('pt-BR') : 'N/A';
+                const totalRevenueFormatted = (sale.totalRevenue || 0).toFixed(2).replace('.', ',');
+
+                const row = document.createElement('tr');
+                row.className = "border-t border-gray-200";
+                row.innerHTML = `
+                    <td class="p-4 text-gray-800">${sale.consultantName || 'N/A'}</td>
+                    <td class="p-4 text-gray-800">${sale.companyName}</td>
+                    <td class="p-4 text-sm">${productsText}</td>
+                    <td class="p-4 text-gray-500 text-sm">${date}</td>
+                    <td class="p-4">R$ ${totalRevenueFormatted}</td>
+                    <td class="p-4">
+                        <button class="text-red-500 hover:text-red-700 delete-btn" data-sale-id="${sale.id}">Excluir</button>
+                    </td>
+                `;
+                salesListBodyEl.appendChild(row);
+            });
+            
+            // Adiciona event listeners para os botões de exclusão
+            document.querySelectorAll('.delete-btn').forEach(button => {
+                button.addEventListener('click', (e) => {
+                    saleIdToDelete = e.target.getAttribute('data-sale-id');
+                    deleteModal.classList.remove('hidden');
+                });
+            });
+        }
+
+        function renderCommissionDetails(details, tierIndex) {
+            commissionDetailsBodyEl.innerHTML = '';
+            
+            const cappedTierIndex = Math.min(tierIndex, commissionData['Migração Mid'].length - 1);
+            
+            const sortedKeys = Object.keys(details).sort();
+
+            sortedKeys.forEach(key => {
+                const detail = details[key];
+                const row = document.createElement('tr');
+                row.className = "border-t border-gray-200";
+                
+                let itemName = key;
+                if (detail.quantity) {
+                    itemName = `${key} (${detail.quantity})`;
+                }
+
+                row.innerHTML = `
+                    <td class="p-4">${itemName}</td>
+                    <td class="p-4">R$ ${detail.value.toFixed(2).replace('.', ',')}</td>
+                    <td class="p-4">${detail.rate}</td>
+                `;
+                commissionDetailsBodyEl.appendChild(row);
+            });
+        }
+        
+        function renderRevenueGoals(totalRevenue) {
+            revenueGoalsBodyEl.innerHTML = '';
+            const goals = goalData['Receita (R$)'];
+            
+            goals.forEach(goal => {
+                const isMet = totalRevenue >= goal;
+                const status = isMet ? 'Atingida' : 'Ainda não';
+                const statusClass = isMet ? 'text-green-500' : 'text-gray-500';
+                
+                const row = document.createElement('tr');
+                row.className = "border-t border-gray-200";
+                row.innerHTML = `
+                    <td class="p-4">R$ ${goal.toFixed(2).replace('.', ',')}</td>
+                    <td class="p-4 ${statusClass}">${status}</td>
+                `;
+                revenueGoalsBodyEl.appendChild(row);
+            });
+        }
+
+        function renderProductGoals(productsSoldSummary) {
+            productGoalsBodyEl.innerHTML = '';
+            
+            productsForGoals.forEach(product => {
+                const sold = productsSoldSummary[product] || 0;
+                const goals = goalData[product] || [0, 0, 0];
+                
+                const row = document.createElement('tr');
+                row.className = "border-t border-gray-200";
+
+                const goal75Met = sold >= goals[0];
+                const goal150Met = sold >= goals[1];
+                const goal200Met = sold >= goals[2];
+
+                let soldValue = sold;
+                if (product === 'Aparelhos (R$)') {
+                    soldValue = `R$ ${sold.toFixed(2).replace('.', ',')}`;
+                }
+
+                row.innerHTML = `
+                    <td class="p-4">${product}</td>
+                    <td class="p-4 text-center">${soldValue}</td>
+                    <td class="p-4 text-center ${goal75Met ? 'text-green-500 font-bold' : ''}">${product === 'Aparelhos (R$)' ? `R$ ${goals[0].toFixed(2).replace('.', ',')}` : goals[0]}</td>
+                    <td class="p-4 text-center ${goal150Met ? 'text-green-500 font-bold' : ''}">${product === 'Aparelhos (R$)' ? `R$ ${goals[1].toFixed(2).replace('.', ',')}` : goals[1]}</td>
+                    <td class="p-4 text-center ${goal200Met ? 'text-green-500 font-bold' : ''}">${product === 'Aparelhos (R$)' ? `R$ ${goals[2].toFixed(2).replace('.', ',')}` : goals[2]}</td>
+                `;
+                productGoalsBodyEl.appendChild(row);
+            });
+        }
+
+        function createProductInputGroup() {
+            const group = document.createElement('div');
+            group.className = "product-input-group flex flex-col sm:flex-row items-center space-y-2 sm:space-y-0 sm:space-x-2";
+            group.innerHTML = `
+                <select class="product-select w-full sm:w-1/3 p-2 rounded-md border-gray-300 shadow-sm focus:ring-blue-500 focus:border-blue-500">
+                    <option value="Migração Up">Migração Up</option>
+                    <option value="Migração Mid">Migração Mid</option>
+                    <option value="Migração Down">Migração Down</option>
+                    <option value="GPON">GPON</option>
+                    <option value="Altas Portadas">Altas Portadas</option>
+                    <option value="Altas Novas">Altas Novas</option>
+                    <option value="VVN">VVN</option>
+                    <option value="Aparelhos (R$)">Aparelhos (R$)</option>
+                    <option value="Avançados">Avançados</option>
+                    <option value="Produtos de TI">Produtos de TI</option>
+                </select>
+                <input type="text" placeholder="Descrição" class="product-description w-full sm:w-1/3 p-2 rounded-md border-gray-300 shadow-sm focus:ring-blue-500 focus:border-blue-500">
+                <input type="number" placeholder="Quantidade" value="0" min="0" class="product-quantity w-full sm:w-1/3 p-2 text-center rounded-md border-gray-300 shadow-sm focus:ring-blue-500 focus:border-blue-500">
+                <input type="number" placeholder="Receita (R$)" step="0.01" class="product-revenue w-full sm:w-1/3 p-2 text-center rounded-md border-gray-300 shadow-sm focus:ring-blue-500 focus:border-blue-500">
+                <button type="button" class="remove-product-btn text-red-500 hover:text-red-700 text-xl font-bold p-1">&times;</button>
+            `;
+            productsContainer.appendChild(group);
+            
+            // Adiciona listener para o botão de remover
+            group.querySelector('.remove-product-btn').addEventListener('click', () => {
+                if (productsContainer.childElementCount > 1) {
+                    group.remove();
+                }
+            });
+        }
+        
+        // Função para formatar o CNPJ com a máscara
+        function formatCNPJ(value) {
+            let v = value.replace(/\D/g, ""); // Remove tudo que não for dígito
+            v = v.replace(/^(\d{2})(\d)/, "$1.$2");
+            v = v.replace(/^(\d{2})\.(\d{3})(\d)/, "$1.$2.$3");
+            v = v.replace(/\.(\d{3})(\d)/, ".$1/$2");
+            v = v.replace(/(\d{4})(\d)/, "$1-$2");
+            return v;
+        }
+
+        // --- Event Listeners ---
+        authForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const email = authEmailInput.value;
+            const password = authPasswordInput.value;
+            authMessageEl.style.display = 'none';
+
+            try {
+                if (isRegisterMode) {
+                    const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+                    displayAuthMessage('Registro bem-sucedido! Por favor, faça login.', 'success');
+                    isRegisterMode = false;
+                    toggleAuthBtn.textContent = 'Não tem uma conta? Registrar';
+                    authBtn.textContent = 'Entrar';
+                } else {
+                    await signInWithEmailAndPassword(auth, email, password);
+                }
+            } catch (e) {
+                console.error("Erro de autenticação: ", e.message);
+                displayAuthMessage('Erro de autenticação. Verifique seu e-mail e senha.', 'error');
+            }
+        });
+
+        toggleAuthBtn.addEventListener('click', () => {
+            isRegisterMode = !isRegisterMode;
+            if (isRegisterMode) {
+                toggleAuthBtn.textContent = 'Já tem uma conta? Entrar';
+                authBtn.textContent = 'Registrar';
+            } else {
+                toggleAuthBtn.textContent = 'Não tem uma conta? Registrar';
+                authBtn.textContent = 'Entrar';
+            }
+        });
+
+        logoutBtn.addEventListener('click', async () => {
+            await signOut(auth);
+        });
+
+        salesForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const consultantName = consultantNameInput.value;
+            const companyName = document.getElementById('company-name').value;
+            const cnpj = cnpjInput.value;
+            const crm = document.getElementById('crm').value;
+            
+            saveConsultantName(consultantName);
+
+            const productInputs = productsContainer.querySelectorAll('.product-input-group');
+            const productsSold = [];
+            let totalRevenue = 0;
+            
+            productInputs.forEach(inputGroup => {
+                const productSelect = inputGroup.querySelector('.product-select');
+                const descriptionInput = inputGroup.querySelector('.product-description');
+                const quantityInput = inputGroup.querySelector('.product-quantity');
+                const revenueInput = inputGroup.querySelector('.product-revenue');
+                
+                const productName = productSelect.value;
+                const description = descriptionInput.value;
+                const quantity = parseFloat(quantityInput.value) || 0;
+                const revenue = parseFloat(revenueInput.value) || 0;
+
+                if (quantity > 0 || revenue > 0) {
+                    productsSold.push({ name: productName, description: description, quantity: quantity, revenue: revenue });
+                    if (productName === 'Aparelhos (R$)') {
+                        totalRevenue += revenue * 0.01;
+                    } else {
+                        totalRevenue += revenue;
+                    }
+                }
+            });
+
+            if (productsSold.length === 0) {
+                displayMessage("Por favor, adicione pelo menos um produto à venda com quantidade ou receita maior que zero.", "error");
+                return;
+            }
+            
+            const newSale = {
+                consultantName,
+                companyName,
+                cnpj,
+                crm,
+                products: JSON.stringify(productsSold), // Serialize products to JSON string
+                totalRevenue,
+                timestamp: serverTimestamp()
+            };
+
+            await saveSale(newSale);
+        });
+
+        addProductBtn.addEventListener('click', () => {
+            createProductInputGroup();
+        });
+
+        // Event listener para a máscara de CNPJ
+        cnpjInput.addEventListener('input', (e) => {
+            e.target.value = formatCNPJ(e.target.value);
+        });
+
+        // Event listeners para o modal de exclusão
+        confirmDeleteBtn.addEventListener('click', () => {
+            if (saleIdToDelete) {
+                deleteSale(saleIdToDelete);
+                saleIdToDelete = null;
+            }
+            deleteModal.classList.add('hidden');
+        });
+
+        cancelDeleteBtn.addEventListener('click', () => {
+            deleteModal.classList.add('hidden');
+            saleIdToDelete = null;
+        });
+
+        // Inicializa o app ao carregar a página
+        window.onload = () => {
+            initializeFirebase();
+            createProductInputGroup();
+        };
+
     </script>
-  </body>
+</body>
 </html>
+
