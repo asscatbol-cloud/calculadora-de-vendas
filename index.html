@@ -254,18 +254,18 @@
     <script type="module">
         // Importa os módulos necessários do Firebase
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
-        import { getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import { getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword, onAuthStateChanged, signOut, signInAnonymously, signInWithCustomToken } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
         import { getFirestore, collection, addDoc, onSnapshot, query, deleteDoc, doc, setDoc, getDoc, setLogLevel, serverTimestamp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
         // Variáveis globais fornecidas pelo ambiente
         const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
-        const firebaseConfig = {
-          apiKey: "AIzaSyC293ALvoMmnm6ygd-t9FecegMjln9lEkc",
-          authDomain: "calculadora-de-vendas.firebaseapp.com",
-          projectId: "calculadora-de-vendas",
-          storageBucket: "calculadora-de-vendas.firebasestorage.app",
-          messagingSenderId: "633108525289",
-          appId: "1:633108525289:web:0b4147c2aa71e637aa4078"
+        const firebaseConfig = typeof __firebase_config !== 'undefined' ? JSON.parse(__firebase_config) : {
+            apiKey: "AIzaSyC293ALvoMmnm6ygd-t9FecegMjln9lEkc",
+            authDomain: "calculadora-de-vendas.firebaseapp.com",
+            projectId: "calculadora-de-vendas",
+            storageBucket: "calculadora-de-vendas.firebasestorage.app",
+            messagingSenderId: "633108525289",
+            appId: "1:633108525289:web:0b4147c2aa71e637aa4078"
         };
         const initialAuthToken = typeof __initial_auth_token !== 'undefined' ? __initial_auth_token : null;
 
@@ -398,6 +398,12 @@
                         updateDashboard([]);
                     }
                 });
+
+                if (initialAuthToken) {
+                    await signInWithCustomToken(auth, initialAuthToken);
+                } else {
+                    await signInAnonymously(auth);
+                }
 
             } catch (e) {
                 console.error("Erro ao inicializar Firebase: ", e);
@@ -788,6 +794,7 @@
             const productsSold = [];
             let totalRevenue = 0;
             
+            let hasValidProduct = false;
             productInputs.forEach(inputGroup => {
                 const productSelect = inputGroup.querySelector('.product-select');
                 const descriptionInput = inputGroup.querySelector('.product-description');
@@ -800,6 +807,7 @@
                 const revenue = parseFloat(revenueInput.value) || 0;
 
                 if (quantity > 0 || revenue > 0) {
+                    hasValidProduct = true;
                     productsSold.push({ name: productName, description: description, quantity: quantity, revenue: revenue });
                     if (productName === 'Aparelhos (R$)') {
                         totalRevenue += revenue * 0.01;
@@ -809,7 +817,7 @@
                 }
             });
 
-            if (productsSold.length === 0) {
+            if (!hasValidProduct) {
                 displayMessage("Por favor, adicione pelo menos um produto à venda com quantidade ou receita maior que zero.", "error");
                 return;
             }
