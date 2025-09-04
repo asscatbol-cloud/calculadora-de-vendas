@@ -44,6 +44,17 @@
             0% { transform: rotate(0deg); }
             100% { transform: rotate(360deg); }
         }
+        .animate-pulse {
+            animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+        }
+        @keyframes pulse {
+            0%, 100% {
+                opacity: 1;
+            }
+            50% {
+                opacity: .5;
+            }
+        }
     </style>
 </head>
 <body class="bg-gray-100 flex items-center justify-center min-h-screen p-4">
@@ -156,9 +167,9 @@
                     Adicionar Produto
                 </button>
                 
-                <button type="submit" id="save-sale-btn" class="w-full px-4 py-2 bg-blue-600 text-white font-medium rounded-lg shadow-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 flex justify-center items-center space-x-2">
-                    <span id="save-sale-btn-text">Salvar Venda</span>
-                    <div id="save-sale-spinner" class="spinner hidden"></div>
+                <button type="submit" id="save-sale-btn" class="w-full px-4 py-2 bg-blue-600 text-white font-medium rounded-lg shadow-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 flex justify-center items-center space-x-2" disabled>
+                    <span id="save-sale-btn-text">Carregando...</span>
+                    <div id="save-sale-spinner" class="spinner"></div>
                 </button>
             </form>
         </div>
@@ -359,10 +370,12 @@
                 saveSaleBtnText.textContent = 'Salvando...';
                 saveSaleSpinner.classList.remove('hidden');
                 saveSaleBtn.disabled = true;
+                saveSaleBtn.classList.add('animate-pulse');
             } else {
                 saveSaleBtnText.textContent = 'Salvar Venda';
                 saveSaleSpinner.classList.add('hidden');
                 saveSaleBtn.disabled = false;
+                saveSaleBtn.classList.remove('animate-pulse');
             }
         }
         
@@ -379,6 +392,9 @@
                 auth = getAuth(app);
                 db = getFirestore(app);
 
+                // ADIÇÃO: Disabilita o botão de salvar venda até a autenticação ser concluída
+                setSaveLoading(true);
+
                 onAuthStateChanged(auth, async (user) => {
                     if (user) {
                         userId = user.uid;
@@ -389,6 +405,10 @@
                         // Carrega o nome do consultor do Firestore
                         loadConsultantName();
                         listenToSales();
+
+                        // CORREÇÃO: Habilita o botão de salvar venda APENAS quando o usuário estiver autenticado
+                        setSaveLoading(false);
+
                     } else {
                         // Mostra a UI de login/registro
                         authSection.classList.remove('hidden');
@@ -396,6 +416,8 @@
                         salesListBodyEl.innerHTML = ''; // Limpa a lista de vendas ao fazer logout
                         // Limpa os dados do dashboard
                         updateDashboard([]);
+                        // Volta a desabilitar o botão
+                        setSaveLoading(true);
                     }
                 });
 
@@ -412,6 +434,13 @@
         }
 
         async function saveSale(saleData) {
+            // CORREÇÃO: Garante que o userId está disponível antes de salvar
+            if (!userId) {
+                displayMessage("Erro: Usuário não autenticado. Tente recarregar a página.", "error");
+                console.error("Erro: userId não está disponível.");
+                return;
+            }
+
             setSaveLoading(true);
             try {
                 // Salva a venda na coleção pública
@@ -867,3 +896,4 @@
     </script>
 </body>
 </html>
+
