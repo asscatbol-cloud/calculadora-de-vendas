@@ -87,6 +87,15 @@
         </div>
         <p class="text-gray-500 mb-8">Acompanhe seu desempenho e comissão em tempo real!</p>
         
+        <!-- Filtro de Período -->
+        <div class="mb-6">
+            <label for="period-filter" class="block text-sm font-medium text-gray-700 mb-2">Visualizar Período:</label>
+            <select id="period-filter" class="w-full md:w-1/3 p-2 rounded-md border-gray-300 shadow-sm focus:ring-blue-500 focus:border-blue-500">
+                <option value="currentMonth">Mês Atual</option>
+                <option value="last3Months">Últimos 3 Meses</option>
+            </select>
+        </div>
+        
         <!-- Dashboard de Desempenho -->
         <div>
             <h2 class="text-xl font-semibold mb-4">Seu Desempenho</h2>
@@ -266,7 +275,7 @@
         // Importa os módulos necessários do Firebase
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
         import { getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword, onAuthStateChanged, signOut, signInWithCustomToken } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
-        import { getFirestore, collection, addDoc, onSnapshot, query, deleteDoc, doc, setDoc, getDoc, setLogLevel, serverTimestamp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+        import { getFirestore, collection, addDoc, onSnapshot, query, deleteDoc, doc, setDoc, getDoc, setLogLevel, serverTimestamp, where } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
         // Variáveis globais fornecidas pelo ambiente
         const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
@@ -343,6 +352,10 @@
         const authBtn = document.getElementById('auth-btn');
         const toggleAuthBtn = document.getElementById('toggle-auth-btn');
         const logoutBtn = document.getElementById('logout-btn');
+        
+        // NOVO: Elemento de filtro
+        const periodFilterEl = document.getElementById('period-filter');
+
 
         let isRegisterMode = false;
 
@@ -491,10 +504,36 @@
             }
         }
 
+        // NOVO: Função para obter a data de início do período
+        function getStartDate(period) {
+            const today = new Date();
+            let startDate;
+
+            switch (period) {
+                case 'currentMonth':
+                    // Zera o dia do mês para o dia 1
+                    startDate = new Date(today.getFullYear(), today.getMonth(), 1);
+                    break;
+                case 'last3Months':
+                    // Retrocede 3 meses e zera o dia para o dia 1
+                    startDate = new Date(today.getFullYear(), today.getMonth() - 2, 1);
+                    break;
+                default:
+                    startDate = new Date(0); // Início de todos os tempos
+            }
+            return startDate;
+        }
+
         function listenToSales() {
-            // CORREÇÃO: Altera o caminho da coleção para incluir "data"
+            if (!db) return;
             const salesRef = collection(db, `artifacts/${appId}/public/data/sales`);
-            onSnapshot(query(salesRef), (snapshot) => {
+            const selectedPeriod = periodFilterEl.value;
+            const startDate = getStartDate(selectedPeriod);
+            
+            // NOVO: Adiciona a condição 'where' para filtrar por data
+            const salesQuery = query(salesRef, where('timestamp', '>=', startDate));
+
+            onSnapshot(salesQuery, (snapshot) => {
                 const sales = [];
                 snapshot.forEach((doc) => {
                     sales.push({ id: doc.id, ...doc.data() });
@@ -616,6 +655,9 @@
         
         function renderSalesList(sales) {
             salesListBodyEl.innerHTML = '';
+            // NOVO: Ordena as vendas por data, da mais recente para a mais antiga
+            sales.sort((a, b) => b.timestamp.seconds - a.timestamp.seconds);
+            
             if (sales.length === 0) {
                 salesListBodyEl.innerHTML = `<tr><td colspan="6" class="p-4 text-center text-gray-500">Nenhuma venda registrada ainda.</td></tr>`;
                 return;
@@ -885,6 +927,12 @@
             deleteModal.classList.add('hidden');
             saleIdToDelete = null;
         });
+        
+        // NOVO: Adiciona um listener para o filtro de período
+        periodFilterEl.addEventListener('change', () => {
+            listenToSales();
+        });
+
 
         // Inicializa o app ao carregar a página
         window.onload = () => {
