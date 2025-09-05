@@ -452,8 +452,9 @@
                 productsContainer.innerHTML = '';
                 createProductInputGroup();
             } catch (e) {
+                // CORREÇÃO: Exibe a mensagem de erro detalhada da API do Firebase
                 console.error("Erro ao salvar a venda: ", e);
-                displayMessage("Erro ao salvar a venda. Verifique sua conexão.", "error");
+                displayMessage(`Erro ao salvar a venda. Detalhes: ${e.message}`, "error");
             } finally {
                 setSaveLoading(false);
             }
