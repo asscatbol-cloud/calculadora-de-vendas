@@ -434,10 +434,10 @@
         }
 
         async function saveSale(saleData) {
-            // CORREÇÃO: Garante que o userId está disponível antes de salvar
-            if (!userId) {
-                displayMessage("Erro: Usuário não autenticado. Tente recarregar a página.", "error");
-                console.error("Erro: userId não está disponível.");
+            // CORREÇÃO: Garante que o userId e a instância do db estão disponíveis
+            if (!userId || !db) {
+                displayMessage("Erro: O aplicativo não está pronto. Por favor, aguarde.", "error");
+                console.error("Erro: A instância do Firestore ou o userId não estão disponíveis. db:", db, "userId:", userId);
                 return;
             }
 
@@ -896,4 +896,3 @@
     </script>
 </body>
 </html>
-
