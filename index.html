@@ -91,8 +91,7 @@
         <div class="mb-6">
             <label for="period-filter" class="block text-sm font-medium text-gray-700 mb-2">Visualizar Período:</label>
             <select id="period-filter" class="w-full md:w-1/3 p-2 rounded-md border-gray-300 shadow-sm focus:ring-blue-500 focus:border-blue-500">
-                <option value="currentMonth">Mês Atual</option>
-                <option value="last3Months">Últimos 3 Meses</option>
+                <!-- As opções serão preenchidas dinamicamente pelo JavaScript -->
             </select>
         </div>
         
@@ -275,7 +274,7 @@
         // Importa os módulos necessários do Firebase
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
         import { getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword, onAuthStateChanged, signOut, signInWithCustomToken } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
-        import { getFirestore, collection, addDoc, onSnapshot, query, deleteDoc, doc, setDoc, getDoc, setLogLevel, serverTimestamp, where } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+        import { getFirestore, collection, addDoc, onSnapshot, query, deleteDoc, doc, setDoc, getDoc, setLogLevel, serverTimestamp, where, orderBy } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
         // Variáveis globais fornecidas pelo ambiente
         const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
@@ -417,6 +416,7 @@
 
                         // Carrega o nome do consultor do Firestore
                         loadConsultantName();
+                        createPeriodOptions(); // NOVO: Chama a função para criar as opções de período
                         listenToSales();
 
                         // Habilita o botão de salvar venda APENAS quando o usuário estiver autenticado
@@ -504,34 +504,38 @@
             }
         }
 
-        // NOVO: Função para obter a data de início do período
-        function getStartDate(period) {
+        // NOVO: Função para criar as opções de meses no seletor
+        function createPeriodOptions() {
+            periodFilterEl.innerHTML = '';
             const today = new Date();
-            let startDate;
+            const months = ['Janeiro', 'Fevereiro', 'Março', 'Abril', 'Maio', 'Junho', 'Julho', 'Agosto', 'Setembro', 'Outubro', 'Novembro', 'Dezembro'];
 
-            switch (period) {
-                case 'currentMonth':
-                    // Zera o dia do mês para o dia 1
-                    startDate = new Date(today.getFullYear(), today.getMonth(), 1);
-                    break;
-                case 'last3Months':
-                    // Retrocede 3 meses e zera o dia para o dia 1
-                    startDate = new Date(today.getFullYear(), today.getMonth() - 2, 1);
-                    break;
-                default:
-                    startDate = new Date(0); // Início de todos os tempos
+            for (let i = 0; i < 3; i++) {
+                const date = new Date(today.getFullYear(), today.getMonth() - i, 1);
+                const monthName = months[date.getMonth()];
+                const year = date.getFullYear();
+                const option = document.createElement('option');
+                option.value = `${year}-${(date.getMonth() + 1).toString().padStart(2, '0')}`;
+                option.textContent = `${monthName} ${year}`;
+                periodFilterEl.appendChild(option);
             }
-            return startDate;
         }
 
         function listenToSales() {
             if (!db) return;
             const salesRef = collection(db, `artifacts/${appId}/public/data/sales`);
             const selectedPeriod = periodFilterEl.value;
-            const startDate = getStartDate(selectedPeriod);
             
-            // NOVO: Adiciona a condição 'where' para filtrar por data
-            const salesQuery = query(salesRef, where('timestamp', '>=', startDate));
+            const [year, month] = selectedPeriod.split('-');
+            const startDate = new Date(year, month - 1, 1);
+            const endDate = new Date(year, month, 1);
+            
+            // NOVO: Adiciona a condição 'where' para filtrar por data, usando o primeiro dia do mês e o primeiro dia do mês seguinte
+            const salesQuery = query(salesRef, 
+                where('timestamp', '>=', startDate), 
+                where('timestamp', '<', endDate),
+                orderBy('timestamp') // Adiciona a ordenação para o bom funcionamento do filtro de intervalo
+            );
 
             onSnapshot(salesQuery, (snapshot) => {
                 const sales = [];
