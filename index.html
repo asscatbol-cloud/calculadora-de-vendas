@@ -458,7 +458,8 @@
 
         async function deleteSale(saleId) {
             try {
-                const saleRef = doc(db, `artifacts/${appId}/public/sales`, saleId);
+                // CORREÇÃO: Altera o caminho para ter um número par de segmentos para a exclusão
+                const saleRef = doc(db, `artifacts/${appId}/public/data/sales`, saleId);
                 await deleteDoc(saleRef);
                 displayMessage("Venda excluída com sucesso!", "success");
             } catch (e) {
