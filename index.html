@@ -61,6 +61,10 @@
 
     <!-- Login/Register Section -->
     <div id="auth-section" class="container w-full max-w-md p-6 bg-white rounded-lg shadow-md hidden">
+        <div class="flex justify-center mb-6">
+            <!-- Logo para a tela de login -->
+            <img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAOEAAADhCAMAAAAJbSJIAAAAbFBMVEUAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAATv19OAAAACnRSTlMA8JCAz+9A7u+oO/K0rYvAAAAAAAWJREFUeNrt2dmSgkAMBNCqLqR1qN7/VVuuRUMk0X+31H0Y+4D7hLhDk/f3OQYAAAAAAAAAAAAAAAAA+A+WlZWVlZWVlZWVlZWVlZVl2XhYWFhYWFhYWFhYWFhYWFj2PwsLCwsLCwsLCwsLCwsLCwvdLwAAAAAAAAAAAAAAAAAAAAAAgA1N51hO+v3eG381oY8fK1MewyVd+Y63fE0I/l8n71L+xP3H+D1P/K1N+S8x/YkBAAAAAAAAAAAAAAAAAAAAAACAh2uT2WvU+b8T+N64xMct+Q2j/wUAAAAAAAAAAAAAAAAAAAAAAADgqXm4FhG6x3c/E/s1fW/8T2c/AAAAAAAAAAAAAAAAAAAAAAAAD9c2mS/E72+5m7/2fE/zV0P/y/rXoQAAAAAAAAAAAAAAAAAAAAAAAF2V5tV5n6H//T3X/7xI/V9Vf1X1Vw4AAAAAAAAAAAAAAAAAAAAAAACA/wBv43t+k3+oX7e+z2m92/M7/5D/T29OAAAAAAAAAAAAAAAAAAAAAAAAv09qX/w19b0BAAAAAAAAAAAAAAAAAAAAAADA+fI57X8CAAAAAAAAAAAAAAAAAAAAAADw92i+w/5+AQAAAAAAAAAAAAAAAAAAAAAAAN3n4d8BAAAAAAAAAAAAAAAAAAAAAAAA2N7DvxMAAAAAAAAAAAAAAAAAAAAAAAAAAJC9B/9MAgAAAAAAAAAAAAAAAAAAAAAAAN279/8FAAAAAAAAAAAAAAAAAAAAAAAAAAD2Hn4BAAAAAAAAAAAAAAAAAAAAAAAAAAAAP8bJv2t2qJmBAAAAAElFTkSuQmCC" alt="Logo Assertiva Vivo Empresas" class="h-24 mx-auto object-contain">
+        </div>
         <h2 class="text-2xl font-bold text-center mb-6 text-gray-800">Acesso do Consultor</h2>
         <div id="auth-message" class="hidden p-4 mb-4 text-sm rounded-lg" role="alert"></div>
         <form id="auth-form" class="space-y-4">
@@ -82,6 +86,7 @@
     <!-- Main App Section -->
     <div id="app-section" class="container hidden">
         <div class="flex justify-center mb-6">
+            <!-- Logo para a tela principal -->
             <img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAOEAAADhCAMAAAAJbSJIAAAAbFBMVEUAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAATv19OAAAACnRSTlMA8JCAz+9A7u+oO/K0rYvAAAAAAAWJREFUeNrt2dmSgkAMBNCqLqR1qN7/VVuuRUMk0X+31H0Y+4D7hLhDk/f3OQYAAAAAAAAAAAAAAAAA+A+WlZWVlZWVlZWVlZWVlZVl2XhYWFhYWFhYWFhYWFhYWFj2PwsLCwsLCwsLCwsLCwsLCwvdLwAAAAAAAAAAAAAAAAAAAAAAgA1N51hO+v3eG381oY8fK1MewyVd+Y63fE0I/l8n71L+xP3H+D1P/K1N+S8x/YkBAAAAAAAAAAAAAAAAAAAAAACAh2uT2WvU+b8T+N64xMct+Q2j/wUAAAAAAAAAAAAAAAAAAAAAAADgqXm4FhG6x3c/E/s1fW/8T2c/AAAAAAAAAAAAAAAAAAAAAAAAD9c2mS/E72+5m7/2fE/zV0P/y/rXoQAAAAAAAAAAAAAAAAAAAAAAAF2V5tV5n6H//T3X/7xI/V9Vf1X1Vw4AAAAAAAAAAAAAAAAAAAAAAACA/wBv43t+k3+oX7e+z2m92/M7/5D/T29OAAAAAAAAAAAAAAAAAAAAAAAAv09qX/w19b0BAAAAAAAAAAAAAAAAAAAAAADA+fI57X8CAAAAAAAAAAAAAAAAAAAAAADw92i+w/5+AQAAAAAAAAAAAAAAAAAAAAAAAN3n4d8BAAAAAAAAAAAAAAAAAAAAAAAA2N7DvxMAAAAAAAAAAAAAAAAAAAAAAAAAAJC9B/9MAgAAAAAAAAAAAAAAAAAAAAAAAN279/8FAAAAAAAAAAAAAAAAAAAAAAAAAAD2Hn4BAAAAAAAAAAAAAAAAAAAAAAAAAAAAP8bJv2t2qJmBAAAAAElFTkSuQmCC" alt="Logo Assertiva Vivo Empresas" class="h-24 mx-auto object-contain">
         </div>
         <div class="flex justify-between items-center mb-4">
@@ -180,7 +185,7 @@
                 
                 <button type="submit" id="save-sale-btn" class="w-full px-4 py-2 bg-blue-600 text-white font-medium rounded-lg shadow-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 flex justify-center items-center space-x-2" disabled>
                     <span id="save-sale-btn-text">Carregando...</span>
-                    <div id="save-sale-spinner" class="spinner"></div>
+                    <div id="save-sale-spinner" class="spinner hidden"></div>
                 </button>
             </form>
         </div>
@@ -536,8 +541,7 @@
             // NOVO: Adiciona a condição 'where' para filtrar por data, usando o primeiro dia do mês e o primeiro dia do mês seguinte
             const salesQuery = query(salesRef, 
                 where('timestamp', '>=', startDate), 
-                where('timestamp', '<', endDate),
-                orderBy('timestamp') // Adiciona a ordenação para o bom funcionamento do filtro de intervalo
+                where('timestamp', '<', endDate)
             );
 
             onSnapshot(salesQuery, (snapshot) => {
@@ -950,3 +954,4 @@
     </script>
 </body>
 </html>
+
