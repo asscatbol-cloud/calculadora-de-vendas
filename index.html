@@ -265,7 +265,7 @@
     <script type="module">
         // Importa os módulos necessários do Firebase
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
-        import { getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword, onAuthStateChanged, signOut, signInAnonymously, signInWithCustomToken } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import { getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword, onAuthStateChanged, signOut, signInWithCustomToken } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
         import { getFirestore, collection, addDoc, onSnapshot, query, deleteDoc, doc, setDoc, getDoc, setLogLevel, serverTimestamp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
         // Variáveis globais fornecidas pelo ambiente
@@ -406,7 +406,7 @@
                         loadConsultantName();
                         listenToSales();
 
-                        // CORREÇÃO: Habilita o botão de salvar venda APENAS quando o usuário estiver autenticado
+                        // Habilita o botão de salvar venda APENAS quando o usuário estiver autenticado
                         setSaveLoading(false);
 
                     } else {
@@ -423,10 +423,8 @@
 
                 if (initialAuthToken) {
                     await signInWithCustomToken(auth, initialAuthToken);
-                } else {
-                    await signInAnonymously(auth);
                 }
-
+                // REMOÇÃO: A autenticação anônima foi removida, pois não é suportada neste ambiente
             } catch (e) {
                 console.error("Erro ao inicializar Firebase: ", e);
                 displayMessage("Erro ao inicializar o aplicativo. Por favor, tente novamente.", "error");
@@ -434,7 +432,6 @@
         }
 
         async function saveSale(saleData) {
-            // CORREÇÃO: Garante que o userId e a instância do db estão disponíveis
             if (!userId || !db) {
                 displayMessage("Erro: O aplicativo não está pronto. Por favor, aguarde.", "error");
                 console.error("Erro: A instância do Firestore ou o userId não estão disponíveis. db:", db, "userId:", userId);
@@ -443,8 +440,8 @@
 
             setSaveLoading(true);
             try {
-                // Salva a venda na coleção pública
-                const salesRef = collection(db, `artifacts/${appId}/public/sales`);
+                // CORREÇÃO: Altera o caminho da coleção para incluir "data"
+                const salesRef = collection(db, `artifacts/${appId}/public/data/sales`);
                 await addDoc(salesRef, { ...saleData, consultantId: userId, consultantName: consultantNameInput.value });
                 displayMessage("Venda salva com sucesso!", "success");
                 // Limpa o formulário após o salvamento
@@ -452,7 +449,6 @@
                 productsContainer.innerHTML = '';
                 createProductInputGroup();
             } catch (e) {
-                // CORREÇÃO: Exibe a mensagem de erro detalhada da API do Firebase
                 console.error("Erro ao salvar a venda: ", e);
                 displayMessage(`Erro ao salvar a venda. Detalhes: ${e.message}`, "error");
             } finally {
@@ -472,7 +468,7 @@
         }
 
         async function saveConsultantName(name) {
-            if (!name || !userId) return; // Garante que o userId está disponível
+            if (!name || !userId) return;
             try {
                 const profileRef = doc(db, `artifacts/${appId}/users/${userId}/profile`, 'info');
                 await setDoc(profileRef, { consultantName: name });
@@ -482,7 +478,7 @@
         }
 
         async function loadConsultantName() {
-            if (!userId) return; // Garante que o userId está disponível
+            if (!userId) return;
             try {
                 const profileRef = doc(db, `artifacts/${appId}/users/${userId}/profile`, 'info');
                 const profileSnap = await getDoc(profileRef);
@@ -495,7 +491,8 @@
         }
 
         function listenToSales() {
-            const salesRef = collection(db, `artifacts/${appId}/public/sales`);
+            // CORREÇÃO: Altera o caminho da coleção para incluir "data"
+            const salesRef = collection(db, `artifacts/${appId}/public/data/sales`);
             onSnapshot(query(salesRef), (snapshot) => {
                 const sales = [];
                 snapshot.forEach((doc) => {
