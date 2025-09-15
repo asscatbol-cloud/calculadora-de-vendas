@@ -530,27 +530,35 @@
                 return;
             }
             const salesRef = collection(db, `artifacts/${appId}/public/data/sales`);
-            const selectedPeriod = periodFilterEl.value;
             
-            const [year, month] = selectedPeriod.split('-');
-            const startDate = new Date(year, month - 1, 1);
-            const endDate = new Date(year, month, 1);
-            
-            // ATUALIZADO: Adiciona a condição para filtrar apenas as vendas do usuário atual
+            // ATUALIZADO: Remove a filtragem por data na query para evitar erro de índice.
             const salesQuery = query(salesRef, 
                 where('consultantId', '==', userId), // FILTRO POR USUÁRIO
-                where('timestamp', '>=', startDate), 
-                where('timestamp', '<', endDate),
                 orderBy('timestamp', 'desc') // Adiciona a ordenação para o bom funcionamento do filtro de intervalo
             );
 
             onSnapshot(salesQuery, (snapshot) => {
-                const sales = [];
+                let sales = [];
                 snapshot.forEach((doc) => {
                     sales.push({ id: doc.id, ...doc.data() });
                 });
-                updateDashboard(sales);
-                renderSalesList(sales);
+
+                // NOVO: Faz a filtragem por período no lado do cliente
+                const selectedPeriod = periodFilterEl.value;
+                const [year, month] = selectedPeriod.split('-');
+                const startDate = new Date(year, month - 1, 1);
+                const endDate = new Date(year, month, 1);
+                
+                const filteredSales = sales.filter(sale => {
+                    if (sale.timestamp && sale.timestamp.toDate) {
+                        const saleDate = sale.timestamp.toDate();
+                        return saleDate >= startDate && saleDate < endDate;
+                    }
+                    return false;
+                });
+                
+                updateDashboard(filteredSales);
+                renderSalesList(filteredSales);
             }, (error) => {
                 console.error("Erro ao ouvir atualizações do Firestore: ", error);
                 displayMessage("Erro de conexão com o banco de dados. Os dados podem não estar atualizados.", "error");
