@@ -202,7 +202,7 @@
                 <table class="min-w-full text-left border-collapse">
                     <thead>
                         <tr class="bg-gray-200">
-                            <th class="p-4 rounded-tl-lg">Consultor</th>
+                            <th class="p-4 rounded-tl-lg">CNPJ</th>
                             <th class="p-4">Empresa</th>
                             <th class="p-4">Produtos</th>
                             <th class="p-4">Data</th>
@@ -533,7 +533,7 @@
         }
 
         function listenToSales() {
-            if (!db) return;
+            if (!db || !userId) return;
             const salesRef = collection(db, `artifacts/${appId}/public/data/sales`);
             const selectedPeriod = periodFilterEl.value;
             
@@ -541,10 +541,11 @@
             const startDate = new Date(year, month - 1, 1);
             const endDate = new Date(year, month, 1);
             
-            // NOVO: Adiciona a condição 'where' para filtrar por data, usando o primeiro dia do mês e o primeiro dia do mês seguinte
+            // NOVO: Adiciona a condição 'where' para filtrar por data E pelo consultor logado
             const salesQuery = query(salesRef, 
                 where('timestamp', '>=', startDate), 
-                where('timestamp', '<', endDate)
+                where('timestamp', '<', endDate),
+                where('consultantId', '==', userId)
             );
 
             onSnapshot(salesQuery, (snapshot) => {
@@ -690,7 +691,7 @@
                 const row = document.createElement('tr');
                 row.className = "border-t border-gray-200";
                 row.innerHTML = `
-                    <td class="p-4 text-gray-800">${sale.consultantName || 'N/A'}</td>
+                    <td class="p-4 text-gray-800">${sale.cnpj || 'N/A'}</td>
                     <td class="p-4 text-gray-800">${sale.companyName}</td>
                     <td class="p-4 text-sm">${productsText}</td>
                     <td class="p-4 text-gray-500 text-sm">${date}</td>
