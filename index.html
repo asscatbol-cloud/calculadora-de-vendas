@@ -456,7 +456,6 @@
 
             setSaveLoading(true);
             try {
-                // CORREÇÃO: Altera o caminho da coleção para incluir "data"
                 const salesRef = collection(db, `artifacts/${appId}/public/data/sales`);
                 await addDoc(salesRef, { ...saleData, consultantId: userId, consultantName: consultantNameInput.value });
                 displayMessage("Venda salva com sucesso!", "success");
@@ -474,7 +473,6 @@
 
         async function deleteSale(saleId) {
             try {
-                // CORREÇÃO: Altera o caminho para ter um número par de segmentos para a exclusão
                 const saleRef = doc(db, `artifacts/${appId}/public/data/sales`, saleId);
                 await deleteDoc(saleRef);
                 displayMessage("Venda excluída com sucesso!", "success");
@@ -526,15 +524,13 @@
 
         function listenToSales() {
             if (!db || !userId) {
-                // Se o usuário não estiver autenticado, não faz a query
                 return;
             }
             const salesRef = collection(db, `artifacts/${appId}/public/data/sales`);
             
-            // ATUALIZADO: Remove a filtragem por data na query para evitar erro de índice.
+            // CORREÇÃO: Remove o orderBy da query para evitar o erro de índice
             const salesQuery = query(salesRef, 
-                where('consultantId', '==', userId), // FILTRO POR USUÁRIO
-                orderBy('timestamp', 'desc') // Adiciona a ordenação para o bom funcionamento do filtro de intervalo
+                where('consultantId', '==', userId)
             );
 
             onSnapshot(salesQuery, (snapshot) => {
@@ -572,7 +568,6 @@
             let totalMigracaoSold = 0;
             let totalAparelhosSoldValue = 0;
 
-            // REMOVIDO: A filtragem por usuário foi movida para a consulta do Firestore
             const mySales = sales;
 
             mySales.forEach(sale => {
@@ -676,7 +671,11 @@
         function renderSalesList(sales) {
             salesListBodyEl.innerHTML = '';
             // NOVO: Ordena as vendas por data, da mais recente para a mais antiga
-            sales.sort((a, b) => b.timestamp.seconds - a.timestamp.seconds);
+            sales.sort((a, b) => {
+                const dateA = a.timestamp && a.timestamp.toDate ? a.timestamp.toDate() : new Date(0);
+                const dateB = b.timestamp && b.timestamp.toDate ? b.timestamp.toDate() : new Date(0);
+                return dateB.getTime() - dateA.getTime();
+            });
             
             if (sales.length === 0) {
                 salesListBodyEl.innerHTML = `<tr><td colspan="6" class="p-4 text-center text-gray-500">Nenhuma venda registrada ainda.</td></tr>`;
