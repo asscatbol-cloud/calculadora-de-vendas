@@ -60,7 +60,7 @@
 <body class="bg-gray-100 flex items-center justify-center min-h-screen p-4">
 
     <!-- Login/Register Section -->
-    <div id="auth-section" class="container w-full max-w-md p-6 bg-white rounded-lg shadow-md hidden">
+    <div id="auth-section" class="container w-full max-w-md p-6 bg-white rounded-lg shadow-md">
         <h2 class="text-2xl font-bold text-center mb-6 text-gray-800">Acesso do Consultor</h2>
         <div id="auth-message" class="hidden p-4 mb-4 text-sm rounded-lg" role="alert"></div>
         <form id="auth-form" class="space-y-4">
@@ -251,6 +251,28 @@
             </div>
         </div>
 
+        <hr class="my-8">
+
+        <!-- NOVO: Seção para Gerentes -->
+        <div id="manager-section" class="hidden bg-gray-50 p-6 rounded-lg shadow-inner">
+            <h2 class="text-xl font-semibold mb-4 text-blue-800">Ferramentas de Gerência</h2>
+            <p class="text-sm text-gray-600 mb-4">Gerencie os acessos de sua equipe.</p>
+            <div id="manager-tools-message" class="hidden p-4 mb-4 text-sm rounded-lg" role="alert"></div>
+            
+            <form id="promote-form" class="space-y-4">
+                <div class="flex flex-col sm:flex-row sm:space-x-4 space-y-4 sm:space-y-0 items-end">
+                    <div class="flex-grow">
+                        <label for="promote-email" class="block text-sm font-medium text-gray-700">E-mail do Consultor</label>
+                        <input type="email" id="promote-email" required class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
+                    </div>
+                    <button type="submit" id="promote-btn" class="px-4 py-2 bg-blue-600 text-white font-medium rounded-lg shadow-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2">
+                        Promover a Gerente
+                    </button>
+                </div>
+            </form>
+        </div>
+
+
     </div>
 
     <!-- Modal de Confirmação de Exclusão -->
@@ -277,7 +299,7 @@
         // Importa os módulos necessários do Firebase
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
         import { getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword, onAuthStateChanged, signOut, signInWithCustomToken } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
-        import { getFirestore, collection, addDoc, onSnapshot, query, deleteDoc, doc, setDoc, getDoc, setLogLevel, serverTimestamp, where, orderBy } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+        import { getFirestore, collection, addDoc, onSnapshot, query, deleteDoc, doc, setDoc, getDoc, setLogLevel, serverTimestamp, where, orderBy, getDocs } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
         // Variáveis globais fornecidas pelo ambiente
         const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
@@ -292,7 +314,7 @@
         const initialAuthToken = typeof __initial_auth_token !== 'undefined' ? __initial_auth_token : null;
 
         // Inicializa o Firebase
-        let app, db, auth, userId;
+        let app, db, auth, userId, isManager = false;
         setLogLevel('debug');
 
         // Dados para comissão, receita e metas
@@ -354,14 +376,15 @@
         const authBtn = document.getElementById('auth-btn');
         const toggleAuthBtn = document.getElementById('toggle-auth-btn');
         const logoutBtn = document.getElementById('logout-btn');
-        
-        // NOVO: Elemento de filtro
         const periodFilterEl = document.getElementById('period-filter');
+        // NOVO: Elementos de gerência
+        const managerSection = document.getElementById('manager-section');
+        const promoteForm = document.getElementById('promote-form');
+        const promoteEmailInput = document.getElementById('promote-email');
+        const managerToolsMessageEl = document.getElementById('manager-tools-message');
 
 
         let isRegisterMode = false;
-
-        // Variável para armazenar o ID da venda a ser excluída
         let saleIdToDelete = null;
 
         function displayMessage(message, type) {
@@ -379,7 +402,12 @@
             authMessageEl.style.display = 'block';
         }
 
-        // Função para mostrar ou esconder o spinner de salvamento
+        function displayManagerMessage(message, type) {
+            managerToolsMessageEl.textContent = message;
+            managerToolsMessageEl.className = `p-4 mb-4 text-sm rounded-lg ${type === 'success' ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'}`;
+            managerToolsMessageEl.style.display = 'block';
+        }
+
         function setSaveLoading(isLoading) {
             if (isLoading) {
                 saveSaleBtnText.textContent = 'Salvando...';
@@ -407,32 +435,35 @@
                 auth = getAuth(app);
                 db = getFirestore(app);
 
-                // ADIÇÃO: Disabilita o botão de salvar venda até a autenticação ser concluída
                 setSaveLoading(true);
 
                 onAuthStateChanged(auth, async (user) => {
                     if (user) {
                         userId = user.uid;
-                        // Mostra a UI principal do aplicativo
+                        // NOVO: Verifica o status de gerente e exibe a seção de ferramentas
+                        isManager = await checkManagerStatus(userId);
+                        if (isManager) {
+                            managerSection.classList.remove('hidden');
+                        } else {
+                            managerSection.classList.add('hidden');
+                        }
+
                         authSection.classList.add('hidden');
                         appSection.classList.remove('hidden');
 
-                        // Carrega o nome do consultor do Firestore
                         loadConsultantName();
-                        createPeriodOptions(); // NOVO: Chama a função para criar as opções de período
+                        createPeriodOptions();
                         listenToSales();
 
-                        // Habilita o botão de salvar venda APENAS quando o usuário estiver autenticado
                         setSaveLoading(false);
 
                     } else {
-                        // Mostra a UI de login/registro
+                        isManager = false;
+                        managerSection.classList.add('hidden');
                         authSection.classList.remove('hidden');
                         appSection.classList.add('hidden');
-                        salesListBodyEl.innerHTML = ''; // Limpa a lista de vendas ao fazer logout
-                        // Limpa os dados do dashboard
+                        salesListBodyEl.innerHTML = ''; 
                         updateDashboard([]);
-                        // Volta a desabilitar o botão
                         setSaveLoading(true);
                     }
                 });
@@ -440,10 +471,22 @@
                 if (initialAuthToken) {
                     await signInWithCustomToken(auth, initialAuthToken);
                 }
-                // REMOÇÃO: A autenticação anônima foi removida, pois não é suportada neste ambiente
             } catch (e) {
                 console.error("Erro ao inicializar Firebase: ", e);
                 displayMessage("Erro ao inicializar o aplicativo. Por favor, tente novamente.", "error");
+            }
+        }
+
+        async function checkManagerStatus(uid) {
+            if (!db) return false;
+            try {
+                // AQUI ESTÁ A CORREÇÃO: O caminho foi ajustado para usar a variável appId
+                const managerRef = doc(db, `artifacts/${appId}/managers`, uid);
+                const docSnap = await getDoc(managerRef);
+                return docSnap.exists();
+            } catch (e) {
+                console.error("Erro ao verificar status de gerente: ", e);
+                return false;
             }
         }
 
@@ -459,7 +502,6 @@
                 const salesRef = collection(db, `artifacts/${appId}/public/data/sales`);
                 await addDoc(salesRef, { ...saleData, consultantId: userId, consultantName: consultantNameInput.value });
                 displayMessage("Venda salva com sucesso!", "success");
-                // Limpa o formulário após o salvamento
                 salesForm.reset();
                 productsContainer.innerHTML = '';
                 createProductInputGroup();
@@ -504,8 +546,42 @@
                 console.error("Erro ao carregar o nome do consultor: ", e);
             }
         }
+        
+        async function promoteUserToManager(email) {
+            if (!db || !isManager) {
+                displayManagerMessage("Erro: Acesso negado. Apenas gerentes podem promover outros usuários.", "error");
+                return;
+            }
+            if (!email) {
+                displayManagerMessage("Erro: O e-mail não pode ser vazio.", "error");
+                return;
+            }
 
-        // NOVO: Função para criar as opções de meses no seletor
+            try {
+                const usersCollectionRef = collection(db, `artifacts/${appId}/users`);
+                const q = query(usersCollectionRef, where('profile.info.email', '==', email));
+                const querySnapshot = await getDocs(q);
+                
+                if (querySnapshot.empty) {
+                    displayManagerMessage("Erro: Não foi possível encontrar um usuário com este e-mail.", "error");
+                    return;
+                }
+                
+                const userDoc = querySnapshot.docs[0];
+                const userIdToPromote = userDoc.id;
+
+                const managerRef = doc(db, `artifacts/${appId}/managers`, userIdToPromote);
+                await setDoc(managerRef, { promotedBy: userId, promotedAt: serverTimestamp() });
+                
+                displayManagerMessage(`O usuário com o e-mail ${email} foi promovido a gerente com sucesso!`, "success");
+                promoteEmailInput.value = '';
+
+            } catch (e) {
+                console.error("Erro ao promover usuário: ", e);
+                displayManagerMessage(`Erro ao promover usuário. Detalhes: ${e.message}`, "error");
+            }
+        }
+
         function createPeriodOptions() {
             periodFilterEl.innerHTML = '';
             const today = new Date();
@@ -526,9 +602,9 @@
             if (!db || !userId) {
                 return;
             }
+            // AQUI ESTÁ A CORREÇÃO: O caminho foi ajustado para usar a variável appId
             const salesRef = collection(db, `artifacts/${appId}/public/data/sales`);
             
-            // CORREÇÃO: Remove o orderBy da query para evitar o erro de índice
             const salesQuery = query(salesRef, 
                 where('consultantId', '==', userId)
             );
@@ -539,7 +615,6 @@
                     sales.push({ id: doc.id, ...doc.data() });
                 });
 
-                // NOVO: Faz a filtragem por período no lado do cliente
                 const selectedPeriod = periodFilterEl.value;
                 const [year, month] = selectedPeriod.split('-');
                 const startDate = new Date(year, month - 1, 1);
@@ -670,7 +745,6 @@
         
         function renderSalesList(sales) {
             salesListBodyEl.innerHTML = '';
-            // NOVO: Ordena as vendas por data, da mais recente para a mais antiga
             sales.sort((a, b) => {
                 const dateA = a.timestamp && a.timestamp.toDate ? a.timestamp.toDate() : new Date(0);
                 const dateB = b.timestamp && b.timestamp.toDate ? b.timestamp.toDate() : new Date(0);
@@ -707,7 +781,6 @@
                 salesListBodyEl.appendChild(row);
             });
             
-            // Adiciona event listeners para os botões de exclusão
             document.querySelectorAll('.delete-btn').forEach(button => {
                 button.addEventListener('click', (e) => {
                     saleIdToDelete = e.target.getAttribute('data-sale-id');
@@ -809,7 +882,7 @@
                 </select>
                 <input type="text" placeholder="Descrição" class="product-description w-full sm:w-1/3 p-2 rounded-md border-gray-300 shadow-sm focus:ring-blue-500 focus:border-blue-500">
                 <input type="number" placeholder="Quantidade" value="0" min="0" class="product-quantity w-full sm:w-1/3 p-2 text-center rounded-md border-gray-300 shadow-sm focus:ring-blue-500 focus:border-blue-500">
-                <input type="number" placeholder="Receita (R$)" step="0.01" class="product-revenue w-full sm:w-1/3 p-2 text-center rounded-md border-gray-300 shadow-sm focus:ring-blue-500 focus:border-blue-500">
+                <input type="number" placeholder="Receita (R$)" step="0.01" class="product-revenue w-full sm:w-1/3 p-2 text-center rounded-md border-gray-300 shadow-sm focus:ring-blue-500 focus:ring-blue-500">
                 <button type="button" class="remove-product-btn text-red-500 hover:text-red-700 text-xl font-bold p-1">&times;</button>
             `;
             productsContainer.appendChild(group);
@@ -842,6 +915,10 @@
             try {
                 if (isRegisterMode) {
                     const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+                    // NOVO: Adiciona o e-mail do consultor ao perfil para que possa ser encontrado depois
+                    const profileRef = doc(db, `artifacts/${appId}/users/${userCredential.user.uid}/profile`, 'info');
+                    await setDoc(profileRef, { email: userCredential.user.email }, { merge: true });
+
                     displayAuthMessage('Registro bem-sucedido! Por favor, faça login.', 'success');
                     isRegisterMode = false;
                     toggleAuthBtn.textContent = 'Não tem uma conta? Registrar';
@@ -947,9 +1024,15 @@
             saleIdToDelete = null;
         });
         
-        // NOVO: Adiciona um listener para o filtro de período
         periodFilterEl.addEventListener('change', () => {
             listenToSales();
+        });
+
+        // NOVO: Event Listener para o formulário de promoção
+        promoteForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const emailToPromote = promoteEmailInput.value;
+            await promoteUserToManager(emailToPromote);
         });
 
 
