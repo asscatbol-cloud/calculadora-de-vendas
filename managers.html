@@ -641,8 +641,6 @@
             });
         }
         
-        // CORREÇÃO: Declarada uma única vez no topo do script.
-        // let weeklySalesChart; 
         function renderWeeklySalesChart(sales) {
             const productNames = ['Migração', 'GPON', 'Altas Portadas', 'Altas Novas', 'VVN', 'Aparelhos (R$)'];
             const weeklySalesData = {
@@ -1083,9 +1081,9 @@
         function renderGoalsTable(salesSummary) {
             goalsTableBody.innerHTML = '';
             goalProductsList.forEach(product => {
-                const currentGoal = currentGoals[product] || 0;
+                const currentGoal = currentGoals[product] || 0; // Pega a meta do estado
                 const effective = salesSummary[product] || 0;
-                const missing = Math.max(0, currentGoal - effective);
+                const missing = Math.max(0, currentGoal - effective); // Subtrai a meta do valor executado
                 const row = document.createElement('tr');
                 row.className = "border-t border-gray-200";
                 row.innerHTML = `
