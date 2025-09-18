@@ -484,7 +484,14 @@
         // NOVO: Função para renderizar o gráfico de produtos
         let productsChart;
         function renderProductsSoldChart(sales) {
-            const productsSold = {};
+            const productCategories = {
+                'Migração': 0,
+                'GPON': 0,
+                'Altas Portadas': 0,
+                'Altas Novas': 0,
+                'VVN': 0,
+                'Aparelhos (R$)': 0,
+            };
             
             sales.forEach(sale => {
                 try {
@@ -492,15 +499,20 @@
                     saleProducts.forEach(p => {
                         const productName = p.name || 'Desconhecido';
                         const quantity = p.quantity || 0;
-                        productsSold[productName] = (productsSold[productName] || 0) + quantity;
+                        
+                        if (productName.includes('Migração')) {
+                            productCategories['Migração'] += quantity;
+                        } else if (productCategories.hasOwnProperty(productName)) {
+                            productCategories[productName] += quantity;
+                        }
                     });
                 } catch (e) {
                     console.error("Erro ao analisar JSON de produtos:", e);
                 }
             });
 
-            const productNames = Object.keys(productsSold);
-            const productQuantities = Object.values(productsSold);
+            const productNames = Object.keys(productCategories);
+            const productQuantities = Object.values(productCategories);
 
             if (productsChart) {
                 productsChart.destroy();
