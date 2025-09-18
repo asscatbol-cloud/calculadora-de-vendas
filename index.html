@@ -31,37 +31,13 @@
             border-radius: 9999px;
             transition: width 0.5s ease-in-out;
         }
-        /* Spinner */
-        .spinner {
-            border: 4px solid #f3f3f3;
-            border-top: 4px solid #3498db;
-            border-radius: 50%;
-            width: 24px;
-            height: 24px;
-            animation: spin 1s linear infinite;
-        }
-        @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
-        }
-        .animate-pulse {
-            animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
-        }
-        @keyframes pulse {
-            0%, 100% {
-                opacity: 1;
-            }
-            50% {
-                opacity: .5;
-            }
-        }
     </style>
 </head>
-<body class="bg-gray-100 flex items-center justify-center min-h-screen p-4">
+<body class="bg-gray-100 p-4 sm:p-8">
 
-    <!-- Login/Register Section -->
-    <div id="auth-section" class="container w-full max-w-md p-6 bg-white rounded-lg shadow-md hidden">
-        <h2 class="text-2xl font-bold text-center mb-6 text-gray-800">Acesso do Consultor</h2>
+    <!-- Seção de Autenticação -->
+    <div id="auth-section" class="container w-full max-w-md p-6 bg-white rounded-lg shadow-md mx-auto">
+        <h2 class="text-2xl font-bold text-center mb-6 text-gray-800">Login de Consultor</h2>
         <div id="auth-message" class="hidden p-4 mb-4 text-sm rounded-lg" role="alert"></div>
         <form id="auth-form" class="space-y-4">
             <div>
@@ -75,212 +51,147 @@
             <button type="submit" id="auth-btn" class="w-full px-4 py-2 bg-blue-600 text-white font-medium rounded-lg shadow-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2">
                 Entrar
             </button>
-            <button type="button" id="toggle-auth-btn" class="w-full text-center text-blue-600 hover:text-blue-800 text-sm mt-2">Não tem uma conta? Registrar</button>
         </form>
+        <div class="mt-4 text-center">
+            <a href="#" id="forgot-password-link" class="text-sm text-blue-600 hover:text-blue-700">Esqueceu sua senha?</a>
+        </div>
     </div>
 
-    <!-- Main App Section -->
-    <div id="app-section" class="container hidden">
-        <div class="flex justify-center mb-6">
-            <img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAOEAAADhCAMAAAAJbSJIAAAAbFBMVEUAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAATv19OAAAACnRSTlMA8JCAz+9A7u+oO/K0rYvAAAAAAAWJREFUeNrt2dmSgkAMBNCqLqR1qN7/VVuuRUMk0X+31H0Y+4D7hLhDk/f3OQYAAAAAAAAAAAAAAAAA+A+WlZWVlZWVlZWVlZWVlZVl2XhYWFhYWFhYWFhYWFhYWFj2PwsLCwsLCwsLCwsLCwsLCwvdLwAAAAAAAAAAAAAAAAAAAAAAgA1N51hO+v3eG381oY8fK1MewyVd+Y63fE0I/l8n71L+xP3H+D1P/K1N+S8x/YkBAAAAAAAAAAAAAAAAAAAAAACAh2uT2WvU+b8T+N64xMct+Q2j/wUAAAAAAAAAAAAAAAAAAAAAAADgqXm4FhG6x3c/E/s1fW/8T2c/AAAAAAAAAAAAAAAAAAAAAAAAD9c2mS/E72+5m7/2fE/zV0P/y/rXoQAAAAAAAAAAAAAAAAAAAAAAAF2V5tV5n6H//T3X/7xI/V9Vf1X1Vw4AAAAAAAAAAAAAAAAAAAAAAACA/wBv43t+k3+oX7e+z2m92/M7/5D/T29OAAAAAAAAAAAAAAAAAAAAAAAAv09qX/w19b0BAAAAAAAAAAAAAAAAAAAAAADA+fI57X8CAAAAAAAAAAAAAAAAAAAAAADw92i+w/5+AQAAAAAAAAAAAAAAAAAAAAAAAN3n4d8BAAAAAAAAAAAAAAAAAAAAAAAA2N7DvxMAAAAAAAAAAAAAAAAAAAAAAAAAAJC9B/9MAgAAAAAAAAAAAAAAAAAAAAAAAN279/8FAAAAAAAAAAAAAAAAAAAAAAAAAAD2Hn4BAAAAAAAAAAAAAAAAAAAAAAAAAAAAP8bJv2t2qJmBAAAAAElFTkSuQmCC" alt="Logo Assertiva Vivo Empresas" class="h-24 mx-auto object-contain">
-        </div>
-        <div class="flex justify-between items-center mb-4">
-            <h1 class="text-3xl font-bold text-gray-800">Calculadora de Metas</h1>
-            <button id="logout-btn" class="px-4 py-2 bg-red-600 text-white font-medium rounded-lg shadow-md hover:bg-red-700">Sair</button>
-        </div>
-        <p class="text-gray-500 mb-8">Acompanhe seu desempenho e comissão em tempo real!</p>
-        
-        <!-- Filtro de Período -->
-        <div class="mb-6">
-            <label for="period-filter" class="block text-sm font-medium text-gray-700 mb-2">Visualizar Período:</label>
-            <select id="period-filter" class="w-full md:w-1/3 p-2 rounded-md border-gray-300 shadow-sm focus:ring-blue-500 focus:border-blue-500">
-                <!-- As opções serão preenchidas dinamicamente pelo JavaScript -->
-            </select>
-        </div>
-        
-        <!-- Dashboard de Desempenho -->
-        <div>
-            <h2 class="text-xl font-semibold mb-4">Seu Desempenho</h2>
-            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-                <div class="bg-indigo-50 p-6 rounded-lg shadow-sm">
-                    <p class="text-sm font-medium text-indigo-700">Receita Total</p>
-                    <p id="total-revenue" class="mt-1 text-2xl font-bold text-indigo-900">R$ 0,00</p>
-                </div>
-                <div class="bg-purple-50 p-6 rounded-lg shadow-sm">
-                    <p class="text-sm font-medium text-purple-700">Comissão Estimada</p>
-                    <p id="estimated-commission" class="mt-1 text-2xl font-bold text-purple-900">R$ 0,00</p>
-                </div>
-                <div class="bg-pink-50 p-6 rounded-lg shadow-sm">
-                    <p id="current-tier-text" class="text-sm font-medium text-pink-700">Sua Faixa Atual</p>
-                    <p id="current-tier" class="mt-1 text-2xl font-bold text-pink-900">Faixa 0</p>
-                </div>
-            </div>
-            
-            <!-- Progresso para a Próxima Faixa -->
-            <div class="mt-8">
-                <h3 id="progress-text" class="text-lg font-medium text-gray-700 mb-2"></h3>
-                <div class="progress-bar">
-                    <div id="progress-fill" class="progress-fill bg-blue-500" style="width: 0%;"></div>
-                </div>
+    <!-- Seção Principal da Calculadora -->
+    <div id="main-section" class="container hidden">
+        <div class="flex flex-col sm:flex-row justify-between items-center mb-6">
+            <h1 class="text-3xl font-bold text-gray-800 mb-4 sm:mb-0">Calculadora de Vendas Avançada</h1>
+            <div class="flex flex-col sm:flex-row items-center space-y-2 sm:space-y-0 sm:space-x-4">
+                <span id="consultant-name-display" class="text-lg font-medium text-gray-700"></span>
+                <button id="logout-btn" class="px-4 py-2 bg-red-600 text-white font-medium rounded-lg shadow-md hover:bg-red-700">Sair</button>
             </div>
         </div>
+        <p class="text-gray-500 mb-8">Registre suas vendas, veja seu progresso e projete seu crescimento.</p>
 
-        <hr class="my-8">
-
-        <!-- Detalhes da Comissão -->
+        <!-- Informações de Vendas e Projeção -->
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+            <div class="bg-indigo-50 p-6 rounded-lg shadow-sm">
+                <p class="text-sm font-medium text-indigo-700">Vendas do Mês</p>
+                <p id="sales-count" class="mt-1 text-2xl font-bold text-indigo-900">0</p>
+            </div>
+            <div class="bg-purple-50 p-6 rounded-lg shadow-sm">
+                <p class="text-sm font-medium text-purple-700">Receita Total</p>
+                <p id="total-revenue" class="mt-1 text-2xl font-bold text-purple-900">R$ 0,00</p>
+            </div>
+            <div class="bg-pink-50 p-6 rounded-lg shadow-sm">
+                <p class="text-sm font-medium text-pink-700">Meta do Mês (R$)</p>
+                <p id="monthly-goal" class="mt-1 text-2xl font-bold text-pink-900">R$ 0,00</p>
+            </div>
+            <div class="bg-green-50 p-6 rounded-lg shadow-sm">
+                <p class="text-sm font-medium text-green-700">Projeção do Mês (R$)</p>
+                <p id="projected-revenue" class="mt-1 text-2xl font-bold text-green-900">R$ 0,00</p>
+            </div>
+        </div>
+        
+        <!-- Progresso da Meta e Gráfico -->
         <div class="mb-8">
-            <h2 class="text-xl font-semibold mb-4">Detalhes da Comissão</h2>
-            <div class="overflow-x-auto">
-                <table class="min-w-full text-left border-collapse">
-                    <thead>
-                        <tr class="bg-gray-200">
-                            <th class="p-4 rounded-tl-lg">Item</th>
-                            <th class="p-4">Valor</th>
-                            <th class="p-4 rounded-tr-lg">Faixa de Comissão</th>
-                        </tr>
-                    </thead>
-                    <tbody id="commission-details-body">
-                        <!-- Commission details will be populated here -->
-                    </tbody>
-                </table>
+            <p class="text-sm font-medium mb-2 text-gray-700">Progresso da Meta</p>
+            <div class="progress-bar">
+                <div id="progress-fill" class="progress-fill bg-blue-500" style="width: 0%;"></div>
+            </div>
+            <p id="progress-text" class="text-right text-sm mt-1 text-gray-600">0%</p>
+        </div>
+        
+        <div class="mb-8">
+            <h2 class="text-xl font-semibold mb-4 text-gray-800">Sua Evolução de Vendas (Últimos 6 Meses)</h2>
+            <div class="bg-gray-50 p-4 rounded-lg shadow-sm">
+                <canvas id="sales-chart"></canvas>
             </div>
         </div>
 
-        <hr class="my-8">
+        <hr class="my-8 border-t-2 border-gray-200">
 
         <!-- Formulário de Registro de Venda -->
-        <div class="mb-8">
-            <h2 class="text-xl font-semibold mb-4">Registrar Nova Venda</h2>
-            <div id="sales-message" class="hidden p-4 mb-4 text-sm rounded-lg" role="alert"></div>
-            <form id="sale-form" class="space-y-4">
+        <form id="sales-form" class="space-y-6">
+            <h2 class="text-xl font-semibold text-gray-800">Registrar Nova Venda</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div>
-                    <label for="consultant-name" class="block text-sm font-medium text-gray-700">Nome do Consultor</label>
-                    <input type="text" id="consultant-name" required class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
+                    <label for="consultant-name" class="block text-sm font-medium text-gray-700">Seu Nome</label>
+                    <input type="text" id="consultant-name" placeholder="Seu nome" required class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
                 </div>
                 <div>
                     <label for="company-name" class="block text-sm font-medium text-gray-700">Nome da Empresa</label>
-                    <input type="text" id="company-name" required class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
+                    <input type="text" id="company-name" placeholder="Ex: Assertiva Consultoria" required class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
                 </div>
                 <div>
                     <label for="cnpj" class="block text-sm font-medium text-gray-700">CNPJ</label>
-                    <input type="text" id="cnpj" required class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
+                    <input type="text" id="cnpj" placeholder="00.000.000/0000-00" required class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
                 </div>
                 <div>
-                    <label for="crm" class="block text-sm font-medium text-gray-700">CRM (Opcional)</label>
-                    <input type="text" id="crm" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
+                    <label for="crm" class="block text-sm font-medium text-gray-700">CRM</label>
+                    <input type="text" id="crm" placeholder="Ex: 12345" required class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
                 </div>
-                
-                <div id="products-container" class="space-y-4">
-                    <!-- Products will be added here dynamically -->
-                </div>
-                
-                <button type="button" id="add-product-btn" class="w-full sm:w-auto px-4 py-2 bg-green-500 text-white font-medium rounded-lg shadow-md hover:bg-green-600 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2">
-                    Adicionar Produto
-                </button>
-                
-                <button type="submit" id="save-sale-btn" class="w-full px-4 py-2 bg-blue-600 text-white font-medium rounded-lg shadow-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 flex justify-center items-center space-x-2" disabled>
-                    <span id="save-sale-btn-text">Carregando...</span>
-                    <div id="save-sale-spinner" class="spinner"></div>
-                </button>
-            </form>
-        </div>
+            </div>
+            
+            <!-- Produtos Vendidos (Dinâmico) -->
+            <div id="products-container" class="space-y-4">
+                <h3 class="text-lg font-medium text-gray-800">Produtos Vendidos</h3>
+            </div>
+            <button type="button" id="add-product-btn" class="px-4 py-2 bg-gray-200 text-gray-800 font-medium rounded-lg shadow-md hover:bg-gray-300">Adicionar Produto</button>
 
-        <hr class="my-8">
+            <button type="submit" id="submit-btn" class="w-full px-4 py-2 bg-blue-600 text-white font-medium rounded-lg shadow-md hover:bg-blue-700">
+                Registrar Venda
+            </button>
+        </form>
 
-        <!-- Lista de Vendas Registradas -->
+        <hr class="my-8 border-t-2 border-gray-200">
+
+        <!-- Histórico de Vendas -->
         <div class="mb-8">
-            <h2 class="text-xl font-semibold mb-4">Vendas Registradas</h2>
+            <div class="flex items-center justify-between mb-4">
+                <h2 class="text-xl font-semibold text-gray-800">Histórico de Vendas</h2>
+                <select id="period-filter" class="px-3 py-2 border rounded-md shadow-sm focus:outline-none focus:ring focus:border-blue-300">
+                    <option value="all">Últimas 10</option>
+                    <option value="month">Último Mês</option>
+                    <option value="three-months">Últimos 3 Meses</option>
+                    <option value="six-months">Últimos 6 Meses</option>
+                </select>
+            </div>
             <div class="overflow-x-auto">
                 <table class="min-w-full text-left border-collapse">
                     <thead>
                         <tr class="bg-gray-200">
-                            <th class="p-4 rounded-tl-lg">CNPJ</th>
+                            <th class="p-4 rounded-tl-lg">Data</th>
                             <th class="p-4">Empresa</th>
-                            <th class="p-4">Produtos</th>
-                            <th class="p-4">Data</th>
                             <th class="p-4">Receita</th>
-                            <th class="p-4 rounded-tr-lg">Ações</th>
+                            <th class="p-4">Ações</th>
                         </tr>
                     </thead>
-                    <tbody id="sales-list-body">
-                        <!-- Sales will be populated here -->
+                    <tbody id="sales-history-body">
                     </tbody>
                 </table>
             </div>
         </div>
-        
-        <hr class="my-8">
 
-        <!-- Acompanhamento de Metas -->
-        <div class="mb-8">
-            <h3 class="text-lg font-semibold mb-4">Metas de Receita</h3>
-            <div class="overflow-x-auto">
-                <table class="w-full text-left border-collapse">
-                    <thead>
-                        <tr class="bg-gray-200">
-                            <th class="p-4 rounded-tl-lg">Meta</th>
-                            <th class="p-4 rounded-tr-lg">Status</th>
-                        </tr>
-                    </thead>
-                    <tbody id="revenue-goals-body">
-                        <!-- Revenue goals will be populated here -->
-                    </tbody>
-                </table>
-            </div>
-        </div>
-        
-        <hr class="my-8">
-
-        <div>
-            <h3 class="text-lg font-semibold mb-4">Metas de Produto por Faixa</h3>
-            <div class="overflow-x-auto">
-                <table class="w-full text-left border-collapse">
-                    <thead>
-                        <tr class="bg-gray-200">
-                            <th class="p-4 rounded-tl-lg">Produto</th>
-                            <th class="p-4">Vendido</th>
-                            <th class="p-4">Meta Faixa 75</th>
-                            <th class="p-4">Meta Faixa 150</th>
-                            <th class="p-4 rounded-tr-lg">Meta Faixa 200</th>
-                        </tr>
-                    </thead>
-                    <tbody id="product-goals-body">
-                        <!-- Product goals will be populated here -->
-                    </tbody>
-                </table>
-            </div>
-        </div>
     </div>
-
+    
     <!-- Modal de Confirmação de Exclusão -->
-    <div id="delete-modal" class="fixed inset-0 bg-gray-600 bg-opacity-50 hidden overflow-y-auto h-full w-full">
-        <div class="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-md bg-white">
-            <div class="mt-3 text-center">
-                <h3 class="text-lg leading-6 font-medium text-gray-900">Confirmar Exclusão</h3>
-                <div class="mt-2 px-7 py-3">
-                    <p class="text-sm text-gray-500">Tem certeza que deseja excluir esta venda? Esta ação não pode ser desfeita.</p>
-                </div>
-                <div class="items-center px-4 py-3">
-                    <button id="confirm-delete-btn" class="px-4 py-2 bg-red-600 text-white text-base font-medium rounded-md w-full shadow-sm hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2">
-                        Excluir
-                    </button>
-                    <button id="cancel-delete-btn" class="mt-3 px-4 py-2 bg-gray-200 text-gray-800 text-base font-medium rounded-md w-full shadow-sm hover:bg-gray-300 focus:outline-none focus:ring-2 focus:ring-gray-400 focus:ring-offset-2">
-                        Cancelar
-                    </button>
-                </div>
+    <div id="delete-modal" class="fixed inset-0 bg-gray-600 bg-opacity-50 flex items-center justify-center hidden">
+        <div class="bg-white p-6 rounded-lg shadow-xl w-full max-w-sm">
+            <h3 class="text-lg font-bold mb-4 text-gray-800">Confirmar Exclusão</h3>
+            <p class="text-sm text-gray-600 mb-4">Tem certeza de que deseja excluir esta venda?</p>
+            <div class="flex justify-end space-x-4">
+                <button id="cancel-delete-btn" class="px-4 py-2 bg-gray-300 text-gray-800 rounded-lg hover:bg-gray-400">Cancelar</button>
+                <button id="confirm-delete-btn" class="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700">Excluir</button>
             </div>
         </div>
     </div>
 
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script type="module">
-        // Importa os módulos necessários do Firebase
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
-        import { getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword, onAuthStateChanged, signOut, signInWithCustomToken } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
-        import { getFirestore, collection, addDoc, onSnapshot, query, deleteDoc, doc, setDoc, getDoc, setLogLevel, serverTimestamp, where, orderBy } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+        import { getAuth, signInWithEmailAndPassword, signOut, onAuthStateChanged, signInWithCustomToken } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import { getFirestore, collection, addDoc, onSnapshot, query, where, orderBy, limit, serverTimestamp, doc, setDoc, getDoc } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
-        // Variáveis globais fornecidas pelo ambiente
+        // Global variables provided by the environment
         const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
         const firebaseConfig = typeof __firebase_config !== 'undefined' ? JSON.parse(__firebase_config) : {
+            // Default config for testing purposes if not provided by the environment
             apiKey: "AIzaSyC293ALvoMmnm6ygd-t9FecegMjln9lEkc",
             authDomain: "calculadora-de-vendas.firebaseapp.com",
             projectId: "calculadora-de-vendas",
@@ -290,85 +201,37 @@
         };
         const initialAuthToken = typeof __initial_auth_token !== 'undefined' ? __initial_auth_token : null;
 
-        // Inicializa o Firebase
-        let app, db, auth, userId;
-        setLogLevel('debug');
+        let app, db, auth, userId, userEmail;
+        let saleIdToDelete = null;
 
-        // Dados para comissão, receita e metas
-        const commissionData = {
-            'Migração Up': [8, 8, 9, 10, 11, 12, 13, 14],
-            'Migração Mid': [4, 4, 5, 7, 7, 8, 9, 10],
-            'Migração Down': [2, 2, 3, 4, 5, 6, 7, 8],
-            'GPON': [20, 22, 25, 28, 31, 35, 40],
-            'Altas Portadas': [6, 8, 10, 12, 14, 16, 20],
-            'Altas Novas': [3, 4, 5, 6, 7, 8, 10],
-            'VVN': [10, 12, 14, 16, 18, 20, 22],
-            'Avançados': [15, 17, 19, 21, 23, 25, 28],
-            'Produtos de TI': [10, 11, 12, 13, 14, 15, 16],
-        };
-
-        const revenuePercentages = [11, 13, 16, 19, 22, 28, 35];
-
-        const goalData = {
-            'Receita (R$)': [750, 1500, 3000],
-            'GPON': [3, 6, 9],
-            'Altas Portadas': [5, 15, 30],
-            'Altas Novas': [5, 15, 30],
-            'Contratos (CNPJ\'s)': [1, 1.5, 2],
-            'VVN': [5, 15, 25],
-            'Aparelhos (R$)': [8000, 20000, 30000],
-            'Migração': [75, 150, 200],
-        };
-        
-        const productsForGoals = ['Migração', 'GPON', 'Altas Portadas', 'Altas Novas', 'VVN', 'Aparelhos (R$)'];
-
-        // Elementos DOM
-        const totalRevenueEl = document.getElementById('total-revenue');
-        const estimatedCommissionEl = document.getElementById('estimated-commission');
-        const currentTierEl = document.getElementById('current-tier');
-        const progressFillEl = document.getElementById('progress-fill');
-        const progressTextEl = document.getElementById('progress-text');
-        const salesForm = document.getElementById('sale-form');
-        const salesListBodyEl = document.getElementById('sales-list-body');
-        const addProductBtn = document.getElementById('add-product-btn');
-        const productsContainer = document.getElementById('products-container');
-        const salesMessageEl = document.getElementById('sales-message');
-        const productGoalsBodyEl = document.getElementById('product-goals-body');
-        const revenueGoalsBodyEl = document.getElementById('revenue-goals-body');
-        const commissionDetailsBodyEl = document.getElementById('commission-details-body');
-        const consultantNameInput = document.getElementById('consultant-name');
-        const cnpjInput = document.getElementById('cnpj');
-        const deleteModal = document.getElementById('delete-modal');
-        const confirmDeleteBtn = document.getElementById('confirm-delete-btn');
-        const cancelDeleteBtn = document.getElementById('cancel-delete-btn');
-        const saveSaleBtn = document.getElementById('save-sale-btn');
-        const saveSaleBtnText = document.getElementById('save-sale-btn-text');
-        const saveSaleSpinner = document.getElementById('save-sale-spinner');
+        // DOM elements
         const authSection = document.getElementById('auth-section');
-        const appSection = document.getElementById('app-section');
+        const mainSection = document.getElementById('main-section');
         const authForm = document.getElementById('auth-form');
         const authEmailInput = document.getElementById('auth-email');
         const authPasswordInput = document.getElementById('auth-password');
         const authMessageEl = document.getElementById('auth-message');
-        const authBtn = document.getElementById('auth-btn');
-        const toggleAuthBtn = document.getElementById('toggle-auth-btn');
+        const consultantNameInput = document.getElementById('consultant-name');
+        const consultantNameDisplay = document.getElementById('consultant-name-display');
         const logoutBtn = document.getElementById('logout-btn');
+        const salesForm = document.getElementById('sales-form');
+        const companyNameInput = document.getElementById('company-name');
+        const cnpjInput = document.getElementById('cnpj');
+        const crmInput = document.getElementById('crm');
+        const productsContainer = document.getElementById('products-container');
+        const addProductBtn = document.getElementById('add-product-btn');
+        const salesCountEl = document.getElementById('sales-count');
+        const totalRevenueEl = document.getElementById('total-revenue');
+        const monthlyGoalEl = document.getElementById('monthly-goal');
+        const projectedRevenueEl = document.getElementById('projected-revenue');
+        const progressFillEl = document.getElementById('progress-fill');
+        const progressTextEl = document.getElementById('progress-text');
+        const salesHistoryBody = document.getElementById('sales-history-body');
+        const deleteModal = document.getElementById('delete-modal');
+        const confirmDeleteBtn = document.getElementById('confirm-delete-btn');
+        const cancelDeleteBtn = document.getElementById('cancel-delete-btn');
         const periodFilterEl = document.getElementById('period-filter');
-
-
-        let isRegisterMode = false;
-
-        // Variável para armazenar o ID da venda a ser excluída
-        let saleIdToDelete = null;
-
-        function displayMessage(message, type) {
-            salesMessageEl.textContent = message;
-            salesMessageEl.className = `p-4 mb-4 text-sm rounded-lg ${type === 'success' ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'}`;
-            salesMessageEl.style.display = 'block';
-            setTimeout(() => {
-                salesMessageEl.style.display = 'none';
-            }, 5000);
-        }
+        let salesChart;
 
         function displayAuthMessage(message, type) {
             authMessageEl.textContent = message;
@@ -376,26 +239,10 @@
             authMessageEl.style.display = 'block';
         }
 
-        // Função para mostrar ou esconder o spinner de salvamento
-        function setSaveLoading(isLoading) {
-            if (isLoading) {
-                saveSaleBtnText.textContent = 'Salvando...';
-                saveSaleSpinner.classList.remove('hidden');
-                saveSaleBtn.disabled = true;
-                saveSaleBtn.classList.add('animate-pulse');
-            } else {
-                saveSaleBtnText.textContent = 'Salvar Venda';
-                saveSaleSpinner.classList.add('hidden');
-                saveSaleBtn.disabled = false;
-                saveSaleBtn.classList.remove('animate-pulse');
-            }
-        }
-        
-        // --- Firebase Functions ---
         async function initializeFirebase() {
             try {
                 if (Object.keys(firebaseConfig).length === 0) {
-                    displayMessage("Erro: A configuração do Firebase está faltando.", "error");
+                    displayAuthMessage("Erro: A configuração do Firebase está faltando.", "error");
                     console.error("Firebase config is missing.");
                     return;
                 }
@@ -404,307 +251,255 @@
                 auth = getAuth(app);
                 db = getFirestore(app);
 
-                // ADIÇÃO: Disabilita o botão de salvar venda até a autenticação ser concluída
-                setSaveLoading(true);
-
                 onAuthStateChanged(auth, async (user) => {
                     if (user) {
                         userId = user.uid;
-                        // Mostra a UI principal do aplicativo
+                        userEmail = user.email;
                         authSection.classList.add('hidden');
-                        appSection.classList.remove('hidden');
+                        mainSection.classList.remove('hidden');
+                        
+                        // NOVO: Verifica e salva o nome do consultor na coleção 'users'
+                        const userDocRef = doc(db, `artifacts/${appId}/users/${userId}`);
+                        const userDoc = await getDoc(userDocRef);
+                        
+                        if (!userDoc.exists()) {
+                            // Se o nome não estiver salvo, salva-o com um valor padrão (o e-mail)
+                            // e atualiza o campo de nome no formulário
+                            const consultantName = consultantNameInput.value || userEmail.split('@')[0];
+                            await setDoc(userDocRef, { consultantName: consultantName }, { merge: true });
+                            console.log("Nome do consultor salvo no banco de dados.");
+                            consultantNameInput.value = consultantName;
+                            consultantNameDisplay.textContent = `Bem-vindo(a), ${consultantName}!`;
+                        } else {
+                            // Se já existir, carrega o nome do consultor
+                            const consultantName = userDoc.data().consultantName;
+                            consultantNameInput.value = consultantName;
+                            consultantNameDisplay.textContent = `Bem-vindo(a), ${consultantName}!`;
+                        }
 
-                        // Carrega o nome do consultor do Firestore
-                        loadConsultantName();
-                        createPeriodOptions(); // NOVO: Chama a função para criar as opções de período
                         listenToSales();
-
-                        // Habilita o botão de salvar venda APENAS quando o usuário estiver autenticado
-                        setSaveLoading(false);
-
                     } else {
-                        // Mostra a UI de login/registro
+                        userId = null;
+                        userEmail = null;
                         authSection.classList.remove('hidden');
-                        appSection.classList.add('hidden');
-                        salesListBodyEl.innerHTML = ''; // Limpa a lista de vendas ao fazer logout
-                        // Limpa os dados do dashboard
-                        updateDashboard([]);
-                        // Volta a desabilitar o botão
-                        setSaveLoading(true);
+                        mainSection.classList.add('hidden');
                     }
                 });
 
                 if (initialAuthToken) {
                     await signInWithCustomToken(auth, initialAuthToken);
                 }
-                // REMOÇÃO: A autenticação anônima foi removida, pois não é suportada neste ambiente
             } catch (e) {
                 console.error("Erro ao inicializar Firebase: ", e);
-                displayMessage("Erro ao inicializar o aplicativo. Por favor, tente novamente.", "error");
+                displayAuthMessage("Erro ao inicializar o aplicativo. Por favor, tente novamente.", "error");
             }
         }
 
+        function formatCNPJ(cnpj) {
+            cnpj = cnpj.replace(/\D/g, '');
+            cnpj = cnpj.replace(/^(\d{2})(\d{3})(\d{3})(\d{4})(\d{2}).*/, '$1.$2.$3/$4-$5');
+            return cnpj;
+        }
+
+        function createProductInputGroup() {
+            const productGroup = document.createElement('div');
+            productGroup.className = 'flex flex-col sm:flex-row space-y-4 sm:space-y-0 sm:space-x-4';
+            productGroup.innerHTML = `
+                <div class="flex-1">
+                    <label class="block text-sm font-medium text-gray-700">Nome do Produto</label>
+                    <input type="text" placeholder="Nome do Produto" class="product-name mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500" required>
+                </div>
+                <div class="flex-1">
+                    <label class="block text-sm font-medium text-gray-700">Valor (R$)</label>
+                    <input type="number" step="0.01" placeholder="Ex: 50.00" class="product-value mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500" required>
+                </div>
+                <button type="button" class="remove-product-btn flex-shrink-0 px-4 py-2 bg-red-500 text-white rounded-lg shadow-md hover:bg-red-600 self-end">Remover</button>
+            `;
+            productsContainer.appendChild(productGroup);
+
+            // Adiciona listener para o botão de remover
+            productGroup.querySelector('.remove-product-btn').addEventListener('click', () => {
+                productsContainer.removeChild(productGroup);
+            });
+        }
+        
         async function saveSale(saleData) {
-            if (!userId || !db) {
-                displayMessage("Erro: O aplicativo não está pronto. Por favor, aguarde.", "error");
-                console.error("Erro: A instância do Firestore ou o userId não estão disponíveis. db:", db, "userId:", userId);
+            if (!db || !userId) {
+                console.error("Firebase não inicializado ou usuário não autenticado.");
                 return;
             }
-
-            setSaveLoading(true);
             try {
-                const salesRef = collection(db, `artifacts/${appId}/public/data/sales`);
-                await addDoc(salesRef, { ...saleData, consultantId: userId, consultantName: consultantNameInput.value });
-                displayMessage("Venda salva com sucesso!", "success");
-                // Limpa o formulário após o salvamento
+                const salesCollection = collection(db, `artifacts/${appId}/public/data/sales`);
+                await addDoc(salesCollection, saleData);
+                console.log("Venda registrada com sucesso!");
+                alert("Venda registrada com sucesso!");
                 salesForm.reset();
                 productsContainer.innerHTML = '';
-                createProductInputGroup();
+                createProductInputGroup(); // Cria um novo campo para o próximo registro
             } catch (e) {
-                console.error("Erro ao salvar a venda: ", e);
-                displayMessage(`Erro ao salvar a venda. Detalhes: ${e.message}`, "error");
-            } finally {
-                setSaveLoading(false);
+                console.error("Erro ao adicionar documento: ", e);
             }
         }
 
         async function deleteSale(saleId) {
+            if (!db || !userId || !saleId) return;
             try {
                 const saleRef = doc(db, `artifacts/${appId}/public/data/sales`, saleId);
                 await deleteDoc(saleRef);
-                displayMessage("Venda excluída com sucesso!", "success");
+                console.log("Venda excluída com sucesso!");
+                alert("Venda excluída com sucesso!");
             } catch (e) {
-                console.error("Erro ao excluir a venda: ", e);
-                displayMessage("Erro ao excluir a venda. Por favor, tente novamente.", "error");
+                console.error("Erro ao excluir documento: ", e);
             }
         }
 
-        async function saveConsultantName(name) {
-            if (!name || !userId) return;
-            try {
-                const profileRef = doc(db, `artifacts/${appId}/users/${userId}/profile`, 'info');
-                await setDoc(profileRef, { consultantName: name });
-            } catch (e) {
-                console.error("Erro ao salvar o nome do consultor: ", e);
-            }
-        }
-
-        async function loadConsultantName() {
-            if (!userId) return;
-            try {
-                const profileRef = doc(db, `artifacts/${appId}/users/${userId}/profile`, 'info');
-                const profileSnap = await getDoc(profileRef);
-                if (profileSnap.exists()) {
-                    consultantNameInput.value = profileSnap.data().consultantName || '';
-                }
-            } catch (e) {
-                console.error("Erro ao carregar o nome do consultor: ", e);
-            }
-        }
-
-        // NOVO: Função para criar as opções de meses no seletor
-        function createPeriodOptions() {
-            periodFilterEl.innerHTML = '';
+        function getPastMonths(count) {
+            const months = [];
             const today = new Date();
-            const months = ['Janeiro', 'Fevereiro', 'Março', 'Abril', 'Maio', 'Junho', 'Julho', 'Agosto', 'Setembro', 'Outubro', 'Novembro', 'Dezembro'];
-
-            for (let i = 0; i < 3; i++) {
-                const date = new Date(today.getFullYear(), today.getMonth() - i, 1);
-                const monthName = months[date.getMonth()];
-                const year = date.getFullYear();
-                const option = document.createElement('option');
-                option.value = `${year}-${(date.getMonth() + 1).toString().padStart(2, '0')}`;
-                option.textContent = `${monthName} ${year}`;
-                periodFilterEl.appendChild(option);
+            for (let i = count - 1; i >= 0; i--) {
+                const d = new Date(today.getFullYear(), today.getMonth() - i, 1);
+                months.push(d);
             }
+            return months;
         }
 
-        function listenToSales() {
-            if (!db || !userId) {
-                return;
+        function renderSalesChart(sales) {
+            const months = getPastMonths(6);
+            const monthlyRevenue = months.map(month => {
+                return sales.reduce((sum, sale) => {
+                    const saleDate = sale.timestamp ? new Date(sale.timestamp.seconds * 1000) : null;
+                    if (saleDate && saleDate.getMonth() === month.getMonth() && saleDate.getFullYear() === month.getFullYear()) {
+                        return sum + (sale.totalRevenue || 0);
+                    }
+                    return sum;
+                }, 0);
+            });
+
+            if (salesChart) {
+                salesChart.destroy();
             }
+
+            const ctx = document.getElementById('sales-chart').getContext('2d');
+            salesChart = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: months.map(m => m.toLocaleString('pt-BR', { month: 'short', year: 'numeric' })),
+                    datasets: [{
+                        label: 'Receita Mensal (R$)',
+                        data: monthlyRevenue,
+                        backgroundColor: 'rgba(54, 162, 235, 0.6)',
+                        borderColor: 'rgba(54, 162, 235, 1)',
+                        borderWidth: 2,
+                        fill: false
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            title: {
+                                display: true,
+                                text: 'Receita (R$)'
+                            }
+                        }
+                    }
+                }
+            });
+        }
+        
+        function listenToSales() {
+            if (!db || !userId) return;
+
             const salesRef = collection(db, `artifacts/${appId}/public/data/sales`);
-            
-            // CORREÇÃO: Remove o orderBy da query para evitar o erro de índice
-            const salesQuery = query(salesRef, 
-                where('consultantId', '==', userId)
-            );
+            let salesQuery = query(salesRef, where("consultantId", "==", userId));
+
+            const period = periodFilterEl.value;
+            const now = new Date();
+            let startDate;
+
+            switch (period) {
+                case 'month':
+                    startDate = new Date(now.getFullYear(), now.getMonth(), 1);
+                    break;
+                case 'three-months':
+                    startDate = new Date(now.getFullYear(), now.getMonth() - 2, 1);
+                    break;
+                case 'six-months':
+                    startDate = new Date(now.getFullYear(), now.getMonth() - 5, 1);
+                    break;
+                default:
+                    salesQuery = query(salesQuery, orderBy("timestamp", "desc"), limit(10));
+                    break;
+            }
+
+            if (startDate) {
+                salesQuery = query(salesQuery, where("timestamp", ">=", startDate), orderBy("timestamp", "desc"));
+            }
 
             onSnapshot(salesQuery, (snapshot) => {
-                let sales = [];
-                snapshot.forEach((doc) => {
-                    sales.push({ id: doc.id, ...doc.data() });
+                const sales = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+                
+                const totalRevenue = sales.reduce((sum, s) => sum + (s.totalRevenue || 0), 0);
+                salesCountEl.textContent = sales.length;
+                totalRevenueEl.textContent = `R$ ${totalRevenue.toFixed(2).replace('.', ',')}`;
+
+                renderSalesChart(sales);
+
+                const monthlyGoal = parseFloat(monthlyGoalEl.textContent.replace('R$ ', '').replace(',', '.')) || 0;
+                const progressPercentage = monthlyGoal > 0 ? (totalRevenue / monthlyGoal) * 100 : 0;
+                progressFillEl.style.width = `${Math.min(progressPercentage, 100)}%`;
+                progressTextEl.textContent = `${Math.round(progressPercentage)}%`;
+                
+                // Cálculo de projeção
+                const months = getPastMonths(6);
+                const monthlyRevenue = months.map(month => {
+                    return sales.reduce((sum, s) => {
+                        const saleDate = s.timestamp ? new Date(s.timestamp.seconds * 1000) : null;
+                        if (saleDate && saleDate.getMonth() === month.getMonth() && saleDate.getFullYear() === month.getFullYear()) {
+                            return sum + (s.totalRevenue || 0);
+                        }
+                        return sum;
+                    }, 0);
                 });
 
-                // NOVO: Faz a filtragem por período no lado do cliente
-                const selectedPeriod = periodFilterEl.value;
-                const [year, month] = selectedPeriod.split('-');
-                const startDate = new Date(year, month - 1, 1);
-                const endDate = new Date(year, month, 1);
-                
-                const filteredSales = sales.filter(sale => {
-                    if (sale.timestamp && sale.timestamp.toDate) {
-                        const saleDate = sale.timestamp.toDate();
-                        return saleDate >= startDate && saleDate < endDate;
+                let totalGrowth = 0;
+                let countGrowth = 0;
+                for (let i = 1; i < monthlyRevenue.length; i++) {
+                    if (monthlyRevenue[i-1] > 0) {
+                        const growthRate = (monthlyRevenue[i] - monthlyRevenue[i-1]) / monthlyRevenue[i-1];
+                        totalGrowth += growthRate;
+                        countGrowth++;
                     }
-                    return false;
-                });
-                
-                updateDashboard(filteredSales);
-                renderSalesList(filteredSales);
+                }
+                const averageGrowth = countGrowth > 0 ? totalGrowth / countGrowth : 0;
+                const lastMonthRevenue = monthlyRevenue[monthlyRevenue.length - 1];
+                const projectedRevenue = lastMonthRevenue * (1 + averageGrowth);
+                projectedRevenueEl.textContent = `R$ ${projectedRevenue.toFixed(2).replace('.', ',')}`;
+
+                renderSalesHistory(sales);
             }, (error) => {
-                console.error("Erro ao ouvir atualizações do Firestore: ", error);
-                displayMessage("Erro de conexão com o banco de dados. Os dados podem não estar atualizados.", "error");
+                console.error("Erro ao ouvir vendas: ", error);
             });
         }
-        
-        // --- Funções de UI e Lógica ---
-        function updateDashboard(sales) {
-            let totalRevenue = 0;
-            const productsSoldSummary = {};
-            let totalMigracaoSold = 0;
-            let totalAparelhosSoldValue = 0;
 
-            const mySales = sales;
-
-            mySales.forEach(sale => {
-                const saleProducts = JSON.parse(sale.products);
-                saleProducts.forEach(p => {
-                    const productNameKey = p.name.includes('Migração') ? 'Migração' : p.name;
-                    if (productNameKey in productsSoldSummary) {
-                        productsSoldSummary[productNameKey] = (productsSoldSummary[productNameKey] || 0) + p.quantity;
-                    } else {
-                        productsSoldSummary[productNameKey] = p.quantity;
-                    }
-                    if (['Migração Up', 'Migração Mid', 'Migração Down'].includes(p.name)) {
-                        totalMigracaoSold += p.quantity;
-                    }
-                    if (p.name === 'Aparelhos (R$)') {
-                        totalAparelhosSoldValue += p.revenue;
-                    } else {
-                        totalRevenue += p.revenue;
-                    }
-                });
-            });
-
-            productsSoldSummary['Migração'] = totalMigracaoSold;
-            productsSoldSummary['Aparelhos (R$)'] = totalAparelhosSoldValue;
-            totalRevenue += totalAparelhosSoldValue * 0.01;
-
-            let currentTier = 0;
-            const revenueGoals = goalData['Receita (R$)'];
-            
-            if (totalRevenue >= revenueGoals[0]) currentTier++;
-            if (totalRevenue >= revenueGoals[1]) currentTier++;
-            if (totalRevenue >= revenueGoals[2]) currentTier++;
-
-            productsForGoals.forEach(product => {
-                const sold = productsSoldSummary[product] || 0;
-                const goals = goalData[product] || [];
-                if (goals.length > 0 && sold >= goals[0]) currentTier++;
-                if (goals.length > 1 && sold >= goals[1]) currentTier++;
-                if (goals.length > 2 && sold >= goals[2]) currentTier++;
-            });
-            
-            let totalCommission = 0;
-            const commissionDetails = {};
-            
-            let tierIndexForCommission = currentTier;
-            if (currentTier > 0) tierIndexForCommission = currentTier - 1;
-            tierIndexForCommission = Math.min(tierIndexForCommission, commissionData['Migração Mid'].length - 1);
-
-            mySales.forEach(sale => {
-                const saleProducts = JSON.parse(sale.products);
-                saleProducts.forEach(p => {
-                    const commissionRate = commissionData[p.name] ? commissionData[p.name][tierIndexForCommission] : 0;
-                    const productCommission = (p.quantity || 0) * commissionRate;
-                    
-                    if (commissionDetails[p.name]) {
-                        commissionDetails[p.name].value += productCommission;
-                        commissionDetails[p.name].quantity += (p.quantity || 0);
-                    } else {
-                        commissionDetails[p.name] = {
-                            value: productCommission,
-                            quantity: (p.quantity || 0),
-                            rate: commissionRate
-                        };
-                    }
-                });
-            });
-            
-            const revenueCommission = totalRevenue * (revenuePercentages[tierIndexForCommission] / 100);
-            commissionDetails['Receita Total'] = {
-                value: revenueCommission,
-                rate: revenuePercentages[tierIndexForCommission] + '%'
-            };
-
-            totalCommission = Object.values(commissionDetails).reduce((sum, item) => sum + item.value, 0);
-
-            totalRevenueEl.textContent = `R$ ${totalRevenue.toFixed(2).replace('.', ',')}`;
-            estimatedCommissionEl.textContent = `R$ ${totalCommission.toFixed(2).replace('.', ',')}`;
-            currentTierEl.textContent = `Faixa ${currentTier}`;
-            
-            let nextTierGoal = 0;
-            let progressPercentage = 0;
-
-            const nextRevenueGoalIndex = revenueGoals.findIndex(goal => totalRevenue < goal);
-            if (nextRevenueGoalIndex !== -1) {
-                nextTierGoal = revenueGoals[nextRevenueGoalIndex];
-                progressPercentage = Math.min(100, (totalRevenue / nextTierGoal) * 100);
-                progressTextEl.textContent = `Progresso para a Faixa ${currentTier + 1}:`;
-            } else {
-                progressPercentage = 100;
-                progressTextEl.textContent = 'Parabéns! Você alcançou a Faixa mais alta!';
-            }
-
-            progressFillEl.style.width = `${progressPercentage}%`;
-            progressFillEl.className = `progress-fill ${progressPercentage >= 100 ? 'bg-green-500' : 'bg-blue-500'}`;
-            
-            renderRevenueGoals(totalRevenue);
-            renderProductGoals(productsSoldSummary);
-            renderCommissionDetails(commissionDetails, currentTier);
-        }
-        
-        function renderSalesList(sales) {
-            salesListBodyEl.innerHTML = '';
-            // NOVO: Ordena as vendas por data, da mais recente para a mais antiga
-            sales.sort((a, b) => {
-                const dateA = a.timestamp && a.timestamp.toDate ? a.timestamp.toDate() : new Date(0);
-                const dateB = b.timestamp && b.timestamp.toDate ? b.timestamp.toDate() : new Date(0);
-                return dateB.getTime() - dateA.getTime();
-            });
-            
-            if (sales.length === 0) {
-                salesListBodyEl.innerHTML = `<tr><td colspan="6" class="p-4 text-center text-gray-500">Nenhuma venda registrada ainda.</td></tr>`;
-                return;
-            }
-
+        function renderSalesHistory(sales) {
+            salesHistoryBody.innerHTML = '';
             sales.forEach(sale => {
-                const saleProducts = JSON.parse(sale.products);
-                const productsText = saleProducts.map(p => {
-                    const description = p.description ? ` - ${p.description}` : '';
-                    return `${p.name}${description}: ${p.quantity} (R$ ${p.revenue.toFixed(2).replace('.', ',')})`;
-                }).join(', ');
-
-                const date = sale.timestamp ? new Date(sale.timestamp.seconds * 1000).toLocaleString('pt-BR') : 'N/A';
-                const totalRevenueFormatted = (sale.totalRevenue || 0).toFixed(2).replace('.', ',');
-
                 const row = document.createElement('tr');
                 row.className = "border-t border-gray-200";
+                const saleDate = sale.timestamp ? new Date(sale.timestamp.seconds * 1000).toLocaleDateString('pt-BR') : 'N/A';
                 row.innerHTML = `
-                    <td class="p-4 text-gray-800">${sale.cnpj || 'N/A'}</td>
-                    <td class="p-4 text-gray-800">${sale.companyName}</td>
-                    <td class="p-4 text-sm">${productsText}</td>
-                    <td class="p-4 text-gray-500 text-sm">${date}</td>
-                    <td class="p-4">R$ ${totalRevenueFormatted}</td>
+                    <td class="p-4">${saleDate}</td>
+                    <td class="p-4">${sale.companyName || 'N/A'}</td>
+                    <td class="p-4">R$ ${sale.totalRevenue ? sale.totalRevenue.toFixed(2).replace('.', ',') : '0,00'}</td>
                     <td class="p-4">
                         <button class="text-red-500 hover:text-red-700 delete-btn" data-sale-id="${sale.id}">Excluir</button>
                     </td>
                 `;
-                salesListBodyEl.appendChild(row);
+                salesHistoryBody.appendChild(row);
             });
-            
-            // Adiciona event listeners para os botões de exclusão
+
             document.querySelectorAll('.delete-btn').forEach(button => {
                 button.addEventListener('click', (e) => {
                     saleIdToDelete = e.target.getAttribute('data-sale-id');
@@ -713,123 +508,7 @@
             });
         }
 
-        function renderCommissionDetails(details, tierIndex) {
-            commissionDetailsBodyEl.innerHTML = '';
-            
-            const cappedTierIndex = Math.min(tierIndex, commissionData['Migração Mid'].length - 1);
-            
-            const sortedKeys = Object.keys(details).sort();
-
-            sortedKeys.forEach(key => {
-                const detail = details[key];
-                const row = document.createElement('tr');
-                row.className = "border-t border-gray-200";
-                
-                let itemName = key;
-                if (detail.quantity) {
-                    itemName = `${key} (${detail.quantity})`;
-                }
-
-                row.innerHTML = `
-                    <td class="p-4">${itemName}</td>
-                    <td class="p-4">R$ ${detail.value.toFixed(2).replace('.', ',')}</td>
-                    <td class="p-4">${detail.rate}</td>
-                `;
-                commissionDetailsBodyEl.appendChild(row);
-            });
-        }
-        
-        function renderRevenueGoals(totalRevenue) {
-            revenueGoalsBodyEl.innerHTML = '';
-            const goals = goalData['Receita (R$)'];
-            
-            goals.forEach(goal => {
-                const isMet = totalRevenue >= goal;
-                const status = isMet ? 'Atingida' : 'Ainda não';
-                const statusClass = isMet ? 'text-green-500' : 'text-gray-500';
-                
-                const row = document.createElement('tr');
-                row.className = "border-t border-gray-200";
-                row.innerHTML = `
-                    <td class="p-4">R$ ${goal.toFixed(2).replace('.', ',')}</td>
-                    <td class="p-4 ${statusClass}">${status}</td>
-                `;
-                revenueGoalsBodyEl.appendChild(row);
-            });
-        }
-
-        function renderProductGoals(productsSoldSummary) {
-            productGoalsBodyEl.innerHTML = '';
-            
-            productsForGoals.forEach(product => {
-                const sold = productsSoldSummary[product] || 0;
-                const goals = goalData[product] || [0, 0, 0];
-                
-                const row = document.createElement('tr');
-                row.className = "border-t border-gray-200";
-
-                const goal75Met = sold >= goals[0];
-                const goal150Met = sold >= goals[1];
-                const goal200Met = sold >= goals[2];
-
-                let soldValue = sold;
-                if (product === 'Aparelhos (R$)') {
-                    soldValue = `R$ ${sold.toFixed(2).replace('.', ',')}`;
-                }
-
-                row.innerHTML = `
-                    <td class="p-4">${product}</td>
-                    <td class="p-4 text-center">${soldValue}</td>
-                    <td class="p-4 text-center ${goal75Met ? 'text-green-500 font-bold' : ''}">${product === 'Aparelhos (R$)' ? `R$ ${goals[0].toFixed(2).replace('.', ',')}` : goals[0]}</td>
-                    <td class="p-4 text-center ${goal150Met ? 'text-green-500 font-bold' : ''}">${product === 'Aparelhos (R$)' ? `R$ ${goals[1].toFixed(2).replace('.', ',')}` : goals[1]}</td>
-                    <td class="p-4 text-center ${goal200Met ? 'text-green-500 font-bold' : ''}">${product === 'Aparelhos (R$)' ? `R$ ${goals[2].toFixed(2).replace('.', ',')}` : goals[2]}</td>
-                `;
-                productGoalsBodyEl.appendChild(row);
-            });
-        }
-
-        function createProductInputGroup() {
-            const group = document.createElement('div');
-            group.className = "product-input-group flex flex-col sm:flex-row items-center space-y-2 sm:space-y-0 sm:space-x-2";
-            group.innerHTML = `
-                <select class="product-select w-full sm:w-1/3 p-2 rounded-md border-gray-300 shadow-sm focus:ring-blue-500 focus:border-blue-500">
-                    <option value="Migração Up">Migração Up</option>
-                    <option value="Migração Mid">Migração Mid</option>
-                    <option value="Migração Down">Migração Down</option>
-                    <option value="GPON">GPON</option>
-                    <option value="Altas Portadas">Altas Portadas</option>
-                    <option value="Altas Novas">Altas Novas</option>
-                    <option value="VVN">VVN</option>
-                    <option value="Aparelhos (R$)">Aparelhos (R$)</option>
-                    <option value="Avançados">Avançados</option>
-                    <option value="Produtos de TI">Produtos de TI</option>
-                </select>
-                <input type="text" placeholder="Descrição" class="product-description w-full sm:w-1/3 p-2 rounded-md border-gray-300 shadow-sm focus:ring-blue-500 focus:border-blue-500">
-                <input type="number" placeholder="Quantidade" value="0" min="0" class="product-quantity w-full sm:w-1/3 p-2 text-center rounded-md border-gray-300 shadow-sm focus:ring-blue-500 focus:border-blue-500">
-                <input type="number" placeholder="Receita (R$)" step="0.01" class="product-revenue w-full sm:w-1/3 p-2 text-center rounded-md border-gray-300 shadow-sm focus:ring-blue-500 focus:ring-blue-500">
-                <button type="button" class="remove-product-btn text-red-500 hover:text-red-700 text-xl font-bold p-1">&times;</button>
-            `;
-            productsContainer.appendChild(group);
-            
-            // Adiciona listener para o botão de remover
-            group.querySelector('.remove-product-btn').addEventListener('click', () => {
-                if (productsContainer.childElementCount > 1) {
-                    group.remove();
-                }
-            });
-        }
-        
-        // Função para formatar o CNPJ com a máscara
-        function formatCNPJ(value) {
-            let v = value.replace(/\D/g, ""); // Remove tudo que não for dígito
-            v = v.replace(/^(\d{2})(\d)/, "$1.$2");
-            v = v.replace(/^(\d{2})\.(\d{3})(\d)/, "$1.$2.$3");
-            v = v.replace(/\.(\d{3})(\d)/, ".$1/$2");
-            v = v.replace(/(\d{4})(\d)/, "$1-$2");
-            return v;
-        }
-
-        // --- Event Listeners ---
+        // Event Listeners
         authForm.addEventListener('submit', async (e) => {
             e.preventDefault();
             const email = authEmailInput.value;
@@ -837,83 +516,47 @@
             authMessageEl.style.display = 'none';
 
             try {
-                if (isRegisterMode) {
-                    const userCredential = await createUserWithEmailAndPassword(auth, email, password);
-                    displayAuthMessage('Registro bem-sucedido! Por favor, faça login.', 'success');
-                    isRegisterMode = false;
-                    toggleAuthBtn.textContent = 'Não tem uma conta? Registrar';
-                    authBtn.textContent = 'Entrar';
-                } else {
-                    await signInWithEmailAndPassword(auth, email, password);
-                }
+                await signInWithEmailAndPassword(auth, email, password);
             } catch (e) {
                 console.error("Erro de autenticação: ", e.message);
-                displayAuthMessage('Erro de autenticação. Verifique seu e-mail e senha.', 'error');
-            }
-        });
-
-        toggleAuthBtn.addEventListener('click', () => {
-            isRegisterMode = !isRegisterMode;
-            if (isRegisterMode) {
-                toggleAuthBtn.textContent = 'Já tem uma conta? Entrar';
-                authBtn.textContent = 'Registrar';
-            } else {
-                toggleAuthBtn.textContent = 'Não tem uma conta? Registrar';
-                authBtn.textContent = 'Entrar';
+                displayAuthMessage('Falha no login. Verifique suas credenciais.', 'error');
             }
         });
 
         logoutBtn.addEventListener('click', async () => {
             await signOut(auth);
         });
-
+        
         salesForm.addEventListener('submit', async (e) => {
             e.preventDefault();
             const consultantName = consultantNameInput.value;
-            const companyName = document.getElementById('company-name').value;
+            const companyName = companyNameInput.value;
             const cnpj = cnpjInput.value;
-            const crm = document.getElementById('crm').value;
-            
-            saveConsultantName(consultantName);
+            const crm = crmInput.value;
 
-            const productInputs = productsContainer.querySelectorAll('.product-input-group');
             const productsSold = [];
-            let totalRevenue = 0;
-            
-            let hasValidProduct = false;
-            productInputs.forEach(inputGroup => {
-                const productSelect = inputGroup.querySelector('.product-select');
-                const descriptionInput = inputGroup.querySelector('.product-description');
-                const quantityInput = inputGroup.querySelector('.product-quantity');
-                const revenueInput = inputGroup.querySelector('.product-revenue');
-                
-                const productName = productSelect.value;
-                const description = descriptionInput.value;
-                const quantity = parseFloat(quantityInput.value) || 0;
-                const revenue = parseFloat(revenueInput.value) || 0;
-
-                if (quantity > 0 || revenue > 0) {
-                    hasValidProduct = true;
-                    productsSold.push({ name: productName, description: description, quantity: quantity, revenue: revenue });
-                    if (productName === 'Aparelhos (R$)') {
-                        totalRevenue += revenue * 0.01;
-                    } else {
-                        totalRevenue += revenue;
-                    }
+            document.querySelectorAll('.product-group').forEach(group => {
+                const name = group.querySelector('.product-name').value;
+                const value = parseFloat(group.querySelector('.product-value').value);
+                if (name && value > 0) {
+                    productsSold.push({ name, value });
                 }
             });
 
-            if (!hasValidProduct) {
-                displayMessage("Por favor, adicione pelo menos um produto à venda com quantidade ou receita maior que zero.", "error");
+            if (productsSold.length === 0) {
+                alert("Por favor, adicione pelo menos um produto com um valor válido.");
                 return;
             }
+
+            const totalRevenue = productsSold.reduce((sum, p) => sum + p.value, 0);
             
             const newSale = {
+                consultantId: userId,
                 consultantName,
                 companyName,
                 cnpj,
                 crm,
-                products: JSON.stringify(productsSold), // Serialize products to JSON string
+                products: JSON.stringify(productsSold),
                 totalRevenue,
                 timestamp: serverTimestamp()
             };
@@ -925,12 +568,10 @@
             createProductInputGroup();
         });
 
-        // Event listener para a máscara de CNPJ
         cnpjInput.addEventListener('input', (e) => {
             e.target.value = formatCNPJ(e.target.value);
         });
-
-        // Event listeners para o modal de exclusão
+        
         confirmDeleteBtn.addEventListener('click', () => {
             if (saleIdToDelete) {
                 deleteSale(saleIdToDelete);
@@ -944,18 +585,14 @@
             saleIdToDelete = null;
         });
         
-        // NOVO: Adiciona um listener para o filtro de período
         periodFilterEl.addEventListener('change', () => {
             listenToSales();
         });
 
-
-        // Inicializa o app ao carregar a página
         window.onload = () => {
             initializeFirebase();
             createProductInputGroup();
         };
-
     </script>
 </body>
 </html>
