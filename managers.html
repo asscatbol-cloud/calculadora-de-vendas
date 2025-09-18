@@ -103,16 +103,16 @@
             <hr class="my-6">
 
             <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
-                <div>
+                <div class="w-full">
                     <h2 class="text-xl font-semibold mb-4">Evolução Coletiva (Últimos 6 Meses)</h2>
                     <div class="bg-gray-50 p-4 rounded-lg shadow-sm">
                         <canvas id="collective-sales-chart"></canvas>
                     </div>
                 </div>
-                <div>
+                <div class="w-full">
                     <h2 class="text-xl font-semibold mb-4">Produtos Vendidos (Total da Equipe)</h2>
                     <div class="bg-gray-50 p-4 rounded-lg shadow-sm">
-                        <canvas id="products-sold-chart"></canvas>
+                        <canvas id="products-sold-chart" class="h-64"></canvas>
                     </div>
                 </div>
             </div>
@@ -122,7 +122,7 @@
             <div class="mb-6">
                 <h2 class="text-xl font-semibold mb-4">Vendas por Período Semanal</h2>
                 <div class="bg-gray-50 p-4 rounded-lg shadow-sm">
-                    <canvas id="weekly-sales-chart"></canvas>
+                    <canvas id="weekly-sales-chart" class="h-72"></canvas>
                 </div>
             </div>
 
@@ -342,7 +342,7 @@
         const saveGoalsBtn = document.getElementById('save-goals-btn');
         const goalsMessageEl = document.getElementById('goals-message');
 
-        let collectiveChart, productsSoldChart, weeklySalesChart; // Variável declarada apenas uma vez
+        let collectiveChart, productsSoldChart, weeklySalesChart;
 
         let allSalesData = [];
         let allConsultantsData = [];
@@ -627,6 +627,7 @@
                 },
                 options: {
                     responsive: true,
+                    maintainAspectRatio: false, // Permite controlar o tamanho
                     plugins: {
                         legend: {
                             position: 'top',
@@ -664,12 +665,22 @@
             const today = new Date();
             const currentMonth = today.getMonth();
             const currentYear = today.getFullYear();
+
+            // Lógica para obter as datas das 4 semanas do mês atual
+            const labels = [];
+            const daysInMonth = new Date(currentYear, currentMonth + 1, 0).getDate();
+            let startDay = 1;
+            for (let i = 0; i < 4; i++) {
+                const endDay = Math.min(startDay + 6, daysInMonth);
+                labels.push(`${startDay} - ${endDay}/${currentMonth + 1}`);
+                startDay += 7;
+            }
             
             sales.forEach(sale => {
                 try {
                     const saleDate = sale.timestamp ? new Date(sale.timestamp.seconds * 1000) : null;
                     if (saleDate && saleDate.getMonth() === currentMonth && saleDate.getFullYear() === currentYear) {
-                        const weekOfMonth = Math.ceil(saleDate.getDate() / 7) -1; // 0-3
+                        const weekOfMonth = Math.ceil(saleDate.getDate() / 7) - 1; // 0-3
                         if (weekOfMonth >= 0 && weekOfMonth < 4) {
                             const saleProducts = JSON.parse(sale.products);
                             saleProducts.forEach(p => {
@@ -705,11 +716,12 @@
             weeklySalesChart = new Chart(ctx, {
                 type: 'line',
                 data: {
-                    labels: ['Semana 1', 'Semana 2', 'Semana 3', 'Semana 4'],
+                    labels: labels,
                     datasets: datasets,
                 },
                 options: {
                     responsive: true,
+                    maintainAspectRatio: false,
                     scales: {
                         x: {
                             title: {
@@ -760,6 +772,7 @@
                 },
                 options: {
                     responsive: true,
+                    maintainAspectRatio: false,
                     scales: {
                         y: {
                             beginAtZero: true,
