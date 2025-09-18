@@ -245,7 +245,9 @@
             // Listen to all consultants' profiles
             const consultantsRef = collection(db, `artifacts/${appId}/users`);
             onSnapshot(consultantsRef, (snapshot) => {
+                console.log("Dados dos consultores recebidos:", snapshot.docs.length, "consultores encontrados.");
                 allConsultantsData = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+                console.log("Array de consultores:", allConsultantsData);
                 updateDashboard(allSalesData, allConsultantsData);
             }, (error) => {
                 console.error("Erro ao ouvir perfis de consultores: ", error);
