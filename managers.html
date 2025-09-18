@@ -95,10 +95,18 @@
 
         <hr class="my-8">
 
-        <div class="mb-8">
-            <h2 class="text-xl font-semibold mb-4">Evolução Coletiva (Últimos 6 Meses)</h2>
-            <div class="bg-gray-50 p-4 rounded-lg shadow-sm">
-                <canvas id="collective-sales-chart"></canvas>
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
+            <div>
+                <h2 class="text-xl font-semibold mb-4">Evolução Coletiva (Últimos 6 Meses)</h2>
+                <div class="bg-gray-50 p-4 rounded-lg shadow-sm">
+                    <canvas id="collective-sales-chart"></canvas>
+                </div>
+            </div>
+            <div>
+                <h2 class="text-xl font-semibold mb-4">Produtos Vendidos (Total da Equipe)</h2>
+                <div class="bg-gray-50 p-4 rounded-lg shadow-sm">
+                    <canvas id="products-sold-chart"></canvas>
+                </div>
             </div>
         </div>
         
@@ -114,7 +122,7 @@
                             <th class="p-4">Total de Vendas</th>
                             <th class="p-4">Receita Total</th>
                             <th class="p-4">Projeção (Próx. Mês)</th>
-                            <th class="p-4 rounded-tr-lg">Ver Detalhes</th>
+                            <th class="p-4 rounded-tr-lg">Ações</th>
                         </tr>
                     </thead>
                     <tbody id="consultants-performance-body">
@@ -122,13 +130,102 @@
                 </table>
             </div>
         </div>
+    </div>
+    
+    <!-- Seção de Visão de Consultor (escondida por padrão) -->
+    <div id="consultant-view-section" class="container hidden">
+        <div class="flex justify-between items-center mb-6">
+            <h1 id="consultant-view-title" class="text-3xl font-bold text-gray-800"></h1>
+            <button id="back-to-dashboard-btn" class="px-4 py-2 bg-gray-600 text-white font-medium rounded-lg shadow-md hover:bg-gray-700">Voltar</button>
+        </div>
+        
+        <!-- Dashboard do Consultor -->
+        <div>
+            <h2 class="text-xl font-semibold mb-4">Seu Desempenho</h2>
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+                <div class="bg-indigo-50 p-6 rounded-lg shadow-sm">
+                    <p class="text-sm font-medium text-indigo-700">Receita Total</p>
+                    <p id="individual-total-revenue" class="mt-1 text-2xl font-bold text-indigo-900">R$ 0,00</p>
+                </div>
+                <div class="bg-purple-50 p-6 rounded-lg shadow-sm">
+                    <p class="text-sm font-medium text-purple-700">Comissão Estimada</p>
+                    <p id="individual-estimated-commission" class="mt-1 text-2xl font-bold text-purple-900">R$ 0,00</p>
+                </div>
+                <div class="bg-pink-50 p-6 rounded-lg shadow-sm">
+                    <p id="individual-current-tier-text" class="text-sm font-medium text-pink-700">Sua Faixa Atual</p>
+                    <p id="individual-current-tier" class="mt-1 text-2xl font-bold text-pink-900">Faixa 0</p>
+                </div>
+            </div>
+            
+            <!-- Progresso para a Próxima Faixa -->
+            <div class="mt-8">
+                <h3 id="individual-progress-text" class="text-lg font-medium text-gray-700 mb-2"></h3>
+                <div class="progress-bar">
+                    <div id="individual-progress-fill" class="progress-fill bg-blue-500" style="width: 0%;"></div>
+                </div>
+            </div>
+        </div>
 
         <hr class="my-8">
 
-        <div id="individual-chart-section" class="mb-8 hidden">
-            <h2 id="individual-chart-title" class="text-xl font-semibold mb-4"></h2>
-            <div class="bg-gray-50 p-4 rounded-lg shadow-sm">
-                <canvas id="individual-sales-chart"></canvas>
+        <!-- Detalhes da Comissão -->
+        <div class="mb-8">
+            <h2 class="text-xl font-semibold mb-4">Detalhes da Comissão</h2>
+            <div class="overflow-x-auto">
+                <table class="min-w-full text-left border-collapse">
+                    <thead>
+                        <tr class="bg-gray-200">
+                            <th class="p-4 rounded-tl-lg">Item</th>
+                            <th class="p-4">Valor</th>
+                            <th class="p-4 rounded-tr-lg">Faixa de Comissão</th>
+                        </tr>
+                    </thead>
+                    <tbody id="individual-commission-details-body">
+                        <!-- Commission details will be populated here -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <hr class="my-8">
+
+        <!-- Acompanhamento de Metas -->
+        <div class="mb-8">
+            <h3 class="text-lg font-semibold mb-4">Metas de Receita</h3>
+            <div class="overflow-x-auto">
+                <table class="w-full text-left border-collapse">
+                    <thead>
+                        <tr class="bg-gray-200">
+                            <th class="p-4 rounded-tl-lg">Meta</th>
+                            <th class="p-4 rounded-tr-lg">Status</th>
+                        </tr>
+                    </thead>
+                    <tbody id="individual-revenue-goals-body">
+                        <!-- Revenue goals will be populated here -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <hr class="my-8">
+
+        <div>
+            <h3 class="text-lg font-semibold mb-4">Metas de Produto por Faixa</h3>
+            <div class="overflow-x-auto">
+                <table class="w-full text-left border-collapse">
+                    <thead>
+                        <tr class="bg-gray-200">
+                            <th class="p-4 rounded-tl-lg">Produto</th>
+                            <th class="p-4">Vendido</th>
+                            <th class="p-4">Meta Faixa 75</th>
+                            <th class="p-4">Meta Faixa 150</th>
+                            <th class="p-4 rounded-tr-lg">Meta Faixa 200</th>
+                        </tr>
+                    </thead>
+                    <tbody id="individual-product-goals-body">
+                        <!-- Product goals will be populated here -->
+                    </tbody>
+                </table>
             </div>
         </div>
     </div>
@@ -138,7 +235,7 @@
         import { getAuth, signInWithEmailAndPassword, onAuthStateChanged, signOut, signInWithCustomToken } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
         import { getFirestore, collection, onSnapshot, query, where, getDocs, doc, getDoc, setDoc } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
         
-        // Global variables provided by the environment
+        // Variáveis globais fornecidas pelo ambiente
         const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
         const firebaseConfig = typeof __firebase_config !== 'undefined' ? JSON.parse(__firebase_config) : {
             // Default config for testing purposes if not provided by the environment
@@ -153,9 +250,10 @@
         
         let app, db, auth, managerId;
         
-        // DOM elements
+        // Elementos DOM
         const authSection = document.getElementById('auth-section');
         const dashboardSection = document.getElementById('dashboard-section');
+        const consultantViewSection = document.getElementById('consultant-view-section');
         const authForm = document.getElementById('auth-form');
         const authEmailInput = document.getElementById('auth-email');
         const authPasswordInput = document.getElementById('auth-password');
@@ -166,12 +264,47 @@
         const totalTeamRevenueEl = document.getElementById('total-team-revenue');
         const projectedTeamRevenueEl = document.getElementById('projected-team-revenue');
         const consultantsPerformanceBody = document.getElementById('consultants-performance-body');
-        const individualChartSection = document.getElementById('individual-chart-section');
-        const individualChartTitle = document.getElementById('individual-chart-title');
+        const backToDashboardBtn = document.getElementById('back-to-dashboard-btn');
+        const consultantViewTitleEl = document.getElementById('consultant-view-title');
         
-        let collectiveChart, individualChart;
+        // Elementos da visão do consultor
+        const individualTotalRevenueEl = document.getElementById('individual-total-revenue');
+        const individualEstimatedCommissionEl = document.getElementById('individual-estimated-commission');
+        const individualCurrentTierEl = document.getElementById('individual-current-tier');
+        const individualProgressTextEl = document.getElementById('individual-progress-text');
+        const individualProgressFillEl = document.getElementById('individual-progress-fill');
+        const individualCommissionDetailsBodyEl = document.getElementById('individual-commission-details-body');
+        const individualRevenueGoalsBodyEl = document.getElementById('individual-revenue-goals-body');
+        const individualProductGoalsBodyEl = document.getElementById('individual-product-goals-body');
+
+        let collectiveChart, productsSoldChart;
         let allSalesData = [];
         let allConsultantsData = [];
+
+        // Dados de comissão, receita e metas (replicados do index.html para esta visualização)
+        const commissionData = {
+            'Migração Up': [8, 8, 9, 10, 11, 12, 13, 14],
+            'Migração Mid': [4, 4, 5, 7, 7, 8, 9, 10],
+            'Migração Down': [2, 2, 3, 4, 5, 6, 7, 8],
+            'GPON': [20, 22, 25, 28, 31, 35, 40],
+            'Altas Portadas': [6, 8, 10, 12, 14, 16, 20],
+            'Altas Novas': [3, 4, 5, 6, 7, 8, 10],
+            'VVN': [10, 12, 14, 16, 18, 20, 22],
+            'Avançados': [15, 17, 19, 21, 23, 25, 28],
+            'Produtos de TI': [10, 11, 12, 13, 14, 15, 16],
+        };
+        const revenuePercentages = [11, 13, 16, 19, 22, 28, 35];
+        const goalData = {
+            'Receita (R$)': [750, 1500, 3000],
+            'GPON': [3, 6, 9],
+            'Altas Portadas': [5, 15, 30],
+            'Altas Novas': [5, 15, 30],
+            'Contratos (CNPJ\'s)': [1, 1.5, 2],
+            'VVN': [5, 15, 25],
+            'Aparelhos (R$)': [8000, 20000, 30000],
+            'Migração': [75, 150, 200],
+        };
+        const productsForGoals = ['Migração', 'GPON', 'Altas Portadas', 'Altas Novas', 'VVN', 'Aparelhos (R$)'];
 
         function displayAuthMessage(message, type) {
             authMessageEl.textContent = message;
@@ -198,6 +331,7 @@
                         if (isManager) {
                             authSection.classList.add('hidden');
                             dashboardSection.classList.remove('hidden');
+                            consultantViewSection.classList.add('hidden');
                             listenToSalesAndConsultants();
                         } else {
                             await signOut(auth);
@@ -206,6 +340,7 @@
                     } else {
                         authSection.classList.remove('hidden');
                         dashboardSection.classList.add('hidden');
+                        consultantViewSection.classList.add('hidden');
                     }
                 });
 
@@ -245,9 +380,7 @@
             // Listen to all consultants' profiles
             const consultantsRef = collection(db, `artifacts/${appId}/users`);
             onSnapshot(consultantsRef, (snapshot) => {
-                console.log("Dados dos consultores recebidos:", snapshot.docs.length, "consultores encontrados.");
                 allConsultantsData = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-                console.log("Array de consultores:", allConsultantsData);
                 updateDashboard(allSalesData, allConsultantsData);
             }, (error) => {
                 console.error("Erro ao ouvir perfis de consultores: ", error);
@@ -262,6 +395,7 @@
             totalTeamRevenueEl.textContent = `R$ ${teamRevenue.toFixed(2).replace('.', ',')}`;
 
             renderCollectiveChart(sales);
+            renderProductsSoldChart(sales); // NOVA CHAMADA
             calculateAndDisplayProjections(sales, consultants);
         }
 
@@ -275,6 +409,7 @@
             return months;
         }
         
+        // NOVO: Adiciona a lógica de projeção de vendas
         function calculateAndDisplayProjections(sales, consultants) {
             const months = getPastMonths(6);
             const teamMonthlyRevenue = months.map(month => {
@@ -287,6 +422,7 @@
                 }, 0);
             });
             
+            // Projeção da equipe: média de crescimento dos últimos meses
             let totalGrowth = 0;
             let countGrowth = 0;
             for (let i = 1; i < teamMonthlyRevenue.length; i++) {
@@ -301,14 +437,12 @@
             const projectedTeamRevenue = lastMonthRevenue * (1 + averageGrowth);
             projectedTeamRevenueEl.textContent = `R$ ${projectedTeamRevenue.toFixed(2).replace('.', ',')}`;
 
+            // Projeção individual
             const performanceMap = {};
-
-            // Preenche o mapa de desempenho com todos os consultores, inicializando os dados.
             consultants.forEach(c => {
-                performanceMap[c.id] = { name: c.consultantName || 'Consultor sem nome', salesCount: 0, totalRevenue: 0, monthlyRevenue: {}, projectedRevenue: 0 };
+                performanceMap[c.id] = { name: c.consultantName || 'Consultor sem nome', salesCount: 0, totalRevenue: 0, monthlyRevenue: {} };
             });
 
-            // Atualiza os dados de desempenho com base nas vendas.
             sales.forEach(sale => {
                 const consultantId = sale.consultantId;
                 const saleDate = sale.timestamp ? new Date(sale.timestamp.seconds * 1000) : null;
@@ -345,6 +479,75 @@
             });
 
             renderConsultantsPerformance(sales, consultants, performanceMap);
+        }
+
+        // NOVO: Função para renderizar o gráfico de produtos
+        let productsChart;
+        function renderProductsSoldChart(sales) {
+            const productsSold = {};
+            
+            sales.forEach(sale => {
+                try {
+                    const saleProducts = JSON.parse(sale.products);
+                    saleProducts.forEach(p => {
+                        const productName = p.name || 'Desconhecido';
+                        const quantity = p.quantity || 0;
+                        productsSold[productName] = (productsSold[productName] || 0) + quantity;
+                    });
+                } catch (e) {
+                    console.error("Erro ao analisar JSON de produtos:", e);
+                }
+            });
+
+            const productNames = Object.keys(productsSold);
+            const productQuantities = Object.values(productsSold);
+
+            if (productsChart) {
+                productsChart.destroy();
+            }
+
+            const ctx = document.getElementById('products-sold-chart').getContext('2d');
+            productsChart = new Chart(ctx, {
+                type: 'doughnut',
+                data: {
+                    labels: productNames,
+                    datasets: [{
+                        label: 'Quantidade Vendida',
+                        data: productQuantities,
+                        backgroundColor: [
+                            'rgba(255, 99, 132, 0.6)',
+                            'rgba(54, 162, 235, 0.6)',
+                            'rgba(255, 206, 86, 0.6)',
+                            'rgba(75, 192, 192, 0.6)',
+                            'rgba(153, 102, 255, 0.6)',
+                            'rgba(255, 159, 64, 0.6)',
+                            'rgba(199, 199, 199, 0.6)'
+                        ],
+                        borderColor: [
+                            'rgba(255, 99, 132, 1)',
+                            'rgba(54, 162, 235, 1)',
+                            'rgba(255, 206, 86, 1)',
+                            'rgba(75, 192, 192, 1)',
+                            'rgba(153, 102, 255, 1)',
+                            'rgba(255, 159, 64, 1)',
+                            'rgba(199, 199, 199, 1)'
+                        ],
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    plugins: {
+                        legend: {
+                            position: 'top',
+                        },
+                        title: {
+                            display: true,
+                            text: 'Total de Produtos Vendidos por Categoria'
+                        }
+                    }
+                }
+            });
         }
 
         function renderCollectiveChart(sales) {
@@ -408,7 +611,7 @@
                     <td class="p-4">R$ ${data.totalRevenue.toFixed(2).replace('.', ',')}</td>
                     <td class="p-4">R$ ${data.projectedRevenue.toFixed(2).replace('.', ',')}</td>
                     <td class="p-4">
-                        <button class="view-details-btn text-blue-500 hover:text-blue-700" data-consultant-id="${id}" data-consultant-name="${data.name}">Ver Gráfico</button>
+                        <button class="view-details-btn text-blue-500 hover:text-blue-700" data-consultant-id="${id}" data-consultant-name="${data.name}">Ver Visão</button>
                     </td>
                 `;
                 consultantsPerformanceBody.appendChild(row);
@@ -418,57 +621,196 @@
                 button.addEventListener('click', (e) => {
                     const consultantId = e.target.getAttribute('data-consultant-id');
                     const consultantName = e.target.getAttribute('data-consultant-name');
-                    renderIndividualChart(consultantId, consultantName, sales);
+                    renderConsultantView(consultantId, consultantName, sales);
                 });
             });
         }
 
-        function renderIndividualChart(consultantId, consultantName, sales) {
-            individualChartSection.classList.remove('hidden');
-            individualChartTitle.textContent = `Evolução de ${consultantName} (Últimos 6 Meses)`;
-            
-            const consultantSales = sales.filter(s => s.consultantId === consultantId);
-            const months = getPastMonths(6);
-            const monthlyRevenue = months.map(month => {
-                return consultantSales.reduce((sum, sale) => {
-                    const saleDate = sale.timestamp ? new Date(sale.timestamp.seconds * 1000) : null;
-                    if (saleDate && saleDate.getMonth() === month.getMonth() && saleDate.getFullYear() === month.getFullYear()) {
-                        return sum + (sale.totalRevenue || 0);
-                    }
-                    return sum;
-                }, 0);
+        // NOVO: Funções para renderizar a visão de consultor
+        function renderConsultantView(consultantId, consultantName, allSales) {
+            dashboardSection.classList.add('hidden');
+            consultantViewSection.classList.remove('hidden');
+            consultantViewTitleEl.textContent = `Visão do Consultor: ${consultantName}`;
+
+            const sales = allSales.filter(sale => sale.consultantId === consultantId);
+
+            let totalRevenue = 0;
+            const productsSoldSummary = {};
+            let totalMigracaoSold = 0;
+            let totalAparelhosSoldValue = 0;
+
+            sales.forEach(sale => {
+                try {
+                    const saleProducts = JSON.parse(sale.products);
+                    saleProducts.forEach(p => {
+                        const productNameKey = p.name.includes('Migração') ? 'Migração' : p.name;
+                        if (productNameKey in productsSoldSummary) {
+                            productsSoldSummary[productNameKey] = (productsSoldSummary[productNameKey] || 0) + (p.quantity || 0);
+                        } else {
+                            productsSoldSummary[productNameKey] = (p.quantity || 0);
+                        }
+                        if (['Migração Up', 'Migração Mid', 'Migração Down'].includes(p.name)) {
+                            totalMigracaoSold += (p.quantity || 0);
+                        }
+                        if (p.name === 'Aparelhos (R$)') {
+                            totalAparelhosSoldValue += (p.revenue || 0);
+                        } else {
+                            totalRevenue += (p.revenue || 0);
+                        }
+                    });
+                } catch (e) {
+                    console.error("Erro ao analisar JSON de produtos na visão do consultor:", e);
+                }
             });
 
-            if (individualChart) {
-                individualChart.destroy();
-            }
+            productsSoldSummary['Migração'] = totalMigracaoSold;
+            productsSoldSummary['Aparelhos (R$)'] = totalAparelhosSoldValue;
+            totalRevenue += totalAparelhosSoldValue * 0.01;
 
-            const ctx = document.getElementById('individual-sales-chart').getContext('2d');
-            individualChart = new Chart(ctx, {
-                type: 'line',
-                data: {
-                    labels: months.map(m => m.toLocaleString('pt-BR', { month: 'short', year: 'numeric' })),
-                    datasets: [{
-                        label: 'Receita Individual (R$)',
-                        data: monthlyRevenue,
-                        backgroundColor: 'rgba(54, 162, 235, 0.6)',
-                        borderColor: 'rgba(54, 162, 235, 1)',
-                        borderWidth: 2,
-                        fill: false
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    scales: {
-                        y: {
-                            beginAtZero: true,
-                            title: {
-                                display: true,
-                                text: 'Receita (R$)'
-                            }
-                        }
+            let currentTier = 0;
+            const revenueGoals = goalData['Receita (R$)'];
+            
+            if (totalRevenue >= revenueGoals[0]) currentTier++;
+            if (totalRevenue >= revenueGoals[1]) currentTier++;
+            if (totalRevenue >= revenueGoals[2]) currentTier++;
+
+            productsForGoals.forEach(product => {
+                const sold = productsSoldSummary[product] || 0;
+                const goals = goalData[product] || [];
+                if (goals.length > 0 && sold >= goals[0]) currentTier++;
+                if (goals.length > 1 && sold >= goals[1]) currentTier++;
+                if (goals.length > 2 && sold >= goals[2]) currentTier++;
+            });
+            
+            let totalCommission = 0;
+            const commissionDetails = {};
+            
+            let tierIndexForCommission = currentTier;
+            if (currentTier > 0) tierIndexForCommission = currentTier - 1;
+            tierIndexForCommission = Math.min(tierIndexForCommission, commissionData['Migração Mid'].length - 1);
+
+            sales.forEach(sale => {
+                const saleProducts = JSON.parse(sale.products);
+                saleProducts.forEach(p => {
+                    const commissionRate = commissionData[p.name] ? commissionData[p.name][tierIndexForCommission] : 0;
+                    const productCommission = (p.quantity || 0) * commissionRate;
+                    
+                    if (commissionDetails[p.name]) {
+                        commissionDetails[p.name].value += productCommission;
+                        commissionDetails[p.name].quantity += (p.quantity || 0);
+                    } else {
+                        commissionDetails[p.name] = {
+                            value: productCommission,
+                            quantity: (p.quantity || 0),
+                            rate: commissionRate
+                        };
                     }
+                });
+            });
+            
+            const revenueCommission = totalRevenue * (revenuePercentages[tierIndexForCommission] / 100);
+            commissionDetails['Receita Total'] = {
+                value: revenueCommission,
+                rate: revenuePercentages[tierIndexForCommission] + '%'
+            };
+
+            totalCommission = Object.values(commissionDetails).reduce((sum, item) => sum + item.value, 0);
+
+            // Renderiza os elementos
+            individualTotalRevenueEl.textContent = `R$ ${totalRevenue.toFixed(2).replace('.', ',')}`;
+            individualEstimatedCommissionEl.textContent = `R$ ${totalCommission.toFixed(2).replace('.', ',')}`;
+            individualCurrentTierEl.textContent = `Faixa ${currentTier}`;
+            
+            let nextTierGoal = 0;
+            let progressPercentage = 0;
+            const nextRevenueGoalIndex = revenueGoals.findIndex(goal => totalRevenue < goal);
+            
+            if (nextRevenueGoalIndex !== -1) {
+                nextTierGoal = revenueGoals[nextRevenueGoalIndex];
+                progressPercentage = Math.min(100, (totalRevenue / nextTierGoal) * 100);
+                individualProgressTextEl.textContent = `Progresso para a Faixa ${currentTier + 1}:`;
+            } else {
+                progressPercentage = 100;
+                individualProgressTextEl.textContent = 'Parabéns! Você alcançou a Faixa mais alta!';
+            }
+            individualProgressFillEl.style.width = `${progressPercentage}%`;
+            individualProgressFillEl.className = `progress-fill ${progressPercentage >= 100 ? 'bg-green-500' : 'bg-blue-500'}`;
+            
+            renderIndividualCommissionDetails(commissionDetails);
+            renderIndividualRevenueGoals(totalRevenue);
+            renderIndividualProductGoals(productsSoldSummary);
+        }
+
+        function renderIndividualCommissionDetails(details) {
+            individualCommissionDetailsBodyEl.innerHTML = '';
+            
+            const sortedKeys = Object.keys(details).sort();
+
+            sortedKeys.forEach(key => {
+                const detail = details[key];
+                const row = document.createElement('tr');
+                row.className = "border-t border-gray-200";
+                
+                let itemName = key;
+                if (detail.quantity) {
+                    itemName = `${key} (${detail.quantity})`;
                 }
+
+                row.innerHTML = `
+                    <td class="p-4">${itemName}</td>
+                    <td class="p-4">R$ ${detail.value.toFixed(2).replace('.', ',')}</td>
+                    <td class="p-4">${detail.rate}</td>
+                `;
+                individualCommissionDetailsBodyEl.appendChild(row);
+            });
+        }
+        
+        function renderIndividualRevenueGoals(totalRevenue) {
+            individualRevenueGoalsBodyEl.innerHTML = '';
+            const goals = goalData['Receita (R$)'];
+            
+            goals.forEach(goal => {
+                const isMet = totalRevenue >= goal;
+                const status = isMet ? 'Atingida' : 'Ainda não';
+                const statusClass = isMet ? 'text-green-500' : 'text-gray-500';
+                
+                const row = document.createElement('tr');
+                row.className = "border-t border-gray-200";
+                row.innerHTML = `
+                    <td class="p-4">R$ ${goal.toFixed(2).replace('.', ',')}</td>
+                    <td class="p-4 ${statusClass}">${status}</td>
+                `;
+                individualRevenueGoalsBodyEl.appendChild(row);
+            });
+        }
+
+        function renderIndividualProductGoals(productsSoldSummary) {
+            individualProductGoalsBodyEl.innerHTML = '';
+            
+            productsForGoals.forEach(product => {
+                const sold = productsSoldSummary[product] || 0;
+                const goals = goalData[product] || [0, 0, 0];
+                
+                const row = document.createElement('tr');
+                row.className = "border-t border-gray-200";
+
+                const goal75Met = sold >= goals[0];
+                const goal150Met = sold >= goals[1];
+                const goal200Met = sold >= goals[2];
+
+                let soldValue = sold;
+                if (product === 'Aparelhos (R$)') {
+                    soldValue = `R$ ${sold.toFixed(2).replace('.', ',')}`;
+                }
+
+                row.innerHTML = `
+                    <td class="p-4">${product}</td>
+                    <td class="p-4 text-center">${soldValue}</td>
+                    <td class="p-4 text-center ${goal75Met ? 'text-green-500 font-bold' : ''}">${product === 'Aparelhos (R$)' ? `R$ ${goals[0].toFixed(2).replace('.', ',')}` : goals[0]}</td>
+                    <td class="p-4 text-center ${goal150Met ? 'text-green-500 font-bold' : ''}">${product === 'Aparelhos (R$)' ? `R$ ${goals[1].toFixed(2).replace('.', ',')}` : goals[1]}</td>
+                    <td class="p-4 text-center ${goal200Met ? 'text-green-500 font-bold' : ''}">${product === 'Aparelhos (R$)' ? `R$ ${goals[2].toFixed(2).replace('.', ',')}` : goals[2]}</td>
+                `;
+                individualProductGoalsBodyEl.appendChild(row);
             });
         }
 
@@ -489,6 +831,11 @@
 
         logoutBtn.addEventListener('click', async () => {
             await signOut(auth);
+        });
+
+        backToDashboardBtn.addEventListener('click', () => {
+            consultantViewSection.classList.add('hidden');
+            dashboardSection.classList.remove('hidden');
         });
 
         window.onload = initializeFirebase;
