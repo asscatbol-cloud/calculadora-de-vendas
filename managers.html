@@ -260,7 +260,6 @@
             totalTeamRevenueEl.textContent = `R$ ${teamRevenue.toFixed(2).replace('.', ',')}`;
 
             renderCollectiveChart(sales);
-            renderConsultantsPerformance(sales, consultants);
             calculateAndDisplayProjections(sales, consultants);
         }
 
@@ -274,7 +273,6 @@
             return months;
         }
         
-        // NOVO: Adiciona a lógica de projeção de vendas
         function calculateAndDisplayProjections(sales, consultants) {
             const months = getPastMonths(6);
             const teamMonthlyRevenue = months.map(month => {
@@ -287,7 +285,6 @@
                 }, 0);
             });
             
-            // Projeção da equipe: média de crescimento dos últimos meses
             let totalGrowth = 0;
             let countGrowth = 0;
             for (let i = 1; i < teamMonthlyRevenue.length; i++) {
@@ -302,16 +299,18 @@
             const projectedTeamRevenue = lastMonthRevenue * (1 + averageGrowth);
             projectedTeamRevenueEl.textContent = `R$ ${projectedTeamRevenue.toFixed(2).replace('.', ',')}`;
 
-            // Projeção individual
             const performanceMap = {};
+
+            // Preenche o mapa de desempenho com todos os consultores, inicializando os dados.
             consultants.forEach(c => {
-                performanceMap[c.id] = { name: c.consultantName || 'Consultor sem nome', salesCount: 0, totalRevenue: 0, monthlyRevenue: {} };
+                performanceMap[c.id] = { name: c.consultantName || 'Consultor sem nome', salesCount: 0, totalRevenue: 0, monthlyRevenue: {}, projectedRevenue: 0 };
             });
 
+            // Atualiza os dados de desempenho com base nas vendas.
             sales.forEach(sale => {
                 const consultantId = sale.consultantId;
                 const saleDate = sale.timestamp ? new Date(sale.timestamp.seconds * 1000) : null;
-                if (consultantId && saleDate) {
+                if (consultantId && performanceMap[consultantId] && saleDate) {
                     const monthKey = `${saleDate.getFullYear()}-${saleDate.getMonth()}`;
                     if (!performanceMap[consultantId].monthlyRevenue[monthKey]) {
                         performanceMap[consultantId].monthlyRevenue[monthKey] = 0;
