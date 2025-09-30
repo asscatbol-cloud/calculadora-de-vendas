@@ -298,14 +298,13 @@
         // Dados para comissão, receita e metas
         const commissionData = {
             'Migração Up': [8, 8, 9, 10, 11, 12, 13, 14],
-            'Migração Mid': [4, 4, 5, 7, 7, 8, 9, 10],
+            'Migração Mid': [4, 4, 5, 6, 7, 8, 9, 10], // CORRIGIDO: Faixa 3 paga 6
             'Migração Down': [2, 2, 3, 4, 5, 6, 7, 8],
             'GPON': [20, 22, 25, 28, 31, 35, 40],
             'Altas Portadas': [6, 8, 10, 12, 14, 16, 20],
             'Altas Novas': [3, 4, 5, 6, 7, 8, 10],
             'VVN': [10, 12, 14, 16, 18, 20, 22],
-            'Avançados': [15, 17, 19, 21, 23, 25, 28],
-            'Produtos de TI': [10, 11, 12, 13, 14, 15, 16],
+            // REMOVIDO: 'Avançados' e 'Produtos de TI' não pagam comissão por produto
         };
 
         const revenuePercentages = [11, 13, 16, 19, 22, 28, 35];
@@ -438,7 +437,6 @@
                 if (initialAuthToken) {
                     await signInWithCustomToken(auth, initialAuthToken);
                 }
-                // REMOÇÃO: A autenticação anônima foi removida, pois não é suportada neste ambiente
             } catch (e) {
                 console.error("Erro ao inicializar Firebase: ", e);
                 displayMessage("Erro ao inicializar o aplicativo. Por favor, tente novamente.", "error");
@@ -483,7 +481,6 @@
         async function saveConsultantName(name) {
             if (!name || !userId) return;
             try {
-                // A CORREÇÃO ESTÁ AQUI: salva o nome na coleção `users`
                 const userDocRef = doc(db, `artifacts/${appId}/users/${userId}`);
                 await setDoc(userDocRef, { consultantName: name }, { merge: true });
             } catch (e) {
@@ -503,8 +500,7 @@
                 console.error("Erro ao carregar o nome do consultor: ", e);
             }
         }
-
-        // NOVO: Função para criar as opções de meses no seletor
+        
         function createPeriodOptions() {
             periodFilterEl.innerHTML = '';
             const today = new Date();
@@ -527,7 +523,6 @@
             }
             const salesRef = collection(db, `artifacts/${appId}/public/data/sales`);
             
-            // CORREÇÃO: Remove o orderBy da query para evitar o erro de índice
             const salesQuery = query(salesRef, 
                 where('consultantId', '==', userId)
             );
@@ -538,7 +533,6 @@
                     sales.push({ id: doc.id, ...doc.data() });
                 });
 
-                // NOVO: Faz a filtragem por período no lado do cliente
                 const selectedPeriod = periodFilterEl.value;
                 const [year, month] = selectedPeriod.split('-');
                 const startDate = new Date(year, month - 1, 1);
@@ -611,26 +605,27 @@
             let totalCommission = 0;
             const commissionDetails = {};
             
-            // CORREÇÃO APLICADA AQUI:
-            // A lógica foi alterada para usar a faixa atual diretamente.
             let tierIndexForCommission = currentTier;
-            tierIndexForCommission = Math.min(tierIndexForCommission, commissionData['Migração Mid'].length - 1);
+            tierIndexForCommission = Math.min(tierIndexForCommission, revenuePercentages.length - 1);
 
             mySales.forEach(sale => {
                 const saleProducts = JSON.parse(sale.products);
                 saleProducts.forEach(p => {
+                    // Busca a taxa de comissão. Se não existir (como para 'Avançados'), será 0.
                     const commissionRate = commissionData[p.name] ? commissionData[p.name][tierIndexForCommission] : 0;
                     const productCommission = (p.quantity || 0) * commissionRate;
                     
-                    if (commissionDetails[p.name]) {
-                        commissionDetails[p.name].value += productCommission;
-                        commissionDetails[p.name].quantity += (p.quantity || 0);
-                    } else {
-                        commissionDetails[p.name] = {
-                            value: productCommission,
-                            quantity: (p.quantity || 0),
-                            rate: commissionRate
-                        };
+                    if(productCommission > 0) {
+                        if (commissionDetails[p.name]) {
+                            commissionDetails[p.name].value += productCommission;
+                            commissionDetails[p.name].quantity += (p.quantity || 0);
+                        } else {
+                            commissionDetails[p.name] = {
+                                value: productCommission,
+                                quantity: (p.quantity || 0),
+                                rate: commissionRate
+                            };
+                        }
                     }
                 });
             });
@@ -665,12 +660,11 @@
             
             renderRevenueGoals(totalRevenue);
             renderProductGoals(productsSoldSummary);
-            renderCommissionDetails(commissionDetails, currentTier);
+            renderCommissionDetails(commissionDetails);
         }
         
         function renderSalesList(sales) {
             salesListBodyEl.innerHTML = '';
-            // NOVO: Ordena as vendas por data, da mais recente para a mais antiga
             sales.sort((a, b) => {
                 const dateA = a.timestamp && a.timestamp.toDate ? a.timestamp.toDate() : new Date(0);
                 const dateB = b.timestamp && b.timestamp.toDate ? b.timestamp.toDate() : new Date(0);
@@ -707,7 +701,6 @@
                 salesListBodyEl.appendChild(row);
             });
             
-            // Adiciona event listeners para os botões de exclusão
             document.querySelectorAll('.delete-btn').forEach(button => {
                 button.addEventListener('click', (e) => {
                     saleIdToDelete = e.target.getAttribute('data-sale-id');
@@ -716,10 +709,8 @@
             });
         }
 
-        function renderCommissionDetails(details, tierIndex) {
+        function renderCommissionDetails(details) {
             commissionDetailsBodyEl.innerHTML = '';
-            
-            const cappedTierIndex = Math.min(tierIndex, commissionData['Migração Mid'].length - 1);
             
             const sortedKeys = Object.keys(details).sort();
 
@@ -828,7 +819,6 @@
             `;
             productsContainer.appendChild(group);
             
-            // Adiciona listener para o botão de remover
             group.querySelector('.remove-product-btn').addEventListener('click', () => {
                 if (productsContainer.childElementCount > 1) {
                     group.remove();
@@ -836,7 +826,6 @@
             });
         }
         
-        // Função para formatar o CNPJ com a máscara
         function formatCNPJ(value) {
             let v = value.replace(/\D/g, ""); // Remove tudo que não for dígito
             v = v.replace(/^(\d{2})(\d)/, "$1.$2");
@@ -855,7 +844,7 @@
 
             try {
                 if (isRegisterMode) {
-                    const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+                    await createUserWithEmailAndPassword(auth, email, password);
                     displayAuthMessage('Registro bem-sucedido! Por favor, faça login.', 'success');
                     isRegisterMode = false;
                     toggleAuthBtn.textContent = 'Não tem uma conta? Registrar';
@@ -930,7 +919,7 @@
                 companyName,
                 cnpj,
                 crm,
-                products: JSON.stringify(productsSold), // Serialize products to JSON string
+                products: JSON.stringify(productsSold),
                 totalRevenue,
                 timestamp: serverTimestamp()
             };
@@ -942,12 +931,10 @@
             createProductInputGroup();
         });
 
-        // Event listener para a máscara de CNPJ
         cnpjInput.addEventListener('input', (e) => {
             e.target.value = formatCNPJ(e.target.value);
         });
 
-        // Event listeners para o modal de exclusão
         confirmDeleteBtn.addEventListener('click', () => {
             if (saleIdToDelete) {
                 deleteSale(saleIdToDelete);
@@ -961,13 +948,10 @@
             saleIdToDelete = null;
         });
         
-        // NOVO: Adiciona um listener para o filtro de período
         periodFilterEl.addEventListener('change', () => {
             listenToSales();
         });
 
-
-        // Inicializa o app ao carregar a página
         window.onload = () => {
             initializeFirebase();
             createProductInputGroup();
