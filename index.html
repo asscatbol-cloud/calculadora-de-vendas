@@ -298,13 +298,12 @@
         // Dados para comissão, receita e metas
         const commissionData = {
             'Migração Up': [8, 8, 9, 10, 11, 12, 13, 14],
-            'Migração Mid': [4, 4, 5, 6, 7, 8, 9, 10], // CORRIGIDO: Faixa 3 paga 6
+            'Migração Mid': [4, 4, 5, 6, 7, 8, 9, 10], 
             'Migração Down': [2, 2, 3, 4, 5, 6, 7, 8],
             'GPON': [20, 22, 25, 28, 31, 35, 40],
             'Altas Portadas': [6, 8, 10, 12, 14, 16, 20],
             'Altas Novas': [3, 4, 5, 6, 7, 8, 10],
             'VVN': [10, 12, 14, 16, 18, 20, 22],
-            // REMOVIDO: 'Avançados' e 'Produtos de TI' não pagam comissão por produto
         };
 
         const revenuePercentages = [11, 13, 16, 19, 22, 28, 35];
@@ -357,8 +356,6 @@
 
 
         let isRegisterMode = false;
-
-        // Variável para armazenar o ID da venda a ser excluída
         let saleIdToDelete = null;
 
         function displayMessage(message, type) {
@@ -376,7 +373,6 @@
             authMessageEl.style.display = 'block';
         }
 
-        // Função para mostrar ou esconder o spinner de salvamento
         function setSaveLoading(isLoading) {
             if (isLoading) {
                 saveSaleBtnText.textContent = 'Salvando...';
@@ -391,7 +387,6 @@
             }
         }
         
-        // --- Firebase Functions ---
         async function initializeFirebase() {
             try {
                 if (Object.keys(firebaseConfig).length === 0) {
@@ -404,32 +399,23 @@
                 auth = getAuth(app);
                 db = getFirestore(app);
 
-                // ADIÇÃO: Disabilita o botão de salvar venda até a autenticação ser concluída
                 setSaveLoading(true);
 
                 onAuthStateChanged(auth, async (user) => {
                     if (user) {
                         userId = user.uid;
-                        // Mostra a UI principal do aplicativo
                         authSection.classList.add('hidden');
                         appSection.classList.remove('hidden');
-
-                        // Carrega o nome do consultor do Firestore
                         loadConsultantName();
-                        createPeriodOptions(); // NOVO: Chama a função para criar as opções de período
+                        createPeriodOptions();
                         listenToSales();
-
-                        // Habilita o botão de salvar venda APENAS quando o usuário estiver autenticado
                         setSaveLoading(false);
 
                     } else {
-                        // Mostra a UI de login/registro
                         authSection.classList.remove('hidden');
                         appSection.classList.add('hidden');
-                        salesListBodyEl.innerHTML = ''; // Limpa a lista de vendas ao fazer logout
-                        // Limpa os dados do dashboard
+                        salesListBodyEl.innerHTML = '';
                         updateDashboard([]);
-                        // Volta a desabilitar o botão
                         setSaveLoading(true);
                     }
                 });
@@ -446,7 +432,6 @@
         async function saveSale(saleData) {
             if (!userId || !db) {
                 displayMessage("Erro: O aplicativo não está pronto. Por favor, aguarde.", "error");
-                console.error("Erro: A instância do Firestore ou o userId não estão disponíveis. db:", db, "userId:", userId);
                 return;
             }
 
@@ -455,7 +440,6 @@
                 const salesRef = collection(db, `artifacts/${appId}/public/data/sales`);
                 await addDoc(salesRef, { ...saleData, consultantId: userId, consultantName: consultantNameInput.value });
                 displayMessage("Venda salva com sucesso!", "success");
-                // Limpa o formulário após o salvamento
                 salesForm.reset();
                 productsContainer.innerHTML = '';
                 createProductInputGroup();
@@ -523,9 +507,7 @@
             }
             const salesRef = collection(db, `artifacts/${appId}/public/data/sales`);
             
-            const salesQuery = query(salesRef, 
-                where('consultantId', '==', userId)
-            );
+            const salesQuery = query(salesRef, where('consultantId', '==', userId));
 
             onSnapshot(salesQuery, (snapshot) => {
                 let sales = [];
@@ -534,6 +516,8 @@
                 });
 
                 const selectedPeriod = periodFilterEl.value;
+                if (!selectedPeriod) return;
+
                 const [year, month] = selectedPeriod.split('-');
                 const startDate = new Date(year, month - 1, 1);
                 const endDate = new Date(year, month, 1);
@@ -554,27 +538,22 @@
             });
         }
         
-        // --- Funções de UI e Lógica ---
         function updateDashboard(sales) {
             let totalRevenue = 0;
             const productsSoldSummary = {};
             let totalMigracaoSold = 0;
             let totalAparelhosSoldValue = 0;
 
-            const mySales = sales;
-
-            mySales.forEach(sale => {
+            sales.forEach(sale => {
                 const saleProducts = JSON.parse(sale.products);
                 saleProducts.forEach(p => {
                     const productNameKey = p.name.includes('Migração') ? 'Migração' : p.name;
-                    if (productNameKey in productsSoldSummary) {
-                        productsSoldSummary[productNameKey] = (productsSoldSummary[productNameKey] || 0) + p.quantity;
-                    } else {
-                        productsSoldSummary[productNameKey] = p.quantity;
-                    }
+                    productsSoldSummary[productNameKey] = (productsSoldSummary[productNameKey] || 0) + p.quantity;
+                    
                     if (['Migração Up', 'Migração Mid', 'Migração Down'].includes(p.name)) {
                         totalMigracaoSold += p.quantity;
                     }
+
                     if (p.name === 'Aparelhos (R$)') {
                         totalAparelhosSoldValue += p.revenue;
                     } else {
@@ -604,18 +583,21 @@
             
             let totalCommission = 0;
             const commissionDetails = {};
-            
-            let tierIndexForCommission = currentTier;
-            tierIndexForCommission = Math.min(tierIndexForCommission, revenuePercentages.length - 1);
 
-            mySales.forEach(sale => {
+            // --- LÓGICA DE COMISSÃO SIMPLIFICADA E CORRIGIDA ---
+            const tierIndexForCommission = currentTier; // A faixa atual é o índice correto.
+
+            sales.forEach(sale => {
                 const saleProducts = JSON.parse(sale.products);
                 saleProducts.forEach(p => {
-                    // Busca a taxa de comissão. Se não existir (como para 'Avançados'), será 0.
-                    const commissionRate = commissionData[p.name] ? commissionData[p.name][tierIndexForCommission] : 0;
+                    // Garante que o índice não exceda o tamanho do array de comissões para o produto.
+                    const maxIndex = (commissionData[p.name]?.length || 1) - 1;
+                    const cappedTierIndex = Math.min(tierIndexForCommission, maxIndex);
+                    
+                    const commissionRate = commissionData[p.name] ? commissionData[p.name][cappedTierIndex] : 0;
                     const productCommission = (p.quantity || 0) * commissionRate;
                     
-                    if(productCommission > 0) {
+                    if (productCommission > 0) {
                         if (commissionDetails[p.name]) {
                             commissionDetails[p.name].value += productCommission;
                             commissionDetails[p.name].quantity += (p.quantity || 0);
@@ -630,13 +612,19 @@
                 });
             });
             
-            const revenueCommission = totalRevenue * (revenuePercentages[tierIndexForCommission] / 100);
+            // A comissão da receita também usa o 'currentTier' como índice.
+            const maxRevenueIndex = revenuePercentages.length - 1;
+            const cappedRevenueTierIndex = Math.min(tierIndexForCommission, maxRevenueIndex);
+            const revenueCommissionPercentage = revenuePercentages[cappedRevenueTierIndex];
+
+            const revenueCommission = totalRevenue * (revenueCommissionPercentage / 100);
             commissionDetails['Receita Total'] = {
                 value: revenueCommission,
-                rate: revenuePercentages[tierIndexForCommission] + '%'
+                rate: `${revenueCommissionPercentage}%`
             };
 
             totalCommission = Object.values(commissionDetails).reduce((sum, item) => sum + item.value, 0);
+            // --- FIM DA LÓGICA DE COMISSÃO ---
 
             totalRevenueEl.textContent = `R$ ${totalRevenue.toFixed(2).replace('.', ',')}`;
             estimatedCommissionEl.textContent = `R$ ${totalCommission.toFixed(2).replace('.', ',')}`;
@@ -666,13 +654,13 @@
         function renderSalesList(sales) {
             salesListBodyEl.innerHTML = '';
             sales.sort((a, b) => {
-                const dateA = a.timestamp && a.timestamp.toDate ? a.timestamp.toDate() : new Date(0);
-                const dateB = b.timestamp && b.timestamp.toDate ? b.timestamp.toDate() : new Date(0);
+                const dateA = a.timestamp?.toDate() || new Date(0);
+                const dateB = b.timestamp?.toDate() || new Date(0);
                 return dateB.getTime() - dateA.getTime();
             });
             
             if (sales.length === 0) {
-                salesListBodyEl.innerHTML = `<tr><td colspan="6" class="p-4 text-center text-gray-500">Nenhuma venda registrada ainda.</td></tr>`;
+                salesListBodyEl.innerHTML = `<tr><td colspan="6" class="p-4 text-center text-gray-500">Nenhuma venda registrada neste período.</td></tr>`;
                 return;
             }
 
@@ -681,7 +669,7 @@
                 const productsText = saleProducts.map(p => {
                     const description = p.description ? ` - ${p.description}` : '';
                     return `${p.name}${description}: ${p.quantity} (R$ ${p.revenue.toFixed(2).replace('.', ',')})`;
-                }).join(', ');
+                }).join('<br>');
 
                 const date = sale.timestamp ? new Date(sale.timestamp.seconds * 1000).toLocaleString('pt-BR') : 'N/A';
                 const totalRevenueFormatted = (sale.totalRevenue || 0).toFixed(2).replace('.', ',');
@@ -740,7 +728,7 @@
             goals.forEach(goal => {
                 const isMet = totalRevenue >= goal;
                 const status = isMet ? 'Atingida' : 'Ainda não';
-                const statusClass = isMet ? 'text-green-500' : 'text-gray-500';
+                const statusClass = isMet ? 'text-green-500 font-bold' : 'text-gray-500';
                 
                 const row = document.createElement('tr');
                 row.className = "border-t border-gray-200";
@@ -827,7 +815,7 @@
         }
         
         function formatCNPJ(value) {
-            let v = value.replace(/\D/g, ""); // Remove tudo que não for dígito
+            let v = value.replace(/\D/g, "");
             v = v.replace(/^(\d{2})(\d)/, "$1.$2");
             v = v.replace(/^(\d{2})\.(\d{3})(\d)/, "$1.$2.$3");
             v = v.replace(/\.(\d{3})(\d)/, ".$1/$2");
@@ -835,7 +823,6 @@
             return v;
         }
 
-        // --- Event Listeners ---
         authForm.addEventListener('submit', async (e) => {
             e.preventDefault();
             const email = authEmailInput.value;
