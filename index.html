@@ -297,16 +297,16 @@
 
         // Dados para comissão, receita e metas
         const commissionData = {
-            'Migração Up': [8, 8, 9, 10, 11, 12, 13, 14],
-            'Migração Mid': [4, 4, 5, 6, 7, 8, 9, 10], 
-            'Migração Down': [2, 2, 3, 4, 5, 6, 7, 8],
-            'GPON': [20, 22, 25, 28, 31, 35, 40],
-            'Altas Portadas': [6, 8, 10, 12, 14, 16, 20],
-            'Altas Novas': [3, 4, 5, 6, 7, 8, 10],
-            'VVN': [10, 12, 14, 16, 18, 20, 22],
+            'Migração Up':    [8, 8, 9, 10, 11, 12, 13, 14],
+            'Migração Mid':   [4, 4, 5, 6, 7, 8, 9, 10],
+            'Migração Down':  [2, 2, 3, 4, 5, 6, 7, 8],
+            'GPON':           [20, 20, 22, 25, 28, 31, 35, 40],
+            'Altas Portadas': [6, 6, 8, 10, 12, 14, 16, 20],
+            'Altas Novas':    [3, 3, 4, 5, 6, 7, 8, 10],
+            'VVN':            [10, 10, 12, 14, 16, 18, 20, 22],
         };
 
-        const revenuePercentages = [11, 13, 16, 19, 22, 28, 35];
+        const revenuePercentages = [11, 11, 13, 16, 19, 22, 28, 35];
 
         const goalData = {
             'Receita (R$)': [750, 1500, 3000],
@@ -584,13 +584,11 @@
             let totalCommission = 0;
             const commissionDetails = {};
 
-            // --- LÓGICA DE COMISSÃO SIMPLIFICADA E CORRIGIDA ---
-            const tierIndexForCommission = currentTier; // A faixa atual é o índice correto para TODOS.
+            const tierIndexForCommission = currentTier; 
 
             sales.forEach(sale => {
                 const saleProducts = JSON.parse(sale.products);
                 saleProducts.forEach(p => {
-                    // Garante que o índice não exceda o tamanho do array de comissões para o produto.
                     const maxIndex = (commissionData[p.name]?.length || 1) - 1;
                     const cappedTierIndex = Math.min(tierIndexForCommission, maxIndex);
                     
@@ -612,7 +610,6 @@
                 });
             });
             
-            // A comissão da receita também usa o 'currentTier' como índice.
             const maxRevenueIndex = revenuePercentages.length - 1;
             const cappedRevenueTierIndex = Math.min(tierIndexForCommission, maxRevenueIndex);
             const revenueCommissionPercentage = revenuePercentages[cappedRevenueTierIndex];
@@ -624,7 +621,6 @@
             };
 
             totalCommission = Object.values(commissionDetails).reduce((sum, item) => sum + item.value, 0);
-            // --- FIM DA LÓGICA DE COMISSÃO ---
 
             totalRevenueEl.textContent = `R$ ${totalRevenue.toFixed(2).replace('.', ',')}`;
             estimatedCommissionEl.textContent = `R$ ${totalCommission.toFixed(2).replace('.', ',')}`;
