@@ -585,7 +585,7 @@
             const commissionDetails = {};
 
             // --- LÓGICA DE COMISSÃO SIMPLIFICADA E CORRIGIDA ---
-            const tierIndexForCommission = currentTier; // A faixa atual é o índice correto.
+            const tierIndexForCommission = currentTier; // A faixa atual é o índice correto para TODOS.
 
             sales.forEach(sale => {
                 const saleProducts = JSON.parse(sale.products);
