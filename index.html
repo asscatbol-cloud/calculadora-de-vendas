@@ -99,12 +99,12 @@
             </select>
         </div>
         
-        <!-- Dashboard de Desempenho -->
+        <!-- Dashboard de Desempenho (Vendas Realizadas) -->
         <div>
-            <h2 class="text-xl font-semibold mb-4">Seu Desempenho</h2>
+            <h2 class="text-xl font-semibold mb-4">Desempenho (Vendas com Aceite Realizado)</h2>
             <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
                 <div class="bg-indigo-50 p-6 rounded-lg shadow-sm">
-                    <p class="text-sm font-medium text-indigo-700">Receita Total</p>
+                    <p class="text-sm font-medium text-indigo-700">Receita Realizada</p>
                     <p id="total-revenue" class="mt-1 text-2xl font-bold text-indigo-900">R$ 0,00</p>
                 </div>
                 <div class="bg-purple-50 p-6 rounded-lg shadow-sm">
@@ -128,9 +128,36 @@
 
         <hr class="my-8">
 
+        <!-- Vendas Pendentes -->
+        <div>
+            <h2 class="text-xl font-semibold mb-4">Vendas com Aceite Enviado (Pendentes)</h2>
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+                <div class="bg-yellow-50 p-6 rounded-lg shadow-sm">
+                    <p class="text-sm font-medium text-yellow-700">Receita Pendente</p>
+                    <p id="pending-revenue" class="mt-1 text-2xl font-bold text-yellow-900">R$ 0,00</p>
+                </div>
+            </div>
+        </div>
+
+        <hr class="my-8">
+
+        <!-- Vendas Negadas -->
+        <div>
+            <h2 class="text-xl font-semibold mb-4">Vendas com Aceite Negado</h2>
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+                <div class="bg-red-50 p-6 rounded-lg shadow-sm">
+                    <p class="text-sm font-medium text-red-700">Receita Negada</p>
+                    <p id="denied-revenue" class="mt-1 text-2xl font-bold text-red-900">R$ 0,00</p>
+                </div>
+            </div>
+        </div>
+
+
+        <hr class="my-8">
+
         <!-- Detalhes da Comissão -->
         <div class="mb-8">
-            <h2 class="text-xl font-semibold mb-4">Detalhes da Comissão</h2>
+            <h2 class="text-xl font-semibold mb-4">Detalhes da Comissão (Vendas Realizadas)</h2>
             <div class="overflow-x-auto">
                 <table class="min-w-full text-left border-collapse">
                     <thead>
@@ -170,6 +197,15 @@
                     <label for="crm" class="block text-sm font-medium text-gray-700">CRM (Opcional)</label>
                     <input type="text" id="crm" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
                 </div>
+                <!-- Campo de Status do Aceite -->
+                <div>
+                    <label for="sale-status" class="block text-sm font-medium text-gray-700">Status do Aceite</label>
+                    <select id="sale-status" required class="mt-1 block w-full p-2 rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
+                        <option value="aceite enviado">Aceite Enviado</option>
+                        <option value="aceite realizado">Aceite Realizado</option>
+                        <option value="aceite negado">Aceite Negado</option>
+                    </select>
+                </div>
                 
                 <div id="products-container" class="space-y-4">
                     <!-- Products will be added here dynamically -->
@@ -190,7 +226,7 @@
 
         <!-- Lista de Vendas Registradas -->
         <div class="mb-8">
-            <h2 class="text-xl font-semibold mb-4">Vendas Registradas</h2>
+            <h2 class="text-xl font-semibold mb-4">Vendas Registradas no Período</h2>
             <div class="overflow-x-auto">
                 <table class="min-w-full text-left border-collapse">
                     <thead>
@@ -200,6 +236,7 @@
                             <th class="p-4">Produtos</th>
                             <th class="p-4">Data</th>
                             <th class="p-4">Receita</th>
+                            <th class="p-4">Status</th>
                             <th class="p-4 rounded-tr-lg">Ações</th>
                         </tr>
                     </thead>
@@ -214,7 +251,7 @@
 
         <!-- Acompanhamento de Metas -->
         <div class="mb-8">
-            <h3 class="text-lg font-semibold mb-4">Metas de Receita</h3>
+            <h3 class="text-lg font-semibold mb-4">Metas de Receita (Vendas Realizadas)</h3>
             <div class="overflow-x-auto">
                 <table class="w-full text-left border-collapse">
                     <thead>
@@ -233,7 +270,7 @@
         <hr class="my-8">
 
         <div>
-            <h3 class="text-lg font-semibold mb-4">Metas de Produto por Faixa</h3>
+            <h3 class="text-lg font-semibold mb-4">Metas de Produto por Faixa (Vendas Realizadas)</h3>
             <div class="overflow-x-auto">
                 <table class="w-full text-left border-collapse">
                     <thead>
@@ -353,6 +390,8 @@
         const toggleAuthBtn = document.getElementById('toggle-auth-btn');
         const logoutBtn = document.getElementById('logout-btn');
         const periodFilterEl = document.getElementById('period-filter');
+        const pendingRevenueEl = document.getElementById('pending-revenue');
+        const deniedRevenueEl = document.getElementById('denied-revenue');
 
 
         let isRegisterMode = false;
@@ -539,12 +578,25 @@
         }
         
         function updateDashboard(sales) {
+            // Separa as vendas pelo status do aceite
+            const acceptedSales = sales.filter(s => s.status === 'aceite realizado');
+            const pendingSales = sales.filter(s => s.status === 'aceite enviado');
+            const deniedSales = sales.filter(s => s.status === 'aceite negado');
+
+            // Calcula e exibe a receita de vendas pendentes e negadas
+            const pendingRevenue = pendingSales.reduce((acc, sale) => acc + (sale.totalRevenue || 0), 0);
+            const deniedRevenue = deniedSales.reduce((acc, sale) => acc + (sale.totalRevenue || 0), 0);
+
+            pendingRevenueEl.textContent = `R$ ${pendingRevenue.toFixed(2).replace('.', ',')}`;
+            deniedRevenueEl.textContent = `R$ ${deniedRevenue.toFixed(2).replace('.', ',')}`;
+
+            // A partir daqui, todos os cálculos de metas e comissões usam apenas as vendas aceitas
             let totalRevenue = 0;
             const productsSoldSummary = {};
             let totalMigracaoSold = 0;
             let totalAparelhosSoldValue = 0;
 
-            sales.forEach(sale => {
+            acceptedSales.forEach(sale => {
                 const saleProducts = JSON.parse(sale.products);
                 saleProducts.forEach(p => {
                     const productNameKey = p.name.includes('Migração') ? 'Migração' : p.name;
@@ -586,7 +638,7 @@
 
             const tierIndexForCommission = currentTier; 
 
-            sales.forEach(sale => {
+            acceptedSales.forEach(sale => {
                 const saleProducts = JSON.parse(sale.products);
                 saleProducts.forEach(p => {
                     const maxIndex = (commissionData[p.name]?.length || 1) - 1;
@@ -656,7 +708,7 @@
             });
             
             if (sales.length === 0) {
-                salesListBodyEl.innerHTML = `<tr><td colspan="6" class="p-4 text-center text-gray-500">Nenhuma venda registrada neste período.</td></tr>`;
+                salesListBodyEl.innerHTML = `<tr><td colspan="7" class="p-4 text-center text-gray-500">Nenhuma venda registrada neste período.</td></tr>`;
                 return;
             }
 
@@ -670,6 +722,26 @@
                 const date = sale.timestamp ? new Date(sale.timestamp.seconds * 1000).toLocaleString('pt-BR') : 'N/A';
                 const totalRevenueFormatted = (sale.totalRevenue || 0).toFixed(2).replace('.', ',');
 
+                const status = sale.status || 'aceite enviado';
+                let statusClass = '';
+                let statusText = '';
+
+                switch (status) {
+                    case 'aceite realizado':
+                        statusClass = 'text-green-800 bg-green-100';
+                        statusText = 'Realizado';
+                        break;
+                    case 'aceite negado':
+                        statusClass = 'text-red-800 bg-red-100';
+                        statusText = 'Negado';
+                        break;
+                    case 'aceite enviado':
+                    default:
+                        statusClass = 'text-yellow-800 bg-yellow-100';
+                        statusText = 'Enviado';
+                        break;
+                }
+
                 const row = document.createElement('tr');
                 row.className = "border-t border-gray-200";
                 row.innerHTML = `
@@ -678,6 +750,11 @@
                     <td class="p-4 text-sm">${productsText}</td>
                     <td class="p-4 text-gray-500 text-sm">${date}</td>
                     <td class="p-4">R$ ${totalRevenueFormatted}</td>
+                    <td class="p-4">
+                        <span class="px-2 py-1 font-semibold leading-tight text-xs rounded-full ${statusClass}">
+                            ${statusText}
+                        </span>
+                    </td>
                     <td class="p-4">
                         <button class="text-red-500 hover:text-red-700 delete-btn" data-sale-id="${sale.id}">Excluir</button>
                     </td>
@@ -862,6 +939,7 @@
             const companyName = document.getElementById('company-name').value;
             const cnpj = cnpjInput.value;
             const crm = document.getElementById('crm').value;
+            const status = document.getElementById('sale-status').value;
             
             saveConsultantName(consultantName);
 
@@ -902,6 +980,7 @@
                 companyName,
                 cnpj,
                 crm,
+                status,
                 products: JSON.stringify(productsSold),
                 totalRevenue,
                 timestamp: serverTimestamp()
