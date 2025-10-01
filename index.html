@@ -323,7 +323,7 @@
             authDomain: "calculadora-de-vendas.firebaseapp.com",
             projectId: "calculadora-de-vendas",
             storageBucket: "calculadora-de-vendas.firebasestorage.app",
-            messagingSenderId: "633108525289",
+            messagingSenderId: "633108S25289",
             appId: "1:633108525289:web:0b4147c2aa71e637aa4078"
         };
         const initialAuthToken = typeof __initial_auth_token !== 'undefined' ? __initial_auth_token : null;
@@ -491,6 +491,7 @@
         }
 
         async function deleteSale(saleId) {
+            if (!userId || !db) return;
             try {
                 const saleRef = doc(db, `artifacts/${appId}/public/data/sales`, saleId);
                 await deleteDoc(saleRef);
@@ -521,8 +522,8 @@
         async function saveConsultantName(name) {
             if (!name || !userId) return;
             try {
-                const userDocRef = doc(db, `artifacts/${appId}/users/${userId}`);
-                await setDoc(userDocRef, { consultantName: name }, { merge: true });
+                const consultantProfileRef = doc(db, `artifacts/${appId}/public/data/consultants`, userId);
+                await setDoc(consultantProfileRef, { consultantName: name }, { merge: true });
             } catch (e) {
                 console.error("Erro ao salvar o nome do consultor: ", e);
             }
@@ -531,10 +532,10 @@
         async function loadConsultantName() {
             if (!userId) return;
             try {
-                const userDocRef = doc(db, `artifacts/${appId}/users/${userId}`);
-                const userDocSnap = await getDoc(userDocRef);
-                if (userDocSnap.exists()) {
-                    consultantNameInput.value = userDocSnap.data().consultantName || '';
+                const consultantProfileRef = doc(db, `artifacts/${appId}/public/data/consultants`, userId);
+                const docSnap = await getDoc(consultantProfileRef);
+                if (docSnap.exists()) {
+                    consultantNameInput.value = docSnap.data().consultantName || '';
                 }
             } catch (e) {
                 console.error("Erro ao carregar o nome do consultor: ", e);
