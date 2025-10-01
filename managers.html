@@ -632,204 +632,42 @@
             } catch (e) { console.error("Erro ao salvar metas:", e); displayGoalsMessage("Erro ao salvar as metas.", "error"); }
         }
 
+        function setupEventListeners() {
+            authForm.addEventListener('submit', async (e) => { e.preventDefault(); const email = authEmailInput.value; const password = authPasswordInput.value; authMessageEl.style.display = 'none'; try { await signInWithEmailAndPassword(auth, email, password); } catch (e) { console.error("Erro de autenticação: ", e.message); displayAuthMessage('Falha no login. Verifique suas credenciais.', 'error'); } });
+            logoutBtn.addEventListener('click', async () => { await signOut(auth); });
+            backToDashboardBtn.addEventListener('click', () => { consultantViewSection.classList.add('hidden'); mainSection.classList.remove('hidden'); });
+            dashboardTabBtn.addEventListener('click', () => { dashboardContent.classList.remove('hidden'); goalsContent.classList.add('hidden'); productSalesContent.classList.add('hidden'); dashboardTabBtn.classList.remove('bg-gray-200', 'text-gray-800'); dashboardTabBtn.classList.add('bg-blue-600', 'text-white'); goalsTabBtn.classList.remove('bg-blue-600', 'text-white'); goalsTabBtn.classList.add('bg-gray-200', 'text-gray-800'); mainTitle.textContent = 'Painel de Gerência'; });
+            viewProductsBtn.addEventListener('click', () => { dashboardContent.classList.add('hidden'); goalsContent.classList.add('hidden'); productSalesContent.classList.remove('hidden'); });
+            backToDashboardFromProductsBtn.addEventListener('click', () => { dashboardContent.classList.remove('hidden'); goalsContent.classList.add('hidden'); productSalesContent.classList.add('hidden'); });
+            productFilterSelect.addEventListener('change', (e) => renderDailySalesChart(allSalesData, e.target.value));
+            goalsTabBtn.addEventListener('click', () => { goalsContent.classList.remove('hidden'); dashboardContent.classList.add('hidden'); productSalesContent.classList.add('hidden'); goalsTabBtn.classList.remove('bg-gray-200', 'text-gray-800'); goalsTabBtn.classList.add('bg-blue-600', 'text-white'); dashboardTabBtn.classList.remove('bg-blue-600', 'text-white'); dashboardTabBtn.classList.add('bg-gray-200', 'text-gray-800'); mainTitle.textContent = 'Gestão de Metas'; loadAndRenderGoals(); });
+            goalsMonthSelect.addEventListener('change', loadAndRenderGoals); 
+            goalsYearSelect.addEventListener('change', loadAndRenderGoals); 
+            saveGoalsBtn.addEventListener('click', saveGoals);
+        }
+
+        async function initializeFirebase() {
+            try {
+                if (Object.keys(firebaseConfig).length === 0) { displayAuthMessage("Erro: A configuração do Firebase está faltando.", "error"); console.error("Firebase config is missing."); return; }
+                app = initializeApp(firebaseConfig); auth = getAuth(app); db = getFirestore(app);
+                
+                setupEventListeners();
+
+                onAuthStateChanged(auth, async (user) => {
+                    if (user) {
+                        managerId = user.uid;
+                        const isManager = await checkManagerStatus(managerId);
+                        if (isManager) {
+                            authSection.classList.add('hidden'); mainSection.classList.remove('hidden'); dashboardContent.classList.remove('hidden'); goalsContent.classList.add('hidden'); productSalesContent.classList.add('hidden'); consultantViewSection.classList.add('hidden');
+                            listenToSalesAndConsultants(); populateGoalsSelectors(); loadAndRenderGoals();
+                        } else { await signOut(auth); displayAuthMessage('Acesso negado. Esta conta não é de um gerente.', 'error'); }
+                    } else { authSection.classList.remove('hidden'); mainSection.classList.add('hidden'); consultantViewSection.classList.add('hidden'); }
+                });
+                if (initialAuthToken) { await signInWithCustomToken(auth, initialAuthToken); }
+            } catch (e) { console.error("Erro ao inicializar Firebase: ", e); displayAuthMessage("Erro ao inicializar o aplicativo. Por favor, tente novamente.", "error"); }
+        }
+
         // --- Event Listeners ---
-        authForm.addEventListener('submit', async (e) => { e.preventDefault(); const email = authEmailInput.value; const password = authPasswordInput.value; authMessageEl.style.display = 'none'; try { await signInWithEmailAndPassword(auth, email, password); } catch (e) { console.error("Erro de autenticação: ", e.message); displayAuthMessage('Falha no login. Verifique suas credenciais.', 'error'); } });
-        logoutBtn.addEventListener('click', async () => { await signOut(auth); });
-        backToDashboardBtn.addEventListener('click', () => { consultantViewSection.classList.add('hidden'); mainSection.classList.remove('hidden'); });
-        dashboardTabBtn.addEventListener('click', () => { dashboardContent.classList.remove('hidden'); goalsContent.classList.add('hidden'); productSalesContent.classList.add('hidden'); dashboardTabBtn.classList.remove('bg-gray-200', 'text-gray-800'); dashboardTabBtn.classList.add('bg-blue-600', 'text-white'); goalsTabBtn.classList.remove('bg-blue-600', 'text-white'); goalsTabBtn.classList.add('bg-gray-200', 'text-gray-800'); mainTitle.textContent = 'Painel de Gerência'; });
-        viewProductsBtn.addEventListener('click', () => { dashboardContent.classList.add('hidden'); goalsContent.classList.add('hidden'); productSalesContent.classList.remove('hidden'); });
-        backToDashboardFromProductsBtn.addEventListener('click', () => { dashboardContent.classList.remove('hidden'); goalsContent.classList.add('hidden'); productSalesContent.classList.add('hidden'); });
-        productFilterSelect.addEventListener('change', (e) => renderDailySalesChart(allSalesData, e.target.value));
-        goalsTabBtn.addEventListener('click', () => { goalsContent.classList.remove('hidden'); dashboardContent.classList.add('hidden'); productSalesContent.classList.add('hidden'); goalsTabBtn.classList.remove('bg-gray-200', 'text-gray-800'); goalsTabBtn.classList.add('bg-blue-600', 'text-white'); dashboardTabBtn.classList.remove('bg-blue-600', 'text-white'); dashboardTabBtn.classList.add('bg-gray-200', 'text-gray-800'); mainTitle.textContent = 'Gestão de Metas'; loadAndRenderGoals(); });
-        goalsMonthSelect.addEventListener('change', loadAndRenderGoals); goalsYearSelect.addEventListener('change', loadAndRenderGoals); saveGoalsBtn.addEventListener('click', saveGoals);
         
         function renderConsultantView(consultantId, consultantName, allSales) {
-            mainSection.classList.add('hidden');
-            consultantViewSection.classList.remove('hidden');
-            consultantViewTitleEl.textContent = `Visão do Consultor: ${consultantName}`;
-
-            const sales = allSales.filter(sale => sale.consultantId === consultantId);
-
-            let totalRevenue = 0;
-            const productsSoldSummary = {};
-            let totalMigracaoSold = 0;
-            let totalAparelhosSoldValue = 0;
-
-            sales.forEach(sale => {
-                try {
-                    const saleProducts = JSON.parse(sale.products);
-                    saleProducts.forEach(p => {
-                        const productNameKey = p.name.includes('Migração') ? 'Migração' : p.name;
-                        if (productNameKey in productsSoldSummary) {
-                            productsSoldSummary[productNameKey] = (productsSoldSummary[productNameKey] || 0) + (p.quantity || 0);
-                        } else {
-                            productsSoldSummary[productNameKey] = (p.quantity || 0);
-                        }
-                        if (['Migração Up', 'Migração Mid', 'Migração Down'].includes(p.name)) {
-                            totalMigracaoSold += (p.quantity || 0);
-                        }
-                        if (p.name === 'Aparelhos (R$)') {
-                            totalAparelhosSoldValue += (p.revenue || 0);
-                        } else {
-                            totalRevenue += (p.revenue || 0);
-                        }
-                    });
-                } catch (e) {
-                    console.error("Erro ao analisar JSON de produtos na visão do consultor:", e);
-                }
-            });
-
-            productsSoldSummary['Migração'] = totalMigracaoSold;
-            productsSoldSummary['Aparelhos (R$)'] = totalAparelhosSoldValue;
-            totalRevenue += totalAparelhosSoldValue * 0.01;
-
-            let currentTier = 0;
-            const revenueGoals = goalData['Receita (R$)'];
-            
-            if (totalRevenue >= revenueGoals[0]) currentTier++;
-            if (totalRevenue >= revenueGoals[1]) currentTier++;
-            if (totalRevenue >= revenueGoals[2]) currentTier++;
-
-            productsForGoals.forEach(product => {
-                const sold = productsSoldSummary[product] || 0;
-                const goals = goalData[product] || [];
-                if (goals.length > 0 && sold >= goals[0]) currentTier++;
-                if (goals.length > 1 && sold >= goals[1]) currentTier++;
-                if (goals.length > 2 && sold >= goals[2]) currentTier++;
-            });
-            
-            let totalCommission = 0;
-            const commissionDetails = {};
-            
-            let tierIndexForCommission = currentTier;
-            if (currentTier > 0) tierIndexForCommission = currentTier - 1;
-            tierIndexForCommission = Math.min(tierIndexForCommission, commissionData['Migração Mid'].length - 1);
-
-            sales.forEach(sale => {
-                const saleProducts = JSON.parse(sale.products);
-                saleProducts.forEach(p => {
-                    const commissionRate = commissionData[p.name] ? commissionData[p.name][tierIndexForCommission] : 0;
-                    const productCommission = (p.quantity || 0) * commissionRate;
-                    
-                    if (commissionDetails[p.name]) {
-                        commissionDetails[p.name].value += productCommission;
-                        commissionDetails[p.name].quantity += (p.quantity || 0);
-                    } else {
-                        commissionDetails[p.name] = {
-                            value: productCommission,
-                            quantity: (p.quantity || 0),
-                            rate: commissionRate
-                        };
-                    }
-                });
-            });
-            
-            const revenueCommission = totalRevenue * (revenuePercentages[tierIndexForCommission] / 100);
-            commissionDetails['Receita Total'] = {
-                value: revenueCommission,
-                rate: revenuePercentages[tierIndexForCommission] + '%'
-            };
-
-            totalCommission = Object.values(commissionDetails).reduce((sum, item) => sum + item.value, 0);
-
-            individualTotalRevenueEl.textContent = `R$ ${totalRevenue.toFixed(2).replace('.', ',')}`;
-            individualEstimatedCommissionEl.textContent = `R$ ${totalCommission.toFixed(2).replace('.', ',')}`;
-            individualCurrentTierEl.textContent = `Faixa ${currentTier}`;
-            
-            let nextTierGoal = 0;
-            let progressPercentage = 0;
-            const nextRevenueGoalIndex = revenueGoals.findIndex(goal => totalRevenue < goal);
-            
-            if (nextRevenueGoalIndex !== -1) {
-                nextTierGoal = revenueGoals[nextRevenueGoalIndex];
-                progressPercentage = Math.min(100, (totalRevenue / nextTierGoal) * 100);
-                individualProgressTextEl.textContent = `Progresso para a Faixa ${currentTier + 1}:`;
-            } else {
-                progressPercentage = 100;
-                individualProgressTextEl.textContent = 'Parabéns! Você alcançou a Faixa mais alta!';
-            }
-            individualProgressFillEl.style.width = `${progressPercentage}%`;
-            individualProgressFillEl.className = `progress-fill ${progressPercentage >= 100 ? 'bg-green-500' : 'bg-blue-500'}`;
-            
-            renderIndividualCommissionDetails(commissionDetails);
-            renderIndividualRevenueGoals(totalRevenue);
-            renderIndividualProductGoals(productsSoldSummary);
-        }
-
-        function renderIndividualCommissionDetails(details) {
-            individualCommissionDetailsBodyEl.innerHTML = '';
-            const sortedKeys = Object.keys(details).sort();
-
-            sortedKeys.forEach(key => {
-                const detail = details[key];
-                const row = document.createElement('tr');
-                row.className = "border-t border-gray-200";
-                
-                let itemName = key;
-                if (detail.quantity) {
-                    itemName = `${key} (${detail.quantity})`;
-                }
-
-                row.innerHTML = `
-                    <td class="p-4">${itemName}</td>
-                    <td class="p-4">R$ ${detail.value.toFixed(2).replace('.', ',')}</td>
-                    <td class="p-4">${detail.rate}</td>
-                `;
-                individualCommissionDetailsBodyEl.appendChild(row);
-            });
-        }
-        
-        function renderIndividualRevenueGoals(totalRevenue) {
-            individualRevenueGoalsBodyEl.innerHTML = '';
-            const goals = goalData['Receita (R$)'];
-            
-            goals.forEach(goal => {
-                const isMet = totalRevenue >= goal;
-                const status = isMet ? 'Atingida' : 'Ainda não';
-                const statusClass = isMet ? 'text-green-500' : 'text-gray-500';
-                
-                const row = document.createElement('tr');
-                row.className = "border-t border-gray-200";
-                row.innerHTML = `
-                    <td class="p-4">R$ ${goal.toFixed(2).replace('.', ',')}</td>
-                    <td class="p-4 ${statusClass}">${status}</td>
-                `;
-                individualRevenueGoalsBodyEl.appendChild(row);
-            });
-        }
-
-        function renderIndividualProductGoals(productsSoldSummary) {
-            individualProductGoalsBodyEl.innerHTML = '';
-            
-            productsForGoals.forEach(product => {
-                const sold = productsSoldSummary[product] || 0;
-                const goals = goalData[product] || [0, 0, 0];
-                
-                const row = document.createElement('tr');
-                row.className = "border-t border-gray-200";
-
-                const goal75Met = sold >= goals[0];
-                const goal150Met = sold >= goals[1];
-                const goal200Met = sold >= goals[2];
-
-                let soldValue = sold;
-                if (product === 'Aparelhos (R$)') {
-                    soldValue = `R$ ${sold.toFixed(2).replace('.', ',')}`;
-                }
-
-                row.innerHTML = `
-                    <td class="p-4">${product}</td>
-                    <td class="p-4 text-center">${soldValue}</td>
-                    <td class="p-4 text-center ${goal75Met ? 'text-green-500 font-bold' : ''}">${product === 'Aparelhos (R$)' ? `R$ ${goals[0].toFixed(2).replace('.', ',')}` : goals[0]}</td>
-                    <td class="p-4 text-center ${goal150Met ? 'text-green-500 font-bold' : ''}">${product === 'Aparelhos (R$)' ? `R$ ${goals[1].toFixed(2).replace('.', ',')}` : goals[1]}</td>
-                    <td class="p-4 text-center ${goal200Met ? 'text-green-500 font-bold' : ''}">${product === 'Aparelhos (R$)' ? `R$ ${goals[2].toFixed(2).replace('.', ',')}` : goals[2]}</td>
-                `;
-                individualProductGoalsBodyEl.appendChild(row);
-            });
-        }
-        
-        window.onload = initializeFirebase;
-    </script>
-</body>
-</html>
 
