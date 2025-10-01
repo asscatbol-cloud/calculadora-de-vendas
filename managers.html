@@ -221,7 +221,100 @@
     
     <!-- Seção de Visão de Consultor (escondida por padrão) -->
     <div id="consultant-view-section" class="container hidden">
-        <!-- ... (Conteúdo inalterado) ... -->
+        <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 space-y-4 sm:space-y-0">
+            <h1 id="consultant-view-title" class="text-2xl sm:text-3xl font-bold text-gray-800"></h1>
+            <button id="back-to-dashboard-btn" class="px-4 py-2 bg-gray-600 text-white font-medium rounded-lg shadow-md hover:bg-gray-700">Voltar</button>
+        </div>
+        
+        <!-- Dashboard do Consultor -->
+        <div>
+            <h2 class="text-xl font-semibold mb-4">Seu Desempenho</h2>
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                <div class="bg-indigo-50 p-5 rounded-lg shadow-sm">
+                    <p class="text-sm font-medium text-indigo-700">Receita Total</p>
+                    <p id="individual-total-revenue" class="mt-1 text-2xl font-bold text-indigo-900">R$ 0,00</p>
+                </div>
+                <div class="bg-purple-50 p-5 rounded-lg shadow-sm">
+                    <p class="text-sm font-medium text-purple-700">Comissão Estimada</p>
+                    <p id="individual-estimated-commission" class="mt-1 text-2xl font-bold text-purple-900">R$ 0,00</p>
+                </div>
+                <div class="bg-pink-50 p-5 rounded-lg shadow-sm">
+                    <p id="individual-current-tier-text" class="text-sm font-medium text-pink-700">Sua Faixa Atual</p>
+                    <p id="individual-current-tier" class="mt-1 text-2xl font-bold text-pink-900">Faixa 0</p>
+                </div>
+            </div>
+            
+            <!-- Progresso para a Próxima Faixa -->
+            <div class="mt-6">
+                <h3 id="individual-progress-text" class="text-lg font-medium text-gray-700 mb-2"></h3>
+                <div class="progress-bar">
+                    <div id="individual-progress-fill" class="progress-fill bg-blue-500" style="width: 0%;"></div>
+                </div>
+            </div>
+        </div>
+
+        <hr class="my-6">
+
+        <!-- Detalhes da Comissão -->
+        <div class="mb-6">
+            <h2 class="text-xl font-semibold mb-4">Detalhes da Comissão</h2>
+            <div class="overflow-x-auto">
+                <table class="min-w-full text-left border-collapse">
+                    <thead>
+                        <tr class="bg-gray-200">
+                            <th class="p-4 rounded-tl-lg">Item</th>
+                            <th class="p-4">Valor</th>
+                            <th class="p-4 rounded-tr-lg">Faixa de Comissão</th>
+                        </tr>
+                    </thead>
+                    <tbody id="individual-commission-details-body">
+                        <!-- Commission details will be populated here -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <hr class="my-6">
+
+        <!-- Acompanhamento de Metas -->
+        <div class="mb-6">
+            <h3 class="text-lg font-semibold mb-4">Metas de Receita</h3>
+            <div class="overflow-x-auto">
+                <table class="w-full text-left border-collapse">
+                    <thead>
+                        <tr class="bg-gray-200">
+                            <th class="p-4 rounded-tl-lg">Meta</th>
+                            <th class="p-4 rounded-tr-lg">Status</th>
+                        </tr>
+                    </thead>
+                    <tbody id="individual-revenue-goals-body">
+                        <!-- Revenue goals will be populated here -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <hr class="my-6">
+
+        <div>
+            <h3 class="text-lg font-semibold mb-4">Metas de Produto por Faixa</h3>
+            <div class="overflow-x-auto">
+                <table class="w-full text-left border-collapse">
+                    <thead>
+                        <tr class="bg-gray-200">
+                            <th class="p-4 rounded-tl-lg">Produto</th>
+                            <th class="p-4">Vendido</th>
+                            <th class="p-4">Meta Faixa 75</th>
+                            <th class="p-4">Meta Faixa 150</th>
+                            <th class="p-4 rounded-tr-lg">Meta Faixa 200</th>
+                        </tr>
+                    </thead>
+                    <tbody id="individual-product-goals-body">
+                        <!-- Product goals will be populated here -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
     </div>
 
     <script type="module">
@@ -277,7 +370,14 @@
         // --- Elementos DOM Visão Consultor ---
         const backToDashboardBtn = document.getElementById('back-to-dashboard-btn');
         const consultantViewTitleEl = document.getElementById('consultant-view-title');
-        // ... (outros elementos da visão de consultor inalterados) ...
+        const individualTotalRevenueEl = document.getElementById('individual-total-revenue');
+        const individualEstimatedCommissionEl = document.getElementById('individual-estimated-commission');
+        const individualCurrentTierEl = document.getElementById('individual-current-tier');
+        const individualProgressTextEl = document.getElementById('individual-progress-text');
+        const individualProgressFillEl = document.getElementById('individual-progress-fill');
+        const individualCommissionDetailsBodyEl = document.getElementById('individual-commission-details-body');
+        const individualRevenueGoalsBodyEl = document.getElementById('individual-revenue-goals-body');
+        const individualProductGoalsBodyEl = document.getElementById('individual-product-goals-body');
 
         // --- Elementos DOM Gestão de Metas ---
         const goalsMonthSelect = document.getElementById('goals-month');
@@ -293,11 +393,45 @@
         let isFilterPopulated = false;
 
         // --- Dados de comissão, etc. (inalterados) ---
+        const commissionData = {
+            'Migração Up': [8, 8, 9, 10, 11, 12, 13, 14],
+            'Migração Mid': [4, 4, 5, 7, 7, 8, 9, 10],
+            'Migração Down': [2, 2, 3, 4, 5, 6, 7, 8],
+            'GPON': [20, 22, 25, 28, 31, 35, 40],
+            'Altas Portadas': [6, 8, 10, 12, 14, 16, 20],
+            'Altas Novas': [3, 4, 5, 6, 7, 8, 10],
+            'VVN': [10, 12, 14, 16, 18, 20, 22],
+            'Avançados': [15, 17, 19, 21, 23, 25, 28],
+            'Produtos de TI': [10, 11, 12, 13, 14, 15, 16],
+        };
+        const revenuePercentages = [11, 13, 16, 19, 22, 28, 35];
+        const goalData = {
+            'Receita (R$)': [750, 1500, 3000],
+            'GPON': [3, 6, 9],
+            'Altas Portadas': [5, 15, 30],
+            'Altas Novas': [5, 15, 30],
+            'Contratos (CNPJ\'s)': [1, 1.5, 2],
+            'VVN': [5, 15, 25],
+            'Aparelhos (R$)': [8000, 20000, 30000],
+            'Migração': [75, 150, 200],
+        };
+        const productsForGoals = ['Migração', 'GPON', 'Altas Portadas', 'Altas Novas', 'VVN', 'Aparelhos (R$)'];
         const goalProductsList = ['Migração', 'GPON', 'Altas Portadas', 'Altas Novas', 'VVN', 'Avançados', 'Produtos de TI'];
 
         // --- Funções de Exibição de Mensagens (inalteradas) ---
-        function displayAuthMessage(message, type) { /* ... */ }
-        function displayGoalsMessage(message, type) { /* ... */ }
+        function displayAuthMessage(message, type) {
+            authMessageEl.textContent = message;
+            authMessageEl.className = `p-4 mb-4 text-sm rounded-lg ${type === 'success' ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'}`;
+            authMessageEl.style.display = 'block';
+        }
+        function displayGoalsMessage(message, type) {
+            goalsMessageEl.textContent = message;
+            goalsMessageEl.className = `p-4 mt-4 text-sm rounded-lg ${type === 'success' ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'}`;
+            goalsMessageEl.style.display = 'block';
+            setTimeout(() => {
+                goalsMessageEl.style.display = 'none';
+            }, 5000);
+        }
 
         // --- Inicialização e Autenticação ---
         async function initializeFirebase() {
@@ -487,13 +621,68 @@
                 }
             });
 
-            // ... (Lógica de projeção individual inalterada, usa histórico completo)
+            // Adicionando projeção individual de volta
+            Object.keys(performanceMap).forEach(id => {
+                const consultantSales = sales.filter(s => s.consultantId === id);
+                const months = getPastMonths(6);
+                const consultantMonthlyRevenue = months.map(month => {
+                    return consultantSales.reduce((sum, sale) => {
+                        const saleDate = sale.timestamp ? new Date(sale.timestamp.seconds * 1000) : null;
+                        if (saleDate && saleDate.getMonth() === month.getMonth() && saleDate.getFullYear() === month.getFullYear()) {
+                            return sum + (sale.totalRevenue || 0);
+                        }
+                        return sum;
+                    }, 0);
+                });
+                
+                let growth = 0;
+                let count = 0;
+                for (let i = 1; i < consultantMonthlyRevenue.length; i++) {
+                    if (consultantMonthlyRevenue[i-1] > 0) {
+                        const growthRate = (consultantMonthlyRevenue[i] - consultantMonthlyRevenue[i-1]) / consultantMonthlyRevenue[i-1];
+                        growth += growthRate;
+                        count++;
+                    }
+                }
+                const avgGrowth = count > 0 ? growth / count : 0;
+                const lastMonthRevenue = consultantMonthlyRevenue[consultantMonthlyRevenue.length - 1] || 0;
+                performanceMap[id].projectedRevenue = lastMonthRevenue * (1 + avgGrowth);
+            });
+
 
             renderConsultantsPerformance(consultants, performanceMap, sales);
         }
 
         function renderConsultantsPerformance(consultants, performanceMap, allSalesForProjection) {
-            // ... (Lógica de renderização da tabela inalterada)
+            consultantsPerformanceBody.innerHTML = '';
+            
+            const sortedConsultants = Object.keys(performanceMap).sort((a, b) => {
+                return performanceMap[b].totalRevenue - performanceMap[a].totalRevenue;
+            });
+
+            sortedConsultants.forEach(id => {
+                const data = performanceMap[id];
+                const row = document.createElement('tr');
+                row.className = "border-t border-gray-200";
+                row.innerHTML = `
+                    <td class="p-4">${data.name}</td>
+                    <td class="p-4 text-center">${data.salesCount}</td>
+                    <td class="p-4">R$ ${data.totalRevenue.toFixed(2).replace('.', ',')}</td>
+                    <td class="p-4">R$ ${(data.projectedRevenue || 0).toFixed(2).replace('.', ',')}</td>
+                    <td class="p-4">
+                        <button class="view-details-btn text-blue-500 hover:text-blue-700" data-consultant-id="${id}" data-consultant-name="${data.name}">Ver Visão</button>
+                    </td>
+                `;
+                consultantsPerformanceBody.appendChild(row);
+            });
+
+            document.querySelectorAll('.view-details-btn').forEach(button => {
+                button.addEventListener('click', (e) => {
+                    const consultantId = e.target.getAttribute('data-consultant-id');
+                    const consultantName = e.target.getAttribute('data-consultant-name');
+                    renderConsultantView(consultantId, consultantName, allSalesForProjection);
+                });
+            });
         }
 
         // --- Lógica da Aba Comparativo Mensal ---
@@ -557,7 +746,192 @@
         async function saveGoals() { /* ... */ }
 
         // --- Funções de Visão do Consultor (inalteradas) ---
-        function renderConsultantView(consultantId, consultantName, allSales) { /* ... */ }
+        function renderConsultantView(consultantId, consultantName, allSales) {
+            mainSection.classList.add('hidden');
+            consultantViewSection.classList.remove('hidden');
+            consultantViewTitleEl.textContent = `Visão do Consultor: ${consultantName}`;
+
+            const sales = allSales.filter(sale => sale.consultantId === consultantId);
+
+            let totalRevenue = 0;
+            const productsSoldSummary = {};
+            let totalMigracaoSold = 0;
+            let totalAparelhosSoldValue = 0;
+
+            sales.forEach(sale => {
+                try {
+                    const saleProducts = JSON.parse(sale.products);
+                    saleProducts.forEach(p => {
+                        const productNameKey = p.name.includes('Migração') ? 'Migração' : p.name;
+                        if (productNameKey in productsSoldSummary) {
+                            productsSoldSummary[productNameKey] = (productsSoldSummary[productNameKey] || 0) + (p.quantity || 0);
+                        } else {
+                            productsSoldSummary[productNameKey] = (p.quantity || 0);
+                        }
+                        if (['Migração Up', 'Migração Mid', 'Migração Down'].includes(p.name)) {
+                            totalMigracaoSold += (p.quantity || 0);
+                        }
+                        if (p.name === 'Aparelhos (R$)') {
+                            totalAparelhosSoldValue += (p.revenue || 0);
+                        } else {
+                            totalRevenue += (p.revenue || 0);
+                        }
+                    });
+                } catch (e) {
+                    console.error("Erro ao analisar JSON de produtos na visão do consultor:", e);
+                }
+            });
+
+            productsSoldSummary['Migração'] = totalMigracaoSold;
+            productsSoldSummary['Aparelhos (R$)'] = totalAparelhosSoldValue;
+            totalRevenue += totalAparelhosSoldValue * 0.01;
+
+            let currentTier = 0;
+            const revenueGoals = goalData['Receita (R$)'];
+            
+            if (totalRevenue >= revenueGoals[0]) currentTier++;
+            if (totalRevenue >= revenueGoals[1]) currentTier++;
+            if (totalRevenue >= revenueGoals[2]) currentTier++;
+
+            productsForGoals.forEach(product => {
+                const sold = productsSoldSummary[product] || 0;
+                const goals = goalData[product] || [];
+                if (goals.length > 0 && sold >= goals[0]) currentTier++;
+                if (goals.length > 1 && sold >= goals[1]) currentTier++;
+                if (goals.length > 2 && sold >= goals[2]) currentTier++;
+            });
+            
+            let totalCommission = 0;
+            const commissionDetails = {};
+            
+            let tierIndexForCommission = currentTier;
+            if (currentTier > 0) tierIndexForCommission = currentTier - 1;
+            tierIndexForCommission = Math.min(tierIndexForCommission, commissionData['Migração Mid'].length - 1);
+
+            sales.forEach(sale => {
+                const saleProducts = JSON.parse(sale.products);
+                saleProducts.forEach(p => {
+                    const commissionRate = commissionData[p.name] ? commissionData[p.name][tierIndexForCommission] : 0;
+                    const productCommission = (p.quantity || 0) * commissionRate;
+                    
+                    if (commissionDetails[p.name]) {
+                        commissionDetails[p.name].value += productCommission;
+                        commissionDetails[p.name].quantity += (p.quantity || 0);
+                    } else {
+                        commissionDetails[p.name] = {
+                            value: productCommission,
+                            quantity: (p.quantity || 0),
+                            rate: commissionRate
+                        };
+                    }
+                });
+            });
+            
+            const revenueCommission = totalRevenue * (revenuePercentages[tierIndexForCommission] / 100);
+            commissionDetails['Receita Total'] = {
+                value: revenueCommission,
+                rate: revenuePercentages[tierIndexForCommission] + '%'
+            };
+
+            totalCommission = Object.values(commissionDetails).reduce((sum, item) => sum + item.value, 0);
+
+            // Renderiza os elementos
+            individualTotalRevenueEl.textContent = `R$ ${totalRevenue.toFixed(2).replace('.', ',')}`;
+            individualEstimatedCommissionEl.textContent = `R$ ${totalCommission.toFixed(2).replace('.', ',')}`;
+            individualCurrentTierEl.textContent = `Faixa ${currentTier}`;
+            
+            let nextTierGoal = 0;
+            let progressPercentage = 0;
+            const nextRevenueGoalIndex = revenueGoals.findIndex(goal => totalRevenue < goal);
+            
+            if (nextRevenueGoalIndex !== -1) {
+                nextTierGoal = revenueGoals[nextRevenueGoalIndex];
+                progressPercentage = Math.min(100, (totalRevenue / nextTierGoal) * 100);
+                individualProgressTextEl.textContent = `Progresso para a Faixa ${currentTier + 1}:`;
+            } else {
+                progressPercentage = 100;
+                individualProgressTextEl.textContent = 'Parabéns! Você alcançou a Faixa mais alta!';
+            }
+            individualProgressFillEl.style.width = `${progressPercentage}%`;
+            individualProgressFillEl.className = `progress-fill ${progressPercentage >= 100 ? 'bg-green-500' : 'bg-blue-500'}`;
+            
+            renderIndividualCommissionDetails(commissionDetails);
+            renderIndividualRevenueGoals(totalRevenue);
+            renderIndividualProductGoals(productsSoldSummary);
+        }
+
+        function renderIndividualCommissionDetails(details) {
+            individualCommissionDetailsBodyEl.innerHTML = '';
+            
+            const sortedKeys = Object.keys(details).sort();
+
+            sortedKeys.forEach(key => {
+                const detail = details[key];
+                const row = document.createElement('tr');
+                row.className = "border-t border-gray-200";
+                
+                let itemName = key;
+                if (detail.quantity) {
+                    itemName = `${key} (${detail.quantity})`;
+                }
+
+                row.innerHTML = `
+                    <td class="p-4">${itemName}</td>
+                    <td class="p-4">R$ ${detail.value.toFixed(2).replace('.', ',')}</td>
+                    <td class="p-4">${detail.rate}</td>
+                `;
+                individualCommissionDetailsBodyEl.appendChild(row);
+            });
+        }
+        
+        function renderIndividualRevenueGoals(totalRevenue) {
+            individualRevenueGoalsBodyEl.innerHTML = '';
+            const goals = goalData['Receita (R$)'];
+            
+            goals.forEach(goal => {
+                const isMet = totalRevenue >= goal;
+                const status = isMet ? 'Atingida' : 'Ainda não';
+                const statusClass = isMet ? 'text-green-500' : 'text-gray-500';
+                
+                const row = document.createElement('tr');
+                row.className = "border-t border-gray-200";
+                row.innerHTML = `
+                    <td class="p-4">R$ ${goal.toFixed(2).replace('.', ',')}</td>
+                    <td class="p-4 ${statusClass}">${status}</td>
+                `;
+                individualRevenueGoalsBodyEl.appendChild(row);
+            });
+        }
+
+        function renderIndividualProductGoals(productsSoldSummary) {
+            individualProductGoalsBodyEl.innerHTML = '';
+            
+            productsForGoals.forEach(product => {
+                const sold = productsSoldSummary[product] || 0;
+                const goals = goalData[product] || [0, 0, 0];
+                
+                const row = document.createElement('tr');
+                row.className = "border-t border-gray-200";
+
+                const goal75Met = sold >= goals[0];
+                const goal150Met = sold >= goals[1];
+                const goal200Met = sold >= goals[2];
+
+                let soldValue = sold;
+                if (product === 'Aparelhos (R$)') {
+                    soldValue = `R$ ${sold.toFixed(2).replace('.', ',')}`;
+                }
+
+                row.innerHTML = `
+                    <td class="p-4">${product}</td>
+                    <td class="p-4 text-center">${soldValue}</td>
+                    <td class="p-4 text-center ${goal75Met ? 'text-green-500 font-bold' : ''}">${product === 'Aparelhos (R$)' ? `R$ ${goals[0].toFixed(2).replace('.', ',')}` : goals[0]}</td>
+                    <td class="p-4 text-center ${goal150Met ? 'text-green-500 font-bold' : ''}">${product === 'Aparelhos (R$)' ? `R$ ${goals[1].toFixed(2).replace('.', ',')}` : goals[1]}</td>
+                    <td class="p-4 text-center ${goal200Met ? 'text-green-500 font-bold' : ''}">${product === 'Aparelhos (R$)' ? `R$ ${goals[2].toFixed(2).replace('.', ',')}` : goals[2]}</td>
+                `;
+                individualProductGoalsBodyEl.appendChild(row);
+            });
+        }
 
         // --- Navegação por Abas ---
         function showTab(tabName) {
@@ -595,19 +969,11 @@
         });
 
         logoutBtn.addEventListener('click', async () => await signOut(auth));
-        backToDashboardBtn.addEventListener('click', () => { /* ... */ });
+        backToDashboardBtn.addEventListener('click', () => {
+            consultantViewSection.classList.add('hidden');
+            mainSection.classList.remove('hidden');
+        });
 
         dashboardTabBtn.addEventListener('click', () => showTab('dashboard'));
         goalsTabBtn.addEventListener('click', () => showTab('goals'));
-        comparisonTabBtn.addEventListener('click', () => showTab('comparison'));
-        
-        dailyProductFilter.addEventListener('change', () => updateDashboard(allSalesData, allConsultantsData));
 
-        goalsMonthSelect.addEventListener('change', loadAndRenderGoals);
-        goalsYearSelect.addEventListener('change', loadAndRenderGoals);
-        saveGoalsBtn.addEventListener('click', saveGoals);
-
-        window.onload = initializeFirebase;
-    </script>
-</body>
-</html>
