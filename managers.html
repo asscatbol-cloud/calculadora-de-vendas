@@ -303,13 +303,51 @@
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
         import { getAuth, signInWithEmailAndPassword, onAuthStateChanged, signOut, signInWithCustomToken } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import { getFirestore, collection, onSnapshot, query, where, getDocs, doc, getDoc, setDoc } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+        
+        // Variáveis globais fornecidas pelo ambiente
+        const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
+        const firebaseConfig = typeof __firebase_config !== 'undefined' ? JSON.parse(__firebase_config) : {
+            apiKey: "AIzaSyC293ALvoMmnm6ygd-t9FecegMjln9lEkc",
+            authDomain: "calculadora-de-vendas.firebaseapp.com",
+            projectId: "calculadora-de-vendas",
+            storageBucket: "calculadora-de-vendas.firebasestorage.app",
+            messagingSenderId: "633108525289",
+            appId: "1:633108525289:web:0b4147c2aa71e637aa4078"
+        };
+        const initialAuthToken = typeof __initial_auth_token !== 'undefined' ? __initial_auth_token : null;
+        
+        let app, db, auth, managerId;
+        
+        // Elementos DOM
+        const authSection = document.getElementById('auth-section');
+        const mainSection = document.getElementById('main-section');
+        const dashboardContent = document.getElementById('dashboard-content');
+        const goalsContent = document.getElementById('goals-content');
+        const productSalesContent = document.getElementById('product-sales-content');
+        const consultantViewSection = document.getElementById('consultant-view-section');
+        const authForm = document.getElementById('auth-form');
+        const authEmailInput = document.getElementById('auth-email');
+        const authPasswordInput = document.getElementById('auth-password');
+        const authMessageEl = document.getElementById('auth-message');
+        const logoutBtn = document.getElementById('logout-btn');
+        const consultantsPerformanceBody = document.getElementById('consultants-performance-body');
+        const backToDashboardBtn = document.getElementById('back-to-dashboard-btn');
+        const consultantViewTitleEl = document.getElementById('consultant-view-title');
+        const dashboardTabBtn = document.getElementById('dashboard-tab-btn');
+        const goalsTabBtn = document.getElementById('goals-tab-btn');
         const mainTitle = document.getElementById('main-title');
         const viewProductsBtn = document.getElementById('view-products-btn');
         const backToDashboardFromProductsBtn = document.getElementById('back-to-dashboard-from-products-btn');
         
         // Elementos dos Cards
         const totalSalesCurrentEl = document.getElementById('total-sales-current');
-// ... existing code ... -->
+        const totalSalesPreviousEl = document.getElementById('total-sales-previous');
+        const totalRevenueCurrentEl = document.getElementById('total-revenue-current');
+        const totalRevenuePreviousEl = document.getElementById('total-revenue-previous');
+        const projectedTeamRevenueEl = document.getElementById('projected-team-revenue');
+
+        // Elementos da Tabela de Vendas de Produtos
         const productSalesTableBody = document.getElementById('product-sales-table-body');
 
         // Elementos do Gráfico de Vendas Diárias
@@ -335,7 +373,273 @@
         // --- Gráficos e Dados ---
         let collectiveChart, productsSoldChart, dailySalesChart;
         let allSalesData = [];
-// ... existing code ... -->
+        let allConsultantsData = [];
+        const currentGoals = {};
+
+        // Dados de comissão, receita e metas
+        const commissionData = { 'Migração Up': [8, 8, 9, 10, 11, 12, 13, 14], 'Migração Mid': [4, 4, 5, 7, 7, 8, 9, 10], 'Migração Down': [2, 2, 3, 4, 5, 6, 7, 8], 'GPON': [20, 22, 25, 28, 31, 35, 40], 'Altas Portadas': [6, 8, 10, 12, 14, 16, 20], 'Altas Novas': [3, 4, 5, 6, 7, 8, 10], 'VVN': [10, 12, 14, 16, 18, 20, 22], 'Avançados': [15, 17, 19, 21, 23, 25, 28], 'Produtos de TI': [10, 11, 12, 13, 14, 15, 16], };
+        const revenuePercentages = [11, 13, 16, 19, 22, 28, 35];
+        const goalData = { 'Receita (R$)': [750, 1500, 3000], 'GPON': [3, 6, 9], 'Altas Portadas': [5, 15, 30], 'Altas Novas': [5, 15, 30], 'Contratos (CNPJ\'s)': [1, 1.5, 2], 'VVN': [5, 15, 25], 'Aparelhos (R$)': [8000, 20000, 30000], 'Migração': [75, 150, 200], };
+        const productsForGoals = ['Migração', 'GPON', 'Altas Portadas', 'Altas Novas', 'VVN', 'Aparelhos (R$)'];
+        const goalProductsList = ['Migração', 'GPON', 'Altas Portadas', 'Altas Novas', 'VVN', 'Avançados', 'Produtos de TI'];
+
+
+        function displayAuthMessage(message, type) { authMessageEl.textContent = message; authMessageEl.className = `p-4 mb-4 text-sm rounded-lg ${type === 'success' ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'}`; authMessageEl.style.display = 'block'; }
+        function displayGoalsMessage(message, type) { goalsMessageEl.textContent = message; goalsMessageEl.className = `p-4 mt-4 text-sm rounded-lg ${type === 'success' ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'}`; goalsMessageEl.style.display = 'block'; setTimeout(() => { goalsMessageEl.style.display = 'none'; }, 5000); }
+
+        async function initializeFirebase() {
+            try {
+                if (Object.keys(firebaseConfig).length === 0) { displayAuthMessage("Erro: A configuração do Firebase está faltando.", "error"); console.error("Firebase config is missing."); return; }
+                app = initializeApp(firebaseConfig); auth = getAuth(app); db = getFirestore(app);
+                onAuthStateChanged(auth, async (user) => {
+                    if (user) {
+                        managerId = user.uid;
+                        const isManager = await checkManagerStatus(managerId);
+                        if (isManager) {
+                            authSection.classList.add('hidden'); mainSection.classList.remove('hidden'); dashboardContent.classList.remove('hidden'); goalsContent.classList.add('hidden'); productSalesContent.classList.add('hidden'); consultantViewSection.classList.add('hidden');
+                            listenToSalesAndConsultants(); populateGoalsSelectors(); loadAndRenderGoals();
+                        } else { await signOut(auth); displayAuthMessage('Acesso negado. Esta conta não é de um gerente.', 'error'); }
+                    } else { authSection.classList.remove('hidden'); mainSection.classList.add('hidden'); consultantViewSection.classList.add('hidden'); }
+                });
+                if (initialAuthToken) { await signInWithCustomToken(auth, initialAuthToken); }
+            } catch (e) { console.error("Erro ao inicializar Firebase: ", e); displayAuthMessage("Erro ao inicializar o aplicativo. Por favor, tente novamente.", "error"); }
+        }
+
+        async function checkManagerStatus(uid) { if (!db) return false; try { const managerRef = doc(db, `artifacts/${appId}/managers`, uid); const docSnap = await getDoc(managerRef); return docSnap.exists(); } catch (e) { console.error("Erro ao verificar status de gerente: ", e); return false; } }
+
+        function listenToSalesAndConsultants() {
+            if (!db) return;
+            const salesRef = collection(db, `artifacts/${appId}/public/data/sales`);
+            onSnapshot(salesRef, (snapshot) => { allSalesData = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })); updateDashboard(allSalesData, allConsultantsData); }, (error) => { console.error("Erro ao ouvir vendas: ", error); });
+            const consultantsRef = collection(db, `artifacts/${appId}/users`);
+            onSnapshot(consultantsRef, (snapshot) => { allConsultantsData = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })); updateDashboard(allSalesData, allConsultantsData); }, (error) => { console.error("Erro ao ouvir perfis de consultores: ", error); });
+        }
+        
+        function updateDashboard(sales, consultants) {
+            const today = new Date();
+            const currentMonth = today.getMonth(); const currentYear = today.getFullYear();
+            const previousMonth = currentMonth === 0 ? 11 : currentMonth - 1;
+            const previousMonthYear = currentMonth === 0 ? currentYear - 1 : currentYear;
+
+            const currentMonthSales = sales.filter(s => { const d = s.timestamp?.seconds ? new Date(s.timestamp.seconds * 1000) : null; return d && d.getMonth() === currentMonth && d.getFullYear() === currentYear; });
+            const previousMonthSales = sales.filter(s => { const d = s.timestamp?.seconds ? new Date(s.timestamp.seconds * 1000) : null; return d && d.getMonth() === previousMonth && d.getFullYear() === previousMonthYear; });
+            
+            const totalRevenueCurrent = currentMonthSales.reduce((sum, sale) => sum + (sale.totalRevenue || 0), 0);
+            const totalRevenuePrevious = previousMonthSales.reduce((sum, sale) => sum + (sale.totalRevenue || 0), 0);
+
+            totalSalesCurrentEl.textContent = currentMonthSales.length;
+            totalSalesPreviousEl.textContent = previousMonthSales.length;
+            totalRevenueCurrentEl.textContent = `R$ ${totalRevenueCurrent.toFixed(2).replace('.', ',')}`;
+            totalRevenuePreviousEl.textContent = `R$ ${totalRevenuePrevious.toFixed(2).replace('.', ',')}`;
+
+            renderCollectiveChart(sales);
+            renderProductsSoldChart(currentMonthSales);
+            populateProductFilter(sales);
+            renderDailySalesChart(sales);
+            calculateAndDisplayProjections(sales, consultants);
+            renderProductSalesTable(currentMonthSales, previousMonthSales);
+        }
+
+        function populateProductFilter(sales) {
+            const productSet = new Set(['Todos']);
+            sales.forEach(sale => { try { const prods = JSON.parse(sale.products); prods.forEach(p => productSet.add(p.name)); } catch(e) {} });
+            productFilterSelect.innerHTML = '';
+            productSet.forEach(product => { const option = document.createElement('option'); option.value = product; option.textContent = product; productFilterSelect.appendChild(option); });
+        }
+
+        function renderDailySalesChart(sales, selectedProduct = 'Todos') {
+            const today = new Date();
+            const currentMonth = today.getMonth(); const currentYear = today.getFullYear();
+            const previousMonth = currentMonth === 0 ? 11 : currentMonth - 1;
+            const previousMonthYear = currentMonth === 0 ? currentYear - 1 : currentYear;
+            const daysInCurrentMonth = new Date(currentYear, currentMonth + 1, 0).getDate();
+            const labels = Array.from({ length: daysInCurrentMonth }, (_, i) => i + 1);
+
+            const currentMonthData = new Array(daysInCurrentMonth).fill(0);
+            const previousMonthData = new Array(daysInCurrentMonth).fill(0);
+
+            const filterSales = (saleSet, dataArray, month, year) => {
+                saleSet.forEach(sale => {
+                    const saleDate = sale.timestamp?.seconds ? new Date(sale.timestamp.seconds * 1000) : null;
+                    if (saleDate && saleDate.getMonth() === month && saleDate.getFullYear() === year) {
+                        try {
+                            const products = JSON.parse(sale.products);
+                            products.forEach(p => {
+                                if (selectedProduct === 'Todos' || p.name === selectedProduct) {
+                                    dataArray[saleDate.getDate() - 1] += (p.quantity || 0);
+                                }
+                            });
+                        } catch (e) {}
+                    }
+                });
+            };
+
+            filterSales(sales, currentMonthData, currentMonth, currentYear);
+            filterSales(sales, previousMonthData, previousMonth, previousMonthYear);
+            
+            if (dailySalesChart) { dailySalesChart.destroy(); }
+            const ctx = document.getElementById('daily-sales-chart').getContext('2d');
+            dailySalesChart = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: labels,
+                    datasets: [
+                        { label: `Mês Atual (${selectedProduct})`, data: currentMonthData, backgroundColor: 'rgba(54, 162, 235, 0.6)', borderColor: 'rgba(54, 162, 235, 1)', borderWidth: 1 },
+                        { label: `Mês Anterior (${selectedProduct})`, data: previousMonthData, backgroundColor: 'rgba(255, 99, 132, 0.6)', borderColor: 'rgba(255, 99, 132, 1)', borderWidth: 1 }
+                    ]
+                },
+                options: { responsive: true, maintainAspectRatio: false, scales: { y: { beginAtZero: true, title: { display: true, text: 'Quantidade Vendida' } }, x: { title: { display: true, text: 'Dia do Mês' } } } }
+            });
+        }
+
+        function getPastMonths(count) { const months = []; const today = new Date(); for (let i = count - 1; i >= 0; i--) { const d = new Date(today.getFullYear(), today.getMonth() - i, 1); months.push(d); } return months; }
+        
+        function calculateAndDisplayProjections(sales, consultants) {
+            const months = getPastMonths(6);
+            const teamMonthlyRevenue = months.map(month => sales.reduce((sum, sale) => { const saleDate = sale.timestamp ? new Date(sale.timestamp.seconds * 1000) : null; if (saleDate && saleDate.getMonth() === month.getMonth() && saleDate.getFullYear() === month.getFullYear()) { return sum + (sale.totalRevenue || 0); } return sum; }, 0));
+            
+            let totalGrowth = 0; let countGrowth = 0;
+            for (let i = 1; i < teamMonthlyRevenue.length; i++) { if (teamMonthlyRevenue[i-1] > 0) { const growthRate = (teamMonthlyRevenue[i] - teamMonthlyRevenue[i-1]) / teamMonthlyRevenue[i-1]; totalGrowth += growthRate; countGrowth++; } }
+            const averageGrowth = countGrowth > 0 ? totalGrowth / countGrowth : 0;
+            const lastMonthRevenue = teamMonthlyRevenue[teamMonthlyRevenue.length - 1];
+            const projectedTeamRevenue = lastMonthRevenue * (1 + averageGrowth);
+            projectedTeamRevenueEl.textContent = `R$ ${projectedTeamRevenue.toFixed(2).replace('.', ',')}`;
+
+            const performanceMap = {};
+            consultants.forEach(c => { performanceMap[c.id] = { name: c.consultantName || 'Consultor sem nome', salesCount: 0, totalRevenue: 0, monthlyRevenue: {} }; });
+
+            sales.forEach(sale => {
+                const consultantId = sale.consultantId;
+                const saleDate = sale.timestamp ? new Date(sale.timestamp.seconds * 1000) : null;
+                if (consultantId && performanceMap[consultantId] && saleDate) {
+                    const monthKey = `${saleDate.getFullYear()}-${saleDate.getMonth()}`;
+                    if (!performanceMap[consultantId].monthlyRevenue[monthKey]) { performanceMap[consultantId].monthlyRevenue[monthKey] = 0; }
+                    performanceMap[consultantId].salesCount++;
+                    performanceMap[consultantId].totalRevenue += sale.totalRevenue || 0;
+                    performanceMap[consultantId].monthlyRevenue[monthKey] += sale.totalRevenue || 0;
+                }
+            });
+
+            Object.keys(performanceMap).forEach(id => {
+                const consultantMonthlyRevenue = months.map(month => { const monthKey = `${month.getFullYear()}-${month.getMonth()}`; return performanceMap[id].monthlyRevenue[monthKey] || 0; });
+                let growth = 0; let count = 0;
+                for (let i = 1; i < consultantMonthlyRevenue.length; i++) { if (consultantMonthlyRevenue[i-1] > 0) { const growthRate = (consultantMonthlyRevenue[i] - consultantMonthlyRevenue[i-1]) / consultantMonthlyRevenue[i-1]; growth += growthRate; count++; } }
+                const avgGrowth = count > 0 ? growth / count : 0;
+                const lastMonthRevenue = consultantMonthlyRevenue[consultantMonthlyRevenue.length - 1];
+                performanceMap[id].projectedRevenue = lastMonthRevenue * (1 + avgGrowth);
+            });
+
+            renderConsultantsPerformance(sales, consultants, performanceMap);
+        }
+
+        function renderProductsSoldChart(sales) {
+            const productCategories = {};
+            sales.forEach(sale => { try { const saleProducts = JSON.parse(sale.products); saleProducts.forEach(p => { const productName = p.name || 'Desconhecido'; productCategories[productName] = (productCategories[productName] || 0) + (p.quantity || 0); }); } catch (e) {} });
+            
+            const productNames = Object.keys(productCategories);
+            const productQuantities = Object.values(productCategories);
+            if (productsSoldChart) { productsSoldChart.destroy(); }
+            const ctx = document.getElementById('products-sold-chart').getContext('2d');
+            productsSoldChart = new Chart(ctx, { type: 'doughnut', data: { labels: productNames, datasets: [{ label: 'Quantidade Vendida', data: productQuantities, backgroundColor: [ 'rgba(255, 99, 132, 0.6)', 'rgba(54, 162, 235, 0.6)', 'rgba(255, 206, 86, 0.6)', 'rgba(75, 192, 192, 0.6)', 'rgba(153, 102, 255, 0.6)', 'rgba(255, 159, 64, 0.6)', 'rgba(199, 199, 199, 0.6)' ], borderWidth: 1 }] }, options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'top' } } } });
+        }
+        
+        function renderCollectiveChart(sales) {
+            const months = getPastMonths(6);
+            const monthlyRevenue = months.map(month => sales.reduce((sum, sale) => { const saleDate = sale.timestamp ? new Date(sale.timestamp.seconds * 1000) : null; if (saleDate && saleDate.getMonth() === month.getMonth() && saleDate.getFullYear() === month.getFullYear()) { return sum + (sale.totalRevenue || 0); } return sum; }, 0));
+            if (collectiveChart) { collectiveChart.destroy(); }
+            const ctx = document.getElementById('collective-sales-chart').getContext('2d');
+            collectiveChart = new Chart(ctx, { type: 'bar', data: { labels: months.map(m => m.toLocaleString('pt-BR', { month: 'short', year: 'numeric' })), datasets: [{ label: 'Receita Total da Equipe (R$)', data: monthlyRevenue, backgroundColor: 'rgba(75, 192, 192, 0.6)', borderColor: 'rgba(75, 192, 192, 1)', borderWidth: 1 }] }, options: { responsive: true, maintainAspectRatio: false, scales: { y: { beginAtZero: true, title: { display: true, text: 'Receita (R$)' } } } } });
+        }
+
+        function renderConsultantsPerformance(sales, consultants, performanceMap) {
+            consultantsPerformanceBody.innerHTML = '';
+            const sortedConsultants = Object.keys(performanceMap).sort((a, b) => performanceMap[b].totalRevenue - performanceMap[a].totalRevenue);
+            sortedConsultants.forEach(id => {
+                const data = performanceMap[id];
+                const row = document.createElement('tr');
+                row.className = "border-t border-gray-200";
+                row.innerHTML = `<td class="p-4">${data.name}</td><td class="p-4 text-center">${data.salesCount}</td><td class="p-4">R$ ${data.totalRevenue.toFixed(2).replace('.', ',')}</td><td class="p-4">R$ ${data.projectedRevenue.toFixed(2).replace('.', ',')}</td><td class="p-4"><button class="view-details-btn text-blue-500 hover:text-blue-700" data-consultant-id="${id}" data-consultant-name="${data.name}">Ver Visão</button></td>`;
+                consultantsPerformanceBody.appendChild(row);
+            });
+            document.querySelectorAll('.view-details-btn').forEach(button => { button.addEventListener('click', (e) => { const consultantId = e.target.getAttribute('data-consultant-id'); const consultantName = e.target.getAttribute('data-consultant-name'); renderConsultantView(consultantId, consultantName, sales); }); });
+        }
+
+        function renderProductSalesTable(currentMonthSales, previousMonthSales) {
+            const products = {};
+            const processSales = (sales, period) => {
+                sales.forEach(sale => { try { const prods = JSON.parse(sale.products); prods.forEach(p => { if (!products[p.name]) { products[p.name] = { current: 0, previous: 0 }; } products[p.name][period] += (p.quantity || 0); }); } catch(e) {} });
+            };
+            processSales(currentMonthSales, 'current');
+            processSales(previousMonthSales, 'previous');
+            
+            productSalesTableBody.innerHTML = '';
+            Object.keys(products).sort().forEach(productName => {
+                const data = products[productName];
+                const row = document.createElement('tr');
+                row.className = "border-t border-gray-200";
+                row.innerHTML = `<td class="p-4 font-medium">${productName}</td><td class="p-4 text-center">${data.current}</td><td class="p-4 text-center">${data.previous}</td>`;
+                productSalesTableBody.appendChild(row);
+            });
+        }
+
+        function populateGoalsSelectors() {
+            const today = new Date(); const months = ['Janeiro', 'Fevereiro', 'Março', 'Abril', 'Maio', 'Junho', 'Julho', 'Agosto', 'Setembro', 'Outubro', 'Novembro', 'Dezembro'];
+            months.forEach((month, index) => { const option = document.createElement('option'); option.value = index + 1; option.textContent = month; if (index === today.getMonth()) { option.selected = true; } goalsMonthSelect.appendChild(option); });
+            const currentYear = today.getFullYear();
+            for (let i = 0; i < 5; i++) { const year = currentYear + i; const option = document.createElement('option'); option.value = year; option.textContent = year; if (i === 0) { option.selected = true; } goalsYearSelect.appendChild(option); }
+        }
+
+        async function loadAndRenderGoals() {
+            if (!managerId) return;
+            const month = parseInt(goalsMonthSelect.value); const year = parseInt(goalsYearSelect.value);
+            const goalDocId = `${year}-${month}`;
+            let salesSummary = {};
+            const salesInPeriod = allSalesData.filter(sale => { const d = sale.timestamp?.seconds ? new Date(sale.timestamp.seconds * 1000) : null; return d && d.getMonth() + 1 === month && d.getFullYear() === year; });
+            salesInPeriod.forEach(sale => { try { const prods = JSON.parse(sale.products); prods.forEach(p => { const pName = p.name.includes('Migração') ? 'Migração' : p.name; salesSummary[pName] = (salesSummary[pName] || 0) + (p.quantity || 0); }); } catch (e) {} });
+
+            try {
+                const goalsRef = doc(db, `artifacts/${appId}/managers/${managerId}/manager_goals`, goalDocId);
+                const goalsSnap = await getDoc(goalsRef);
+                if (goalsSnap.exists()) { Object.assign(currentGoals, goalsSnap.data().goals); } else { Object.keys(currentGoals).forEach(key => delete currentGoals[key]); }
+            } catch (e) { console.error("Erro ao carregar metas:", e); displayGoalsMessage("Erro ao carregar as metas.", "error"); }
+            renderGoalsTable(salesSummary);
+        }
+
+        function renderGoalsTable(salesSummary) {
+            goalsTableBody.innerHTML = '';
+            goalProductsList.forEach(product => {
+                const currentGoal = currentGoals[product] || 0;
+                const effective = salesSummary[product] || 0;
+                const missing = Math.max(0, currentGoal - effective);
+                const row = document.createElement('tr');
+                row.className = "border-t border-gray-200";
+                row.innerHTML = `<td class="p-4">${product}</td><td class="p-4"><input type="number" data-product="${product}" value="${currentGoal}" min="0" class="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"></td><td class="p-4 text-center">${effective}</td><td class="p-4 text-center">${missing}</td>`;
+                goalsTableBody.appendChild(row);
+            });
+        }
+
+        async function saveGoals() {
+            if (!managerId) return;
+            const month = goalsMonthSelect.value; const year = goalsYearSelect.value;
+            const goalDocId = `${year}-${month}`;
+            const inputs = goalsTableBody.querySelectorAll('input');
+            const newGoals = {};
+            inputs.forEach(input => { newGoals[input.getAttribute('data-product')] = parseInt(input.value, 10) || 0; });
+            try {
+                const goalsRef = doc(db, `artifacts/${appId}/managers/${managerId}/manager_goals`, goalDocId);
+                await setDoc(goalsRef, { goals: newGoals });
+                displayGoalsMessage("Metas salvas com sucesso!", "success");
+            } catch (e) { console.error("Erro ao salvar metas:", e); displayGoalsMessage("Erro ao salvar as metas.", "error"); }
+        }
+
+        // --- Event Listeners ---
+        authForm.addEventListener('submit', async (e) => { e.preventDefault(); const email = authEmailInput.value; const password = authPasswordInput.value; authMessageEl.style.display = 'none'; try { await signInWithEmailAndPassword(auth, email, password); } catch (e) { console.error("Erro de autenticação: ", e.message); displayAuthMessage('Falha no login. Verifique suas credenciais.', 'error'); } });
+        logoutBtn.addEventListener('click', async () => { await signOut(auth); });
+        backToDashboardBtn.addEventListener('click', () => { consultantViewSection.classList.add('hidden'); mainSection.classList.remove('hidden'); });
+        dashboardTabBtn.addEventListener('click', () => { dashboardContent.classList.remove('hidden'); goalsContent.classList.add('hidden'); productSalesContent.classList.add('hidden'); dashboardTabBtn.classList.remove('bg-gray-200', 'text-gray-800'); dashboardTabBtn.classList.add('bg-blue-600', 'text-white'); goalsTabBtn.classList.remove('bg-blue-600', 'text-white'); goalsTabBtn.classList.add('bg-gray-200', 'text-gray-800'); mainTitle.textContent = 'Painel de Gerência'; });
+        viewProductsBtn.addEventListener('click', () => { dashboardContent.classList.add('hidden'); goalsContent.classList.add('hidden'); productSalesContent.classList.remove('hidden'); });
+        backToDashboardFromProductsBtn.addEventListener('click', () => { dashboardContent.classList.remove('hidden'); goalsContent.classList.add('hidden'); productSalesContent.classList.add('hidden'); });
+        productFilterSelect.addEventListener('change', (e) => renderDailySalesChart(allSalesData, e.target.value));
         goalsTabBtn.addEventListener('click', () => { goalsContent.classList.remove('hidden'); dashboardContent.classList.add('hidden'); productSalesContent.classList.add('hidden'); goalsTabBtn.classList.remove('bg-gray-200', 'text-gray-800'); goalsTabBtn.classList.add('bg-blue-600', 'text-white'); dashboardTabBtn.classList.remove('bg-blue-600', 'text-white'); dashboardTabBtn.classList.add('bg-gray-200', 'text-gray-800'); mainTitle.textContent = 'Gestão de Metas'; loadAndRenderGoals(); });
         goalsMonthSelect.addEventListener('change', loadAndRenderGoals); goalsYearSelect.addEventListener('change', loadAndRenderGoals); saveGoalsBtn.addEventListener('click', saveGoals);
         
@@ -528,6 +832,4 @@
     </script>
 </body>
 </html>
-
-
 
