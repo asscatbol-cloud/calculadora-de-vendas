@@ -302,7 +302,7 @@
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
-// ... existing code ... -->
+        import { getAuth, signInWithEmailAndPassword, onAuthStateChanged, signOut, signInWithCustomToken } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
         const mainTitle = document.getElementById('main-title');
         const viewProductsBtn = document.getElementById('view-products-btn');
         const backToDashboardFromProductsBtn = document.getElementById('back-to-dashboard-from-products-btn');
@@ -528,4 +528,6 @@
     </script>
 </body>
 </html>
+
+
 
