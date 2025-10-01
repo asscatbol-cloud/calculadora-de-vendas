@@ -1,1034 +1,1060 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Calculadora de Vendas Avançada</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <style>
-        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
-        body {
-            font-family: 'Inter', sans-serif;
-            background-color: #f3f4f6;
-            color: #1f2937;
-        }
-        .container {
-            max-width: 1000px;
-            margin: 2rem auto;
-            padding: 2rem;
-            background-color: #ffffff;
-            border-radius: 12px;
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-        }
-        .progress-bar {
-            height: 1.5rem;
-            background-color: #e5e7eb;
-            border-radius: 9999px;
-            overflow: hidden;
-        }
-        .progress-fill {
-            height: 100%;
-            border-radius: 9999px;
-            transition: width 0.5s ease-in-out;
-        }
-        /* Spinner */
-        .spinner {
-            border: 4px solid #f3f3f3;
-            border-top: 4px solid #3498db;
-            border-radius: 50%;
-            width: 24px;
-            height: 24px;
-            animation: spin 1s linear infinite;
-        }
-        @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
-        }
-        .animate-pulse {
-            animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
-        }
-        @keyframes pulse {
-            0%, 100% {
-                opacity: 1;
-            }
-            50% {
-                opacity: .5;
-            }
-        }
-    </style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Calculadora de Vendas Avançada</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f3f4f6;
+            color: #1f2937;
+        }
+        .container {
+            max-width: 1000px;
+            margin: 2rem auto;
+            padding: 2rem;
+            background-color: #ffffff;
+            border-radius: 12px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        .progress-bar {
+            height: 1.5rem;
+            background-color: #e5e7eb;
+            border-radius: 9999px;
+            overflow: hidden;
+        }
+        .progress-fill {
+            height: 100%;
+            border-radius: 9999px;
+            transition: width 0.5s ease-in-out;
+        }
+        /* Spinner */
+        .spinner {
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #3498db;
+            border-radius: 50%;
+            width: 24px;
+            height: 24px;
+            animation: spin 1s linear infinite;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        .animate-pulse {
+            animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+        }
+        @keyframes pulse {
+            0%, 100% {
+                opacity: 1;
+            }
+            50% {
+                opacity: .5;
+            }
+        }
+    </style>
 </head>
 <body class="bg-gray-100 flex items-center justify-center min-h-screen p-4">
 
-    <!-- Login/Register Section -->
-    <div id="auth-section" class="container w-full max-w-md p-6 bg-white rounded-lg shadow-md hidden">
-        <h2 class="text-2xl font-bold text-center mb-6 text-gray-800">Acesso do Consultor</h2>
-        <div id="auth-message" class="hidden p-4 mb-4 text-sm rounded-lg" role="alert"></div>
-        <form id="auth-form" class="space-y-4">
-            <div>
-                <label for="auth-email" class="block text-sm font-medium text-gray-700">E-mail</label>
-                <input type="email" id="auth-email" required class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
-            </div>
-            <div>
-                <label for="auth-password" class="block text-sm font-medium text-gray-700">Senha</label>
-                <input type="password" id="auth-password" required class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
-            </div>
-            <button type="submit" id="auth-btn" class="w-full px-4 py-2 bg-blue-600 text-white font-medium rounded-lg shadow-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2">
-                Entrar
-            </button>
-            <button type="button" id="toggle-auth-btn" class="w-full text-center text-blue-600 hover:text-blue-800 text-sm mt-2">Não tem uma conta? Registrar</button>
-        </form>
-    </div>
-
-    <!-- Main App Section -->
-    <div id="app-section" class="container hidden">
-        <div class="flex justify-center mb-6">
-            <img src="https://firebasestorage.googleapis.com/v0/b/calculadora-de-vendas.appspot.com/o/logo.png?alt=media"
-            alt="Logo Assertiva Vivo Empresas" class="h-24 mx-auto object-contain">
-        </div>
-        <div class="flex justify-between items-center mb-4">
-            <h1 class="text-3xl font-bold text-gray-800">Calculadora de Metas</h1>
-            <button id="logout-btn" class="px-4 py-2 bg-red-600 text-white font-medium rounded-lg shadow-md hover:bg-red-700">Sair</button>
-        </div>
-        <p class="text-gray-500 mb-8">Acompanhe seu desempenho e comissão em tempo real!</p>
-        
-        <!-- Filtro de Período -->
-        <div class="mb-6">
-            <label for="period-filter" class="block text-sm font-medium text-gray-700 mb-2">Visualizar Período:</label>
-            <select id="period-filter" class="w-full md:w-1/3 p-2 rounded-md border-gray-300 shadow-sm focus:ring-blue-500 focus:border-blue-500">
-                <!-- As opções serão preenchidas dinamicamente pelo JavaScript -->
-            </select>
-        </div>
-        
-        <!-- Dashboard de Desempenho (Vendas Realizadas) -->
-        <div>
-            <h2 class="text-xl font-semibold mb-4">Desempenho (Vendas com Aceite Realizado)</h2>
-            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-                <div class="bg-indigo-50 p-6 rounded-lg shadow-sm">
-                    <p class="text-sm font-medium text-indigo-700">Receita Realizada</p>
-                    <p id="total-revenue" class="mt-1 text-2xl font-bold text-indigo-900">R$ 0,00</p>
-                </div>
-                <div class="bg-purple-50 p-6 rounded-lg shadow-sm">
-                    <p class="text-sm font-medium text-purple-700">Comissão Estimada</p>
-                    <p id="estimated-commission" class="mt-1 text-2xl font-bold text-purple-900">R$ 0,00</p>
-                </div>
-                <div class="bg-pink-50 p-6 rounded-lg shadow-sm">
-                    <p id="current-tier-text" class="text-sm font-medium text-pink-700">Sua Faixa Atual</p>
-                    <p id="current-tier" class="mt-1 text-2xl font-bold text-pink-900">Faixa 0</p>
-                </div>
-            </div>
-            
-            <!-- Progresso para a Próxima Faixa -->
-            <div class="mt-8">
-                <h3 id="progress-text" class="text-lg font-medium text-gray-700 mb-2"></h3>
-                <div class="progress-bar">
-                    <div id="progress-fill" class="progress-fill bg-blue-500" style="width: 0%;"></div>
-                </div>
-            </div>
-        </div>
-
-        <hr class="my-8">
-
-        <!-- Vendas Pendentes -->
-        <div>
-            <h2 class="text-xl font-semibold mb-4">Vendas com Aceite Enviado (Pendentes)</h2>
-            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-                <div class="bg-yellow-50 p-6 rounded-lg shadow-sm">
-                    <p class="text-sm font-medium text-yellow-700">Receita Pendente</p>
-                    <p id="pending-revenue" class="mt-1 text-2xl font-bold text-yellow-900">R$ 0,00</p>
-                </div>
-            </div>
-        </div>
-
-        <hr class="my-8">
-
-        <!-- Vendas Negadas -->
-        <div>
-            <h2 class="text-xl font-semibold mb-4">Vendas com Aceite Negado</h2>
-            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-                <div class="bg-red-50 p-6 rounded-lg shadow-sm">
-                    <p class="text-sm font-medium text-red-700">Receita Negada</p>
-                    <p id="denied-revenue" class="mt-1 text-2xl font-bold text-red-900">R$ 0,00</p>
-                </div>
-            </div>
-        </div>
-
-
-        <hr class="my-8">
-
-        <!-- Detalhes da Comissão -->
-        <div class="mb-8">
-            <h2 class="text-xl font-semibold mb-4">Detalhes da Comissão (Vendas Realizadas)</h2>
-            <div class="overflow-x-auto">
-                <table class="min-w-full text-left border-collapse">
-                    <thead>
-                        <tr class="bg-gray-200">
-                            <th class="p-4 rounded-tl-lg">Item</th>
-                            <th class="p-4">Valor</th>
-                            <th class="p-4 rounded-tr-lg">Faixa de Comissão</th>
-                        </tr>
-                    </thead>
-                    <tbody id="commission-details-body">
-                        <!-- Commission details will be populated here -->
-                    </tbody>
-                </table>
-            </div>
-        </div>
-
-        <hr class="my-8">
-
-        <!-- Formulário de Registro de Venda -->
-        <div class="mb-8">
-            <h2 class="text-xl font-semibold mb-4">Registrar Nova Venda</h2>
-            <div id="sales-message" class="hidden p-4 mb-4 text-sm rounded-lg" role="alert"></div>
-            <form id="sale-form" class="space-y-4">
-                <div>
-                    <label for="consultant-name" class="block text-sm font-medium text-gray-700">Nome do Consultor</label>
-                    <input type="text" id="consultant-name" required class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
-                </div>
-                <div>
-                    <label for="company-name" class="block text-sm font-medium text-gray-700">Nome da Empresa</label>
-                    <input type="text" id="company-name" required class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
-                </div>
-                <div>
-                    <label for="cnpj" class="block text-sm font-medium text-gray-700">CNPJ</label>
-                    <input type="text" id="cnpj" required class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
-                </div>
-                <div>
-                    <label for="crm" class="block text-sm font-medium text-gray-700">CRM (Opcional)</label>
-                    <input type="text" id="crm" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
-                </div>
-                <!-- Campo de Status do Aceite -->
-                <div>
-                    <label for="sale-status" class="block text-sm font-medium text-gray-700">Status do Aceite</label>
-                    <select id="sale-status" required class="mt-1 block w-full p-2 rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
-                        <option value="aceite enviado">Aceite Enviado</option>
-                        <option value="aceite realizado">Aceite Realizado</option>
-                        <option value="aceite negado">Aceite Negado</option>
-                    </select>
-                </div>
-                
-                <div id="products-container" class="space-y-4">
-                    <!-- Products will be added here dynamically -->
-                </div>
-                
-                <button type="button" id="add-product-btn" class="w-full sm:w-auto px-4 py-2 bg-green-500 text-white font-medium rounded-lg shadow-md hover:bg-green-600 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2">
-                    Adicionar Produto
-                </button>
-                
-                <button type="submit" id="save-sale-btn" class="w-full px-4 py-2 bg-blue-600 text-white font-medium rounded-lg shadow-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 flex justify-center items-center space-x-2" disabled>
-                    <span id="save-sale-btn-text">Carregando...</span>
-                    <div id="save-sale-spinner" class="spinner"></div>
-                </button>
-            </form>
-        </div>
-
-        <hr class="my-8">
-
-        <!-- Lista de Vendas Registradas -->
-        <div class="mb-8">
-            <h2 class="text-xl font-semibold mb-4">Vendas Registradas no Período</h2>
-            <div class="overflow-x-auto">
-                <table class="min-w-full text-left border-collapse">
-                    <thead>
-                        <tr class="bg-gray-200">
-                            <th class="p-4 rounded-tl-lg">CNPJ</th>
-                            <th class="p-4">Empresa</th>
-                            <th class="p-4">Produtos</th>
-                            <th class="p-4">Data</th>
-                            <th class="p-4">Receita</th>
-                            <th class="p-4">Status</th>
-                            <th class="p-4 rounded-tr-lg">Ações</th>
-                        </tr>
-                    </thead>
-                    <tbody id="sales-list-body">
-                        <!-- Sales will be populated here -->
-                    </tbody>
-                </table>
-            </div>
-        </div>
-        
-        <hr class="my-8">
-
-        <!-- Acompanhamento de Metas -->
-        <div class="mb-8">
-            <h3 class="text-lg font-semibold mb-4">Metas de Receita (Vendas Realizadas)</h3>
-            <div class="overflow-x-auto">
-                <table class="w-full text-left border-collapse">
-                    <thead>
-                        <tr class="bg-gray-200">
-                            <th class="p-4 rounded-tl-lg">Meta</th>
-                            <th class="p-4 rounded-tr-lg">Status</th>
-                        </tr>
-                    </thead>
-                    <tbody id="revenue-goals-body">
-                        <!-- Revenue goals will be populated here -->
-                    </tbody>
-                </table>
-            </div>
-        </div>
-        
-        <hr class="my-8">
-
-        <div>
-            <h3 class="text-lg font-semibold mb-4">Metas de Produto por Faixa (Vendas Realizadas)</h3>
-            <div class="overflow-x-auto">
-                <table class="w-full text-left border-collapse">
-                    <thead>
-                        <tr class="bg-gray-200">
-                            <th class="p-4 rounded-tl-lg">Produto</th>
-                            <th class="p-4">Vendido</th>
-                            <th class="p-4">Meta Faixa 75</th>
-                            <th class="p-4">Meta Faixa 150</th>
-                            <th class="p-4 rounded-tr-lg">Meta Faixa 200</th>
-                        </tr>
-                    </thead>
-                    <tbody id="product-goals-body">
-                        <!-- Product goals will be populated here -->
-                    </tbody>
-                </table>
-            </div>
-        </div>
-    </div>
-
-    <!-- Modal de Confirmação de Exclusão -->
-    <div id="delete-modal" class="fixed inset-0 bg-gray-600 bg-opacity-50 hidden overflow-y-auto h-full w-full">
-        <div class="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-md bg-white">
-            <div class="mt-3 text-center">
-                <h3 class="text-lg leading-6 font-medium text-gray-900">Confirmar Exclusão</h3>
-                <div class="mt-2 px-7 py-3">
-                    <p class="text-sm text-gray-500">Tem certeza que deseja excluir esta venda? Esta ação não pode ser desfeita.</p>
-                </div>
-                <div class="items-center px-4 py-3">
-                    <button id="confirm-delete-btn" class="px-4 py-2 bg-red-600 text-white text-base font-medium rounded-md w-full shadow-sm hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2">
-                        Excluir
-                    </button>
-                    <button id="cancel-delete-btn" class="mt-3 px-4 py-2 bg-gray-200 text-gray-800 text-base font-medium rounded-md w-full shadow-sm hover:bg-gray-300 focus:outline-none focus:ring-2 focus:ring-gray-400 focus:ring-offset-2">
-                        Cancelar
-                    </button>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <script type="module">
-        // Importa os módulos necessários do Firebase
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
-        import { getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword, onAuthStateChanged, signOut, signInWithCustomToken } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
-        import { getFirestore, collection, addDoc, onSnapshot, query, deleteDoc, doc, setDoc, getDoc, setLogLevel, serverTimestamp, where, updateDoc } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
-
-        // Variáveis globais fornecidas pelo ambiente
-        const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
-        const firebaseConfig = typeof __firebase_config !== 'undefined' ? JSON.parse(__firebase_config) : {
-            apiKey: "AIzaSyC293ALvoMmnm6ygd-t9FecegMjln9lEkc",
-            authDomain: "calculadora-de-vendas.firebaseapp.com",
-            projectId: "calculadora-de-vendas",
-            storageBucket: "calculadora-de-vendas.firebasestorage.app",
-            messagingSenderId: "633108525289", // CORREÇÃO: "S" trocado por "5"
-            appId: "1:633108525289:web:0b4147c2aa71e637aa4078"
-        };
-        const initialAuthToken = typeof __initial_auth_token !== 'undefined' ? __initial_auth_token : null;
-
-        // Inicializa o Firebase
-        let app, db, auth, userId;
-        setLogLevel('debug');
-
-        // Dados para comissão, receita e metas
-        const commissionData = {
-            'Migração Up':    [8, 8, 9, 10, 11, 12, 13, 14],
-            'Migração Mid':   [4, 4, 5, 6, 7, 8, 9, 10],
-            'Migração Down':  [2, 2, 3, 4, 5, 6, 7, 8],
-            'GPON':           [20, 20, 22, 25, 28, 31, 35, 40],
-            'Altas Portadas': [6, 6, 8, 10, 12, 14, 16, 20],
-            'Altas Novas':    [3, 3, 4, 5, 6, 7, 8, 10],
-            'VVN':            [10, 10, 12, 14, 16, 18, 20, 22],
-        };
-
-        const revenuePercentages = [11, 11, 13, 16, 19, 22, 28, 35];
-
-        const goalData = {
-            'Receita (R$)': [750, 1500, 3000],
-            'GPON': [3, 6, 9],
-            'Altas Portadas': [5, 15, 30],
-            'Altas Novas': [5, 15, 30],
-            'Contratos (CNPJ\'s)': [1, 1.5, 2],
-            'VVN': [5, 15, 25],
-            'Aparelhos (R$)': [8000, 20000, 30000],
-            'Migração': [75, 150, 200],
-        };
-        
-        const productsForGoals = ['Migração', 'GPON', 'Altas Portadas', 'Altas Novas', 'VVN', 'Aparelhos (R$)'];
-
-        // Elementos DOM
-        const totalRevenueEl = document.getElementById('total-revenue');
-        const estimatedCommissionEl = document.getElementById('estimated-commission');
-        const currentTierEl = document.getElementById('current-tier');
-        const progressFillEl = document.getElementById('progress-fill');
-        const progressTextEl = document.getElementById('progress-text');
-        const salesForm = document.getElementById('sale-form');
-        const salesListBodyEl = document.getElementById('sales-list-body');
-        const addProductBtn = document.getElementById('add-product-btn');
-        const productsContainer = document.getElementById('products-container');
-        const salesMessageEl = document.getElementById('sales-message');
-        const productGoalsBodyEl = document.getElementById('product-goals-body');
-        const revenueGoalsBodyEl = document.getElementById('revenue-goals-body');
-        const commissionDetailsBodyEl = document.getElementById('commission-details-body');
-        const consultantNameInput = document.getElementById('consultant-name');
-        const cnpjInput = document.getElementById('cnpj');
-        const deleteModal = document.getElementById('delete-modal');
-        const confirmDeleteBtn = document.getElementById('confirm-delete-btn');
-        const cancelDeleteBtn = document.getElementById('cancel-delete-btn');
-        const saveSaleBtn = document.getElementById('save-sale-btn');
-        const saveSaleBtnText = document.getElementById('save-sale-btn-text');
-        const saveSaleSpinner = document.getElementById('save-sale-spinner');
-        const authSection = document.getElementById('auth-section');
-        const appSection = document.getElementById('app-section');
-        const authForm = document.getElementById('auth-form');
-        const authEmailInput = document.getElementById('auth-email');
-        const authPasswordInput = document.getElementById('auth-password');
-        const authMessageEl = document.getElementById('auth-message');
-        const authBtn = document.getElementById('auth-btn');
-        const toggleAuthBtn = document.getElementById('toggle-auth-btn');
-        const logoutBtn = document.getElementById('logout-btn');
-        const periodFilterEl = document.getElementById('period-filter');
-        const pendingRevenueEl = document.getElementById('pending-revenue');
-        const deniedRevenueEl = document.getElementById('denied-revenue');
-
-
-        let isRegisterMode = false;
-        let saleIdToDelete = null;
-
-        function displayMessage(message, type) {
-            salesMessageEl.textContent = message;
-            salesMessageEl.className = `p-4 mb-4 text-sm rounded-lg ${type === 'success' ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'}`;
-            salesMessageEl.style.display = 'block';
-            setTimeout(() => {
-                salesMessageEl.style.display = 'none';
-            }, 5000);
-        }
-
-        function displayAuthMessage(message, type) {
-            authMessageEl.textContent = message;
-            authMessageEl.className = `p-4 mb-4 text-sm rounded-lg ${type === 'success' ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'}`;
-            authMessageEl.style.display = 'block';
-        }
-
-        function setSaveLoading(isLoading) {
-            if (isLoading) {
-                saveSaleBtnText.textContent = 'Salvando...';
-                saveSaleSpinner.classList.remove('hidden');
-                saveSaleBtn.disabled = true;
-                saveSaleBtn.classList.add('animate-pulse');
-            } else {
-                saveSaleBtnText.textContent = 'Salvar Venda';
-                saveSaleSpinner.classList.add('hidden');
-                saveSaleBtn.disabled = false;
-                saveSaleBtn.classList.remove('animate-pulse');
-            }
-        }
-        
-        async function initializeFirebase() {
-            try {
-                if (Object.keys(firebaseConfig).length === 0) {
-                    displayMessage("Erro: A configuração do Firebase está faltando.", "error");
-                    console.error("Firebase config is missing.");
-                    return;
-                }
-                
-                app = initializeApp(firebaseConfig);
-                auth = getAuth(app);
-                db = getFirestore(app);
-
-                setSaveLoading(true);
-
-                onAuthStateChanged(auth, async (user) => {
-                    if (user) {
-                        userId = user.uid;
-                        authSection.classList.add('hidden');
-                        appSection.classList.remove('hidden');
-                        loadConsultantName();
-                        createPeriodOptions();
-                        listenToSales();
-                        setSaveLoading(false);
-
-                    } else {
-                        authSection.classList.remove('hidden');
-                        appSection.classList.add('hidden');
-                        salesListBodyEl.innerHTML = '';
-                        updateDashboard([]);
-                        setSaveLoading(true);
-                    }
-                });
-
-                if (initialAuthToken) {
-                    await signInWithCustomToken(auth, initialAuthToken);
-                }
-            } catch (e) {
-                console.error("Erro ao inicializar Firebase: ", e);
-                displayMessage("Erro ao inicializar o aplicativo. Por favor, tente novamente.", "error");
-            }
-        }
-
-        async function saveSale(saleData) {
-            if (!userId || !db) {
-                displayMessage("Erro: O aplicativo não está pronto. Por favor, aguarde.", "error");
-                return;
-            }
-
-            setSaveLoading(true);
-            try {
-                const salesRef = collection(db, `artifacts/${appId}/public/data/sales`);
-                await addDoc(salesRef, { ...saleData, consultantId: userId, consultantName: consultantNameInput.value });
-                displayMessage("Venda salva com sucesso!", "success");
-                salesForm.reset();
-                productsContainer.innerHTML = '';
-                createProductInputGroup();
-            } catch (e) {
-                console.error("Erro ao salvar a venda: ", e);
-                displayMessage(`Erro ao salvar a venda. Detalhes: ${e.message}`, "error");
-            } finally {
-                setSaveLoading(false);
-            }
-        }
-
-        async function deleteSale(saleId) {
-            if (!userId || !db) return;
-            try {
-                const saleRef = doc(db, `artifacts/${appId}/public/data/sales`, saleId);
-                await deleteDoc(saleRef);
-                displayMessage("Venda excluída com sucesso!", "success");
-            } catch (e) {
-                console.error("Erro ao excluir a venda: ", e);
-                displayMessage("Erro ao excluir a venda. Por favor, tente novamente.", "error");
-            }
-        }
-        
-        async function updateSaleStatus(saleId, newStatus) {
-            if (!db || !userId) {
-                displayMessage("Erro: O aplicativo não está pronto. Por favor, aguarde.", "error");
-                return;
-            }
-            try {
-                const saleRef = doc(db, `artifacts/${appId}/public/data/sales`, saleId);
-                await updateDoc(saleRef, {
-                    status: newStatus
-                });
-                displayMessage("Status da venda atualizado com sucesso!", "success");
-            } catch (e) {
-                console.error("Erro ao atualizar o status da venda: ", e);
-                displayMessage(`Erro ao atualizar o status. Detalhes: ${e.message}`, "error");
-            }
-        }
-
-        async function saveConsultantName(name) {
-            if (!name || !userId) return;
-            try {
-                const consultantProfileRef = doc(db, `artifacts/${appId}/public/data/consultants`, userId);
-                await setDoc(consultantProfileRef, { consultantName: name }, { merge: true });
-            } catch (e) {
-                console.error("Erro ao salvar o nome do consultor: ", e);
-            }
-        }
-
-        async function loadConsultantName() {
-            if (!userId) return;
-            try {
-                const consultantProfileRef = doc(db, `artifacts/${appId}/public/data/consultants`, userId);
-                const docSnap = await getDoc(consultantProfileRef);
-                if (docSnap.exists()) {
-                    consultantNameInput.value = docSnap.data().consultantName || '';
-                }
-            } catch (e) {
-                console.error("Erro ao carregar o nome do consultor: ", e);
-            }
-        }
-        
-        function createPeriodOptions() {
-            periodFilterEl.innerHTML = '';
-            const today = new Date();
-            const months = ['Janeiro', 'Fevereiro', 'Março', 'Abril', 'Maio', 'Junho', 'Julho', 'Agosto', 'Setembro', 'Outubro', 'Novembro', 'Dezembro'];
-
-            for (let i = 0; i < 3; i++) {
-                const date = new Date(today.getFullYear(), today.getMonth() - i, 1);
-                const monthName = months[date.getMonth()];
-                const year = date.getFullYear();
-                const option = document.createElement('option');
-                option.value = `${year}-${(date.getMonth() + 1).toString().padStart(2, '0')}`;
-                option.textContent = `${monthName} ${year}`;
-                periodFilterEl.appendChild(option);
-            }
-        }
-
-        function listenToSales() {
-            if (!db || !userId) {
-                return;
-            }
-            const salesRef = collection(db, `artifacts/${appId}/public/data/sales`);
-            
-            const salesQuery = query(salesRef, where('consultantId', '==', userId));
-
-            onSnapshot(salesQuery, (snapshot) => {
-                let sales = [];
-                snapshot.forEach((doc) => {
-                    sales.push({ id: doc.id, ...doc.data() });
-                });
-
-                const selectedPeriod = periodFilterEl.value;
-                if (!selectedPeriod) return;
-
-                const [year, month] = selectedPeriod.split('-');
-                const startDate = new Date(year, month - 1, 1);
-                const endDate = new Date(year, month, 1);
-                
-                const filteredSales = sales.filter(sale => {
-                    if (sale.timestamp && sale.timestamp.toDate) {
-                        const saleDate = sale.timestamp.toDate();
-                        return saleDate >= startDate && saleDate < endDate;
-                    }
-                    return false;
-                });
-                
-                updateDashboard(filteredSales);
-                renderSalesList(filteredSales);
-            }, (error) => {
-                console.error("Erro ao ouvir atualizações do Firestore: ", error);
-                displayMessage("Erro de conexão com o banco de dados. Os dados podem não estar atualizados.", "error");
-            });
-        }
-        
-        function updateDashboard(sales) {
-            // Separa as vendas pelo status do aceite
-            const acceptedSales = sales.filter(s => s.status === 'aceite realizado');
-            const pendingSales = sales.filter(s => s.status === 'aceite enviado');
-            const deniedSales = sales.filter(s => s.status === 'aceite negado');
-
-            // Calcula e exibe a receita de vendas pendentes e negadas
-            const pendingRevenue = pendingSales.reduce((acc, sale) => acc + (sale.totalRevenue || 0), 0);
-            const deniedRevenue = deniedSales.reduce((acc, sale) => acc + (sale.totalRevenue || 0), 0);
-
-            pendingRevenueEl.textContent = `R$ ${pendingRevenue.toFixed(2).replace('.', ',')}`;
-            deniedRevenueEl.textContent = `R$ ${deniedRevenue.toFixed(2).replace('.', ',')}`;
-
-            // A partir daqui, todos os cálculos de metas e comissões usam apenas as vendas aceitas
-            let totalRevenue = 0;
-            const productsSoldSummary = {};
-            let totalMigracaoSold = 0;
-            let totalAparelhosSoldValue = 0;
-
-            acceptedSales.forEach(sale => {
-                const saleProducts = JSON.parse(sale.products);
-                saleProducts.forEach(p => {
-                    const productNameKey = p.name.includes('Migração') ? 'Migração' : p.name;
-                    productsSoldSummary[productNameKey] = (productsSoldSummary[productNameKey] || 0) + p.quantity;
-                    
-                    if (['Migração Up', 'Migração Mid', 'Migração Down'].includes(p.name)) {
-                        totalMigracaoSold += p.quantity;
-                    }
-
-                    if (p.name === 'Aparelhos (R$)') {
-                        totalAparelhosSoldValue += p.revenue;
-                    } else {
-                        totalRevenue += p.revenue;
-                    }
-                });
-            });
-
-            productsSoldSummary['Migração'] = totalMigracaoSold;
-            productsSoldSummary['Aparelhos (R$)'] = totalAparelhosSoldValue;
-            totalRevenue += totalAparelhosSoldValue * 0.01;
-
-            let currentTier = 0;
-            const revenueGoals = goalData['Receita (R$)'];
-            
-            if (totalRevenue >= revenueGoals[0]) currentTier++;
-            if (totalRevenue >= revenueGoals[1]) currentTier++;
-            if (totalRevenue >= revenueGoals[2]) currentTier++;
-
-            productsForGoals.forEach(product => {
-                const sold = productsSoldSummary[product] || 0;
-                const goals = goalData[product] || [];
-                if (goals.length > 0 && sold >= goals[0]) currentTier++;
-                if (goals.length > 1 && sold >= goals[1]) currentTier++;
-                if (goals.length > 2 && sold >= goals[2]) currentTier++;
-            });
-            
-            let totalCommission = 0;
-            const commissionDetails = {};
-
-            const tierIndexForCommission = currentTier; 
-
-            acceptedSales.forEach(sale => {
-                const saleProducts = JSON.parse(sale.products);
-                saleProducts.forEach(p => {
-                    const maxIndex = (commissionData[p.name]?.length || 1) - 1;
-                    const cappedTierIndex = Math.min(tierIndexForCommission, maxIndex);
-                    
-                    const commissionRate = commissionData[p.name] ? commissionData[p.name][cappedTierIndex] : 0;
-                    const productCommission = (p.quantity || 0) * commissionRate;
-                    
-                    if (productCommission > 0) {
-                        if (commissionDetails[p.name]) {
-                            commissionDetails[p.name].value += productCommission;
-                            commissionDetails[p.name].quantity += (p.quantity || 0);
-                        } else {
-                            commissionDetails[p.name] = {
-                                value: productCommission,
-                                quantity: (p.quantity || 0),
-                                rate: commissionRate
-                            };
-                        }
-                    }
-                });
-            });
-            
-            const maxRevenueIndex = revenuePercentages.length - 1;
-            const cappedRevenueTierIndex = Math.min(tierIndexForCommission, maxRevenueIndex);
-            const revenueCommissionPercentage = revenuePercentages[cappedRevenueTierIndex];
-
-            const revenueCommission = totalRevenue * (revenueCommissionPercentage / 100);
-            commissionDetails['Receita Total'] = {
-                value: revenueCommission,
-                rate: `${revenueCommissionPercentage}%`
-            };
-
-            totalCommission = Object.values(commissionDetails).reduce((sum, item) => sum + item.value, 0);
-
-            totalRevenueEl.textContent = `R$ ${totalRevenue.toFixed(2).replace('.', ',')}`;
-            estimatedCommissionEl.textContent = `R$ ${totalCommission.toFixed(2).replace('.', ',')}`;
-            currentTierEl.textContent = `Faixa ${currentTier}`;
-            
-            let nextTierGoal = 0;
-            let progressPercentage = 0;
-
-            const nextRevenueGoalIndex = revenueGoals.findIndex(goal => totalRevenue < goal);
-            if (nextRevenueGoalIndex !== -1) {
-                nextTierGoal = revenueGoals[nextRevenueGoalIndex];
-                progressPercentage = Math.min(100, (totalRevenue / nextTierGoal) * 100);
-                progressTextEl.textContent = `Progresso para a Faixa ${currentTier + 1}:`;
-            } else {
-                progressPercentage = 100;
-                progressTextEl.textContent = 'Parabéns! Você alcançou a Faixa mais alta!';
-            }
-
-            progressFillEl.style.width = `${progressPercentage}%`;
-            progressFillEl.className = `progress-fill ${progressPercentage >= 100 ? 'bg-green-500' : 'bg-blue-500'}`;
-            
-            renderRevenueGoals(totalRevenue);
-            renderProductGoals(productsSoldSummary);
-            renderCommissionDetails(commissionDetails);
-        }
-        
-        function renderSalesList(sales) {
-            salesListBodyEl.innerHTML = '';
-            sales.sort((a, b) => {
-                const dateA = a.timestamp?.toDate() || new Date(0);
-                const dateB = b.timestamp?.toDate() || new Date(0);
-                return dateB.getTime() - dateA.getTime();
-            });
-            
-            if (sales.length === 0) {
-                salesListBodyEl.innerHTML = `<tr><td colspan="7" class="p-4 text-center text-gray-500">Nenhuma venda registrada neste período.</td></tr>`;
-                return;
-            }
-
-            sales.forEach(sale => {
-                const saleProducts = JSON.parse(sale.products);
-                const productsText = saleProducts.map(p => {
-                    const description = p.description ? ` - ${p.description}` : '';
-                    return `${p.name}${description}: ${p.quantity} (R$ ${p.revenue.toFixed(2).replace('.', ',')})`;
-                }).join('<br>');
-
-                const date = sale.timestamp ? new Date(sale.timestamp.seconds * 1000).toLocaleString('pt-BR') : 'N/A';
-                const totalRevenueFormatted = (sale.totalRevenue || 0).toFixed(2).replace('.', ',');
-                const status = sale.status || 'aceite enviado';
-
-                const row = document.createElement('tr');
-                row.className = "border-t border-gray-200";
-                row.innerHTML = `
-                    <td class="p-4 text-gray-800">${sale.cnpj || 'N/A'}</td>
-                    <td class="p-4 text-gray-800">${sale.companyName}</td>
-                    <td class="p-4 text-sm">${productsText}</td>
-                    <td class="p-4 text-gray-500 text-sm">${date}</td>
-                    <td class="p-4">R$ ${totalRevenueFormatted}</td>
-                    <td class="p-4">
-                        <select class="status-select mt-1 block w-full p-2 rounded-md border-gray-300 shadow-sm focus:ring-blue-500 focus:border-blue-500 bg-white" data-sale-id="${sale.id}">
-                            <option value="aceite enviado" ${status === 'aceite enviado' ? 'selected' : ''}>Enviado</option>
-                            <option value="aceite realizado" ${status === 'aceite realizado' ? 'selected' : ''}>Realizado</option>
-                            <option value="aceite negado" ${status === 'aceite negado' ? 'selected' : ''}>Negado</option>
-                        </select>
-                    </td>
-                    <td class="p-4">
-                        <button class="text-red-500 hover:text-red-700 delete-btn" data-sale-id="${sale.id}">Excluir</button>
-                    </td>
-                `;
-                salesListBodyEl.appendChild(row);
-            });
-            
-            document.querySelectorAll('.delete-btn').forEach(button => {
-                button.addEventListener('click', (e) => {
-                    saleIdToDelete = e.target.getAttribute('data-sale-id');
-                    deleteModal.classList.remove('hidden');
-                });
-            });
-
-            document.querySelectorAll('.status-select').forEach(select => {
-                select.addEventListener('change', (e) => {
-                    const saleId = e.target.getAttribute('data-sale-id');
-                    const newStatus = e.target.value;
-                    updateSaleStatus(saleId, newStatus);
-                });
-            });
-        }
-
-        function renderCommissionDetails(details) {
-            commissionDetailsBodyEl.innerHTML = '';
-            
-            const sortedKeys = Object.keys(details).sort();
-
-            sortedKeys.forEach(key => {
-                const detail = details[key];
-                const row = document.createElement('tr');
-                row.className = "border-t border-gray-200";
-                
-                let itemName = key;
-                if (detail.quantity) {
-                    itemName = `${key} (${detail.quantity})`;
-                }
-
-                row.innerHTML = `
-                    <td class="p-4">${itemName}</td>
-                    <td class="p-4">R$ ${detail.value.toFixed(2).replace('.', ',')}</td>
-                    <td class="p-4">${detail.rate}</td>
-                `;
-                commissionDetailsBodyEl.appendChild(row);
-            });
-        }
-        
-        function renderRevenueGoals(totalRevenue) {
-            revenueGoalsBodyEl.innerHTML = '';
-            const goals = goalData['Receita (R$)'];
-            
-            goals.forEach(goal => {
-                const isMet = totalRevenue >= goal;
-                const status = isMet ? 'Atingida' : 'Ainda não';
-                const statusClass = isMet ? 'text-green-500 font-bold' : 'text-gray-500';
-                
-                const row = document.createElement('tr');
-                row.className = "border-t border-gray-200";
-                row.innerHTML = `
-                    <td class="p-4">R$ ${goal.toFixed(2).replace('.', ',')}</td>
-                    <td class="p-4 ${statusClass}">${status}</td>
-                `;
-                revenueGoalsBodyEl.appendChild(row);
-            });
-        }
-
-        function renderProductGoals(productsSoldSummary) {
-            productGoalsBodyEl.innerHTML = '';
-            
-            productsForGoals.forEach(product => {
-                const sold = productsSoldSummary[product] || 0;
-                const goals = goalData[product] || [0, 0, 0];
-                
-                const row = document.createElement('tr');
-                row.className = "border-t border-gray-200";
-
-                const goal75Met = sold >= goals[0];
-                const goal150Met = sold >= goals[1];
-                const goal200Met = sold >= goals[2];
-
-                let soldValue = sold;
-                if (product === 'Aparelhos (R$)') {
-                    soldValue = `R$ ${sold.toFixed(2).replace('.', ',')}`;
-                }
-
-                row.innerHTML = `
-                    <td class="p-4">${product}</td>
-                    <td class="p-4 text-center">${soldValue}</td>
-                    <td class="p-4 text-center ${goal75Met ? 'text-green-500 font-bold' : ''}">${product === 'Aparelhos (R$)' ? `R$ ${goals[0].toFixed(2).replace('.', ',')}` : goals[0]}</td>
-                    <td class="p-4 text-center ${goal150Met ? 'text-green-500 font-bold' : ''}">${product === 'Aparelhos (R$)' ? `R$ ${goals[1].toFixed(2).replace('.', ',')}` : goals[1]}</td>
-                    <td class="p-4 text-center ${goal200Met ? 'text-green-500 font-bold' : ''}">${product === 'Aparelhos (R$)' ? `R$ ${goals[2].toFixed(2).replace('.', ',')}` : goals[2]}</td>
-                `;
-                productGoalsBodyEl.appendChild(row);
-            });
-        }
-
-        function createProductInputGroup() {
-            const group = document.createElement('div');
-            group.className = "product-input-group grid grid-cols-1 sm:grid-cols-2 md:grid-cols-5 gap-4 items-end border-t pt-4 mt-4";
-            group.innerHTML = `
-                <div class="w-full md:col-span-1">
-                    <label class="block text-sm font-medium text-gray-700">Produto</label>
-                    <select class="product-select mt-1 block w-full p-2 rounded-md border-gray-300 shadow-sm focus:ring-blue-500 focus:border-blue-500">
-                        <option value="Migração Up">Migração Up</option>
-                        <option value="Migração Mid">Migração Mid</option>
-                        <option value="Migração Down">Migração Down</option>
-                        <option value="GPON">GPON</option>
-                        <option value="Altas Portadas">Altas Portadas</option>
-                        <option value="Altas Novas">Altas Novas</option>
-                        <option value="VVN">VVN</option>
-                        <option value="Aparelhos (R$)">Aparelhos (R$)</option>
-                        <option value="Avançados">Avançados</option>
-                        <option value="Produtos de TI">Produtos de TI</option>
-                    </select>
-                </div>
-                <div class="w-full md:col-span-1">
-                    <label class="block text-sm font-medium text-gray-700">Descrição</label>
-                    <input type="text" placeholder="Opcional" class="product-description mt-1 block w-full p-2 rounded-md border-gray-300 shadow-sm focus:ring-blue-500 focus:border-blue-500">
-                </div>
-                <div class="w-full md:col-span-1">
-                     <label class="block text-sm font-medium text-gray-700">Quantidade</label>
-                    <input type="number" placeholder="0" value="0" min="0" class="product-quantity mt-1 block w-full p-2 text-center rounded-md border-gray-300 shadow-sm focus:ring-blue-500 focus:ring-blue-500">
-                </div>
-                <div class="w-full md:col-span-1">
-                    <label class="block text-sm font-medium text-gray-700">Receita (R$)</label>
-                    <input type="number" placeholder="0,00" step="0.01" class="product-revenue mt-1 block w-full p-2 text-center rounded-md border-gray-300 shadow-sm focus:ring-blue-500 focus:ring-blue-500">
-                </div>
-                <div class="w-full flex justify-center md:col-span-1">
-                     <button type="button" class="remove-product-btn text-red-500 hover:text-red-700 text-2xl font-bold p-1 self-center">&times;</button>
-                </div>
-            `;
-            productsContainer.appendChild(group);
-            
-            group.querySelector('.remove-product-btn').addEventListener('click', () => {
-                if (productsContainer.childElementCount > 1) {
-                    group.remove();
-                }
-            });
-        }
-        
-        function formatCNPJ(value) {
-            let v = value.replace(/\D/g, "");
-            v = v.replace(/^(\d{2})(\d)/, "$1.$2");
-            v = v.replace(/^(\d{2})\.(\d{3})(\d)/, "$1.$2.$3");
-            v = v.replace(/\.(\d{3})(\d)/, ".$1/$2");
-            v = v.replace(/(\d{4})(\d)/, "$1-$2");
-            return v;
-        }
-
-        authForm.addEventListener('submit', async (e) => {
-            e.preventDefault();
-            const email = authEmailInput.value;
-            const password = authPasswordInput.value;
-            authMessageEl.style.display = 'none';
-
-            try {
-                if (isRegisterMode) {
-                    await createUserWithEmailAndPassword(auth, email, password);
-                    displayAuthMessage('Registro bem-sucedido! Por favor, faça login.', 'success');
-                    isRegisterMode = false;
-                    toggleAuthBtn.textContent = 'Não tem uma conta? Registrar';
-                    authBtn.textContent = 'Entrar';
-                } else {
-                    await signInWithEmailAndPassword(auth, email, password);
-                }
-            } catch (e) {
-                console.error("Erro de autenticação: ", e.message);
-                displayAuthMessage('Erro de autenticação. Verifique seu e-mail e senha.', 'error');
-            }
-        });
-
-        toggleAuthBtn.addEventListener('click', () => {
-            isRegisterMode = !isRegisterMode;
-            if (isRegisterMode) {
-                toggleAuthBtn.textContent = 'Já tem uma conta? Entrar';
-                authBtn.textContent = 'Registrar';
-            } else {
-                toggleAuthBtn.textContent = 'Não tem uma conta? Registrar';
-                authBtn.textContent = 'Entrar';
-            }
-        });
-
-        logoutBtn.addEventListener('click', async () => {
-            await signOut(auth);
-        });
-
-        salesForm.addEventListener('submit', async (e) => {
-            e.preventDefault();
-            const consultantName = consultantNameInput.value;
-            const companyName = document.getElementById('company-name').value;
-            const cnpj = cnpjInput.value;
-            const crm = document.getElementById('crm').value;
-            const status = document.getElementById('sale-status').value;
-            
-            saveConsultantName(consultantName);
-
-            const productInputs = productsContainer.querySelectorAll('.product-input-group');
-            const productsSold = [];
-            let totalRevenue = 0;
-            
-            let hasValidProduct = false;
-            productInputs.forEach(inputGroup => {
-                const productSelect = inputGroup.querySelector('.product-select');
-                const descriptionInput = inputGroup.querySelector('.product-description');
-                const quantityInput = inputGroup.querySelector('.product-quantity');
-                const revenueInput = inputGroup.querySelector('.product-revenue');
-                
-                const productName = productSelect.value;
-                const description = descriptionInput.value;
-                const quantity = parseFloat(quantityInput.value) || 0;
-                const revenue = parseFloat(revenueInput.value) || 0;
-
-                if (quantity > 0 || revenue > 0) {
-                    hasValidProduct = true;
-                    productsSold.push({ name: productName, description: description, quantity: quantity, revenue: revenue });
-                    if (productName === 'Aparelhos (R$)') {
-                        totalRevenue += revenue * 0.01;
-                    } else {
-                        totalRevenue += revenue;
-                    }
-                }
-            });
-
-            if (!hasValidProduct) {
-                displayMessage("Por favor, adicione pelo menos um produto à venda com quantidade ou receita maior que zero.", "error");
-                return;
-            }
-            
-            const newSale = {
-                consultantName,
-                companyName,
-                cnpj,
-                crm,
-                status,
-                products: JSON.stringify(productsSold),
-                totalRevenue,
-                timestamp: serverTimestamp()
-            };
-
-            await saveSale(newSale);
-        });
-
-        addProductBtn.addEventListener('click', () => {
-            createProductInputGroup();
-        });
-
-        cnpjInput.addEventListener('input', (e) => {
-            e.target.value = formatCNPJ(e.target.value);
-        });
-
-        confirmDeleteBtn.addEventListener('click', () => {
-            if (saleIdToDelete) {
-                deleteSale(saleIdToDelete);
-                saleIdToDelete = null;
-            }
-            deleteModal.classList.add('hidden');
-        });
-
-        cancelDeleteBtn.addEventListener('click', () => {
-            deleteModal.classList.add('hidden');
-            saleIdToDelete = null;
-        });
-        
-        periodFilterEl.addEventListener('change', () => {
-            listenToSales();
-        });
-
-        window.onload = () => {
-            initializeFirebase();
-            createProductInputGroup();
-        };
-
-    </script>
+    <!-- Login/Register Section -->
+    <div id="auth-section" class="container w-full max-w-md p-6 bg-white rounded-lg shadow-md hidden">
+        <h2 class="text-2xl font-bold text-center mb-6 text-gray-800">Acesso do Consultor</h2>
+        <div id="auth-message" class="hidden p-4 mb-4 text-sm rounded-lg" role="alert"></div>
+        <form id="auth-form" class="space-y-4">
+            <div>
+                <label for="auth-email" class="block text-sm font-medium text-gray-700">E-mail</label>
+                <input type="email" id="auth-email" required class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
+            </div>
+            <div>
+                <label for="auth-password" class="block text-sm font-medium text-gray-700">Senha</label>
+                <input type="password" id="auth-password" required class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
+            </div>
+            <button type="submit" id="auth-btn" class="w-full px-4 py-2 bg-blue-600 text-white font-medium rounded-lg shadow-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2">
+                Entrar
+            </button>
+            <button type="button" id="toggle-auth-btn" class="w-full text-center text-blue-600 hover:text-blue-800 text-sm mt-2">Não tem uma conta? Registrar</button>
+        </form>
+    </div>
+
+    <!-- Main App Section -->
+    <div id="app-section" class="container hidden">
+        <div class="flex justify-center mb-6">
+            <img src="https://firebasestorage.googleapis.com/v0/b/calculadora-de-vendas.appspot.com/o/logo.png?alt=media"
+            alt="Logo Assertiva Vivo Empresas" class="h-24 mx-auto object-contain">
+        </div>
+        <div class="flex justify-between items-center mb-4">
+            <h1 class="text-3xl font-bold text-gray-800">Calculadora de Metas</h1>
+            <button id="logout-btn" class="px-4 py-2 bg-red-600 text-white font-medium rounded-lg shadow-md hover:bg-red-700">Sair</button>
+        </div>
+        <p class="text-gray-500 mb-8">Acompanhe seu desempenho e comissão em tempo real!</p>
+        
+        <!-- Filtro de Período -->
+        <div class="mb-6">
+            <label for="period-filter" class="block text-sm font-medium text-gray-700 mb-2">Visualizar Período:</label>
+            <select id="period-filter" class="w-full md:w-1/3 p-2 rounded-md border-gray-300 shadow-sm focus:ring-blue-500 focus:border-blue-500">
+                <!-- As opções serão preenchidas dinamicamente pelo JavaScript -->
+            </select>
+        </div>
+        
+        <!-- Dashboard de Desempenho (Vendas Realizadas) -->
+        <div>
+            <h2 class="text-xl font-semibold mb-4">Desempenho (Vendas com Aceite Realizado)</h2>
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+                <div class="bg-indigo-50 p-6 rounded-lg shadow-sm">
+                    <p class="text-sm font-medium text-indigo-700">Receita Realizada</p>
+                    <p id="total-revenue" class="mt-1 text-2xl font-bold text-indigo-900">R$ 0,00</p>
+                </div>
+                <div class="bg-purple-50 p-6 rounded-lg shadow-sm">
+                    <p class="text-sm font-medium text-purple-700">Comissão Estimada</p>
+                    <p id="estimated-commission" class="mt-1 text-2xl font-bold text-purple-900">R$ 0,00</p>
+                </div>
+                <div class="bg-pink-50 p-6 rounded-lg shadow-sm">
+                    <p id="current-tier-text" class="text-sm font-medium text-pink-700">Sua Faixa Atual</p>
+                    <p id="current-tier" class="mt-1 text-2xl font-bold text-pink-900">Faixa 0</p>
+                </div>
+            </div>
+            
+            <!-- Progresso para a Próxima Faixa -->
+            <div class="mt-8">
+                <h3 id="progress-text" class="text-lg font-medium text-gray-700 mb-2"></h3>
+                <div class="progress-bar">
+                    <div id="progress-fill" class="progress-fill bg-blue-500" style="width: 0%;"></div>
+                </div>
+            </div>
+        </div>
+
+        <hr class="my-8">
+
+        <!-- Vendas Pendentes -->
+        <div>
+            <h2 class="text-xl font-semibold mb-4">Vendas com Aceite Enviado (Pendentes)</h2>
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+                <div class="bg-yellow-50 p-6 rounded-lg shadow-sm">
+                    <p class="text-sm font-medium text-yellow-700">Receita Pendente</p>
+                    <p id="pending-revenue" class="mt-1 text-2xl font-bold text-yellow-900">R$ 0,00</p>
+                </div>
+            </div>
+        </div>
+
+        <hr class="my-8">
+
+        <!-- Vendas Negadas -->
+        <div>
+            <h2 class="text-xl font-semibold mb-4">Vendas com Aceite Negado</h2>
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+                <div class="bg-red-50 p-6 rounded-lg shadow-sm">
+                    <p class="text-sm font-medium text-red-700">Receita Negada</p>
+                    <p id="denied-revenue" class="mt-1 text-2xl font-bold text-red-900">R$ 0,00</p>
+                </div>
+            </div>
+        </div>
+
+
+        <hr class="my-8">
+
+        <!-- Detalhes da Comissão -->
+        <div class="mb-8">
+            <h2 class="text-xl font-semibold mb-4">Detalhes da Comissão (Vendas Realizadas)</h2>
+            <div class="overflow-x-auto">
+                <table class="min-w-full text-left border-collapse">
+                    <thead>
+                        <tr class="bg-gray-200">
+                            <th class="p-4 rounded-tl-lg">Item</th>
+                            <th class="p-4">Valor</th>
+                            <th class="p-4 rounded-tr-lg">Faixa de Comissão</th>
+                        </tr>
+                    </thead>
+                    <tbody id="commission-details-body">
+                        <!-- Commission details will be populated here -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <hr class="my-8">
+
+        <!-- Formulário de Registro de Venda -->
+        <div class="mb-8">
+            <h2 class="text-xl font-semibold mb-4">Registrar Nova Venda</h2>
+            <div id="sales-message" class="hidden p-4 mb-4 text-sm rounded-lg" role="alert"></div>
+            <form id="sale-form" class="space-y-4">
+                <div>
+                    <label for="consultant-name" class="block text-sm font-medium text-gray-700">Nome do Consultor</label>
+                    <input type="text" id="consultant-name" required class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
+                </div>
+                <div>
+                    <label for="company-name" class="block text-sm font-medium text-gray-700">Nome da Empresa</label>
+                    <input type="text" id="company-name" required class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
+                </div>
+                <div>
+                    <label for="cnpj" class="block text-sm font-medium text-gray-700">CNPJ</label>
+                    <input type="text" id="cnpj" required class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
+                </div>
+                <div>
+                    <label for="crm" class="block text-sm font-medium text-gray-700">CRM (Opcional)</label>
+                    <input type="text" id="crm" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
+                </div>
+                <!-- Campo de Status do Aceite -->
+                <div>
+                    <label for="sale-status" class="block text-sm font-medium text-gray-700">Status do Aceite</label>
+                    <select id="sale-status" required class="mt-1 block w-full p-2 rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
+                        <option value="aceite enviado">Aceite Enviado</option>
+                        <option value="aceite realizado">Aceite Realizado</option>
+                        <option value="aceite negado">Aceite Negado</option>
+                    </select>
+                </div>
+                
+                <div id="products-container" class="space-y-4">
+                    <!-- Products will be added here dynamically -->
+                </div>
+                
+                <button type="button" id="add-product-btn" class="w-full sm:w-auto px-4 py-2 bg-green-500 text-white font-medium rounded-lg shadow-md hover:bg-green-600 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2">
+                    Adicionar Produto
+                </button>
+                
+                <button type="submit" id="save-sale-btn" class="w-full px-4 py-2 bg-blue-600 text-white font-medium rounded-lg shadow-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 flex justify-center items-center space-x-2" disabled>
+                    <span id="save-sale-btn-text">Carregando...</span>
+                    <div id="save-sale-spinner" class="spinner"></div>
+                </button>
+            </form>
+        </div>
+
+        <hr class="my-8">
+
+        <!-- Lista de Vendas Registradas -->
+        <div class="mb-8">
+            <h2 class="text-xl font-semibold mb-4">Vendas Registradas no Período</h2>
+            <div class="overflow-x-auto">
+                <table class="min-w-full text-left border-collapse">
+                    <thead>
+                        <tr class="bg-gray-200">
+                            <th class="p-4 rounded-tl-lg">CNPJ</th>
+                            <th class="p-4">Empresa</th>
+                            <th class="p-4">Produtos</th>
+                            <th class="p-4">Data</th>
+                            <th class="p-4">Receita</th>
+                            <th class="p-4">Status</th>
+                            <th class="p-4 rounded-tr-lg">Ações</th>
+                        </tr>
+                    </thead>
+                    <tbody id="sales-list-body">
+                        <!-- Sales will be populated here -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        
+        <hr class="my-8">
+
+        <!-- Acompanhamento de Metas -->
+        <div class="mb-8">
+            <h3 class="text-lg font-semibold mb-4">Metas de Receita (Vendas Realizadas)</h3>
+            <div class="overflow-x-auto">
+                <table class="w-full text-left border-collapse">
+                    <thead>
+                        <tr class="bg-gray-200">
+                            <th class="p-4 rounded-tl-lg">Meta</th>
+                            <th class="p-4 rounded-tr-lg">Status</th>
+                        </tr>
+                    </thead>
+                    <tbody id="revenue-goals-body">
+                        <!-- Revenue goals will be populated here -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        
+        <hr class="my-8">
+
+        <div>
+            <h3 class="text-lg font-semibold mb-4">Metas de Produto por Faixa (Vendas Realizadas)</h3>
+            <div class="overflow-x-auto">
+                <table class="w-full text-left border-collapse">
+                    <thead>
+                        <tr class="bg-gray-200">
+                            <th class="p-4 rounded-tl-lg">Produto</th>
+                            <th class="p-4">Vendido</th>
+                            <th class="p-4">Meta Faixa 75</th>
+                            <th class="p-4">Meta Faixa 150</th>
+                            <th class="p-4 rounded-tr-lg">Meta Faixa 200</th>
+                        </tr>
+                    </thead>
+                    <tbody id="product-goals-body">
+                        <!-- Product goals will be populated here -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal de Confirmação de Exclusão -->
+    <div id="delete-modal" class="fixed inset-0 bg-gray-600 bg-opacity-50 hidden overflow-y-auto h-full w-full">
+        <div class="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-md bg-white">
+            <div class="mt-3 text-center">
+                <h3 class="text-lg leading-6 font-medium text-gray-900">Confirmar Exclusão</h3>
+                <div class="mt-2 px-7 py-3">
+                    <p class="text-sm text-gray-500">Tem certeza que deseja excluir esta venda? Esta ação não pode ser desfeita.</p>
+                </div>
+                <div class="items-center px-4 py-3">
+                    <button id="confirm-delete-btn" class="px-4 py-2 bg-red-600 text-white text-base font-medium rounded-md w-full shadow-sm hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2">
+                        Excluir
+                    </button>
+                    <button id="cancel-delete-btn" class="mt-3 px-4 py-2 bg-gray-200 text-gray-800 text-base font-medium rounded-md w-full shadow-sm hover:bg-gray-300 focus:outline-none focus:ring-2 focus:ring-gray-400 focus:ring-offset-2">
+                        Cancelar
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script type="module">
+        // Importa os módulos necessários do Firebase
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+        import { getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword, onAuthStateChanged, signOut, signInWithCustomToken } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import { getFirestore, collection, addDoc, onSnapshot, query, deleteDoc, doc, setDoc, getDoc, setLogLevel, serverTimestamp, where, updateDoc } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+
+        // Variáveis globais fornecidas pelo ambiente
+        const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
+        const firebaseConfig = typeof __firebase_config !== 'undefined' ? JSON.parse(__firebase_config) : {
+            apiKey: "AIzaSyC293ALvoMmnm6ygd-t9FecegMjln9lEkc",
+            authDomain: "calculadora-de-vendas.firebaseapp.com",
+            projectId: "calculadora-de-vendas",
+            storageBucket: "calculadora-de-vendas.firebasestorage.app",
+            messagingSenderId: "633108525289",
+            appId: "1:633108525289:web:0b4147c2aa71e637aa4078"
+        };
+        const initialAuthToken = typeof __initial_auth_token !== 'undefined' ? __initial_auth_token : null;
+
+        // Inicializa o Firebase
+        let app, db, auth, userId;
+        setLogLevel('debug');
+
+        // Dados para comissão, receita e metas
+        const commissionData = {
+            'Migração Up':    [8, 8, 9, 10, 11, 12, 13, 14],
+            'Migração Mid':   [4, 4, 5, 6, 7, 8, 9, 10],
+            'Migração Down':  [2, 2, 3, 4, 5, 6, 7, 8],
+            'GPON':           [20, 20, 22, 25, 28, 31, 35, 40],
+            'Altas Portadas': [6, 6, 8, 10, 12, 14, 16, 20],
+            'Altas Novas':    [3, 3, 4, 5, 6, 7, 8, 10],
+            'VVN':            [10, 10, 12, 14, 16, 18, 20, 22],
+        };
+
+        const revenuePercentages = [11, 11, 13, 16, 19, 22, 28, 35];
+
+        const goalData = {
+            'Receita (R$)': [750, 1500, 3000],
+            'GPON': [3, 6, 9],
+            'Altas Portadas': [5, 15, 30],
+            'Altas Novas': [5, 15, 30],
+            'Contratos (CNPJ\'s)': [1, 1.5, 2],
+            'VVN': [5, 15, 25],
+            'Aparelhos (R$)': [8000, 20000, 30000],
+            'Migração': [75, 150, 200],
+        };
+        
+        const productsForGoals = ['Migração', 'GPON', 'Altas Portadas', 'Altas Novas', 'VVN', 'Aparelhos (R$)'];
+
+        // Elementos DOM
+        const totalRevenueEl = document.getElementById('total-revenue');
+        const estimatedCommissionEl = document.getElementById('estimated-commission');
+        const currentTierEl = document.getElementById('current-tier');
+        const progressFillEl = document.getElementById('progress-fill');
+        const progressTextEl = document.getElementById('progress-text');
+        const salesForm = document.getElementById('sale-form');
+        const salesListBodyEl = document.getElementById('sales-list-body');
+        const addProductBtn = document.getElementById('add-product-btn');
+        const productsContainer = document.getElementById('products-container');
+        const salesMessageEl = document.getElementById('sales-message');
+        const productGoalsBodyEl = document.getElementById('product-goals-body');
+        const revenueGoalsBodyEl = document.getElementById('revenue-goals-body');
+        const commissionDetailsBodyEl = document.getElementById('commission-details-body');
+        const consultantNameInput = document.getElementById('consultant-name');
+        const cnpjInput = document.getElementById('cnpj');
+        const deleteModal = document.getElementById('delete-modal');
+        const confirmDeleteBtn = document.getElementById('confirm-delete-btn');
+        const cancelDeleteBtn = document.getElementById('cancel-delete-btn');
+        const saveSaleBtn = document.getElementById('save-sale-btn');
+        const saveSaleBtnText = document.getElementById('save-sale-btn-text');
+        const saveSaleSpinner = document.getElementById('save-sale-spinner');
+        const authSection = document.getElementById('auth-section');
+        const appSection = document.getElementById('app-section');
+        const authForm = document.getElementById('auth-form');
+        const authEmailInput = document.getElementById('auth-email');
+        const authPasswordInput = document.getElementById('auth-password');
+        const authMessageEl = document.getElementById('auth-message');
+        const authBtn = document.getElementById('auth-btn');
+        const toggleAuthBtn = document.getElementById('toggle-auth-btn');
+        const logoutBtn = document.getElementById('logout-btn');
+        const periodFilterEl = document.getElementById('period-filter');
+        const pendingRevenueEl = document.getElementById('pending-revenue');
+        const deniedRevenueEl = document.getElementById('denied-revenue');
+
+
+        const SALE_STATUS = {
+            PENDING: 'aceite enviado',
+            ACCEPTED: 'aceite realizado',
+            DENIED: 'aceite negado'
+        };
+
+        let isRegisterMode = false;
+        let saleIdToDelete = null;
+
+        function displayMessage(message, type) {
+            salesMessageEl.textContent = message;
+            salesMessageEl.className = `p-4 mb-4 text-sm rounded-lg ${type === 'success' ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'}`;
+            salesMessageEl.style.display = 'block';
+            setTimeout(() => {
+                salesMessageEl.style.display = 'none';
+            }, 5000);
+        }
+
+        function displayAuthMessage(message, type) {
+            authMessageEl.textContent = message;
+            authMessageEl.className = `p-4 mb-4 text-sm rounded-lg ${type === 'success' ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'}`;
+            authMessageEl.style.display = 'block';
+        }
+
+        function setSaveLoading(isLoading) {
+            if (isLoading) {
+                saveSaleBtnText.textContent = 'Salvando...';
+                saveSaleSpinner.classList.remove('hidden');
+                saveSaleBtn.disabled = true;
+                saveSaleBtn.classList.add('animate-pulse');
+            } else {
+                saveSaleBtnText.textContent = 'Salvar Venda';
+                saveSaleSpinner.classList.add('hidden');
+                saveSaleBtn.disabled = false;
+                saveSaleBtn.classList.remove('animate-pulse');
+            }
+        }
+        
+        async function initializeFirebase() {
+            try {
+                if (Object.keys(firebaseConfig).length === 0) {
+                    displayMessage("Erro: A configuração do Firebase está faltando.", "error");
+                    console.error("Firebase config is missing.");
+                    return;
+                }
+                
+                app = initializeApp(firebaseConfig);
+                auth = getAuth(app);
+                db = getFirestore(app);
+
+                setSaveLoading(true);
+
+                onAuthStateChanged(auth, async (user) => {
+                    if (user) {
+                        userId = user.uid;
+                        authSection.classList.add('hidden');
+                        appSection.classList.remove('hidden');
+                        loadConsultantName();
+                        createPeriodOptions();
+                        listenToSales();
+                        setSaveLoading(false);
+
+                    } else {
+                        authSection.classList.remove('hidden');
+                        appSection.classList.add('hidden');
+                        salesListBodyEl.innerHTML = '';
+                        updateDashboard([]);
+                        setSaveLoading(true);
+                    }
+                });
+
+                if (initialAuthToken) {
+                    await signInWithCustomToken(auth, initialAuthToken);
+                }
+            } catch (e) {
+                console.error("Erro ao inicializar Firebase: ", e);
+                displayMessage("Erro ao inicializar o aplicativo. Por favor, tente novamente.", "error");
+            }
+        }
+
+        async function saveSale(saleData) {
+            if (!userId || !db) {
+                displayMessage("Erro: O aplicativo não está pronto. Por favor, aguarde.", "error");
+                return;
+            }
+
+            setSaveLoading(true);
+            try {
+                const salesRef = collection(db, `artifacts/${appId}/public/data/sales`);
+                await addDoc(salesRef, { ...saleData, consultantId: userId, consultantName: consultantNameInput.value });
+                displayMessage("Venda salva com sucesso!", "success");
+                salesForm.reset();
+                productsContainer.innerHTML = '';
+                createProductInputGroup();
+            } catch (e) {
+                console.error("Erro ao salvar a venda: ", e);
+                displayMessage(`Erro ao salvar a venda. Detalhes: ${e.message}`, "error");
+            } finally {
+                setSaveLoading(false);
+            }
+        }
+
+        async function deleteSale(saleId) {
+            if (!userId || !db) return;
+            try {
+                const saleRef = doc(db, `artifacts/${appId}/public/data/sales`, saleId);
+                await deleteDoc(saleRef);
+                displayMessage("Venda excluída com sucesso!", "success");
+            } catch (e) {
+                console.error("Erro ao excluir a venda: ", e);
+                displayMessage("Erro ao excluir a venda. Por favor, tente novamente.", "error");
+            }
+        }
+        
+        async function updateSaleStatus(saleId, newStatus) {
+            if (!db || !userId) {
+                displayMessage("Erro: O aplicativo não está pronto. Por favor, aguarde.", "error");
+                return;
+            }
+            try {
+                const saleRef = doc(db, `artifacts/${appId}/public/data/sales`, saleId);
+                await updateDoc(saleRef, {
+                    status: newStatus
+                });
+                displayMessage("Status da venda atualizado com sucesso!", "success");
+            } catch (e) {
+                console.error("Erro ao atualizar o status da venda: ", e);
+                displayMessage(`Erro ao atualizar o status. Detalhes: ${e.message}`, "error");
+            }
+        }
+
+        async function saveConsultantName(name) {
+            if (!name || !userId) return;
+            try {
+                const consultantProfileRef = doc(db, `artifacts/${appId}/public/data/consultants`, userId);
+                await setDoc(consultantProfileRef, { consultantName: name }, { merge: true });
+            } catch (e) {
+                console.error("Erro ao salvar o nome do consultor: ", e);
+            }
+        }
+
+        async function loadConsultantName() {
+            if (!userId) return;
+            try {
+                const consultantProfileRef = doc(db, `artifacts/${appId}/public/data/consultants`, userId);
+                const docSnap = await getDoc(consultantProfileRef);
+                if (docSnap.exists()) {
+                    consultantNameInput.value = docSnap.data().consultantName || '';
+                }
+            } catch (e) {
+                console.error("Erro ao carregar o nome do consultor: ", e);
+            }
+        }
+        
+        function createPeriodOptions() {
+            periodFilterEl.innerHTML = '';
+            const today = new Date();
+            const months = ['Janeiro', 'Fevereiro', 'Março', 'Abril', 'Maio', 'Junho', 'Julho', 'Agosto', 'Setembro', 'Outubro', 'Novembro', 'Dezembro'];
+
+            for (let i = 0; i < 3; i++) {
+                const date = new Date(today.getFullYear(), today.getMonth() - i, 1);
+                const monthName = months[date.getMonth()];
+                const year = date.getFullYear();
+                const option = document.createElement('option');
+                option.value = `${year}-${(date.getMonth() + 1).toString().padStart(2, '0')}`;
+                option.textContent = `${monthName} ${year}`;
+                periodFilterEl.appendChild(option);
+            }
+        }
+
+        function listenToSales() {
+            if (!db || !userId) {
+                return;
+            }
+            const salesRef = collection(db, `artifacts/${appId}/public/data/sales`);
+            
+            const salesQuery = query(salesRef, where('consultantId', '==', userId));
+
+            onSnapshot(salesQuery, (snapshot) => {
+                let sales = [];
+                snapshot.forEach((doc) => {
+                    sales.push({ id: doc.id, ...doc.data() });
+                });
+
+                const selectedPeriod = periodFilterEl.value;
+                if (!selectedPeriod) return;
+
+                const [year, month] = selectedPeriod.split('-');
+                const startDate = new Date(year, month - 1, 1);
+                const endDate = new Date(year, month, 1);
+                
+                const filteredSales = sales.filter(sale => {
+                    if (sale.timestamp && sale.timestamp.toDate) {
+                        const saleDate = sale.timestamp.toDate();
+                        return saleDate >= startDate && saleDate < endDate;
+                    }
+                    return false;
+                });
+                
+                updateDashboard(filteredSales);
+                renderSalesList(filteredSales);
+            }, (error) => {
+                console.error("Erro ao ouvir atualizações do Firestore: ", error);
+                displayMessage("Erro de conexão com o banco de dados. Os dados podem não estar atualizados.", "error");
+            });
+        }
+        
+        function calculatePerformance(acceptedSales) {
+            let totalRevenue = 0;
+            const productsSoldSummary = {};
+            let totalMigracaoSold = 0;
+            let totalAparelhosSoldValue = 0;
+
+            acceptedSales.forEach(sale => {
+                const saleProducts = JSON.parse(sale.products);
+                saleProducts.forEach(p => {
+                    const productNameKey = p.name.includes('Migração') ? 'Migração' : p.name;
+                    productsSoldSummary[productNameKey] = (productsSoldSummary[productNameKey] || 0) + p.quantity;
+                    
+                    if (['Migração Up', 'Migração Mid', 'Migração Down'].includes(p.name)) {
+                        totalMigracaoSold += p.quantity;
+                    }
+
+                    if (p.name === 'Aparelhos (R$)') {
+                        totalAparelhosSoldValue += p.revenue;
+                    } else {
+                        totalRevenue += p.revenue;
+                    }
+                });
+            });
+
+            productsSoldSummary['Migração'] = totalMigracaoSold;
+            productsSoldSummary['Aparelhos (R$)'] = totalAparelhosSoldValue;
+            totalRevenue += totalAparelhosSoldValue * 0.01;
+            
+            return { totalRevenue, productsSoldSummary };
+        }
+
+        function determineCurrentTier(totalRevenue, productsSoldSummary) {
+            let currentTier = 0;
+            const revenueGoals = goalData['Receita (R$)'];
+            
+            if (totalRevenue >= revenueGoals[0]) currentTier++;
+            if (totalRevenue >= revenueGoals[1]) currentTier++;
+            if (totalRevenue >= revenueGoals[2]) currentTier++;
+
+            productsForGoals.forEach(product => {
+                const sold = productsSoldSummary[product] || 0;
+                const goals = goalData[product] || [];
+                if (goals.length > 0 && sold >= goals[0]) currentTier++;
+                if (goals.length > 1 && sold >= goals[1]) currentTier++;
+                if (goals.length > 2 && sold >= goals[2]) currentTier++;
+            });
+
+            return currentTier;
+        }
+
+        function calculateCommission(acceptedSales, totalRevenue, tierIndexForCommission) {
+            let totalCommission = 0;
+            const commissionDetails = {};
+
+            acceptedSales.forEach(sale => {
+                const saleProducts = JSON.parse(sale.products);
+                saleProducts.forEach(p => {
+                    const maxIndex = (commissionData[p.name]?.length || 1) - 1;
+                    const cappedTierIndex = Math.min(tierIndexForCommission, maxIndex);
+                    
+                    const commissionRate = commissionData[p.name] ? commissionData[p.name][cappedTierIndex] : 0;
+                    const productCommission = (p.quantity || 0) * commissionRate;
+                    
+                    if (productCommission > 0) {
+                        if (commissionDetails[p.name]) {
+                            commissionDetails[p.name].value += productCommission;
+                            commissionDetails[p.name].quantity += (p.quantity || 0);
+                        } else {
+                            commissionDetails[p.name] = {
+                                value: productCommission,
+                                quantity: (p.quantity || 0),
+                                rate: commissionRate
+                            };
+                        }
+                    }
+                });
+            });
+            
+            const maxRevenueIndex = revenuePercentages.length - 1;
+            const cappedRevenueTierIndex = Math.min(tierIndexForCommission, maxRevenueIndex);
+            const revenueCommissionPercentage = revenuePercentages[cappedRevenueTierIndex];
+
+            const revenueCommission = totalRevenue * (revenueCommissionPercentage / 100);
+            commissionDetails['Receita Total'] = {
+                value: revenueCommission,
+                rate: `${revenueCommissionPercentage}%`
+            };
+
+            totalCommission = Object.values(commissionDetails).reduce((sum, item) => sum + item.value, 0);
+
+            return { totalCommission, commissionDetails };
+        }
+
+        function updateDashboard(sales) {
+            // 1. Separar vendas por status
+            const acceptedSales = sales.filter(s => s.status === SALE_STATUS.ACCEPTED);
+            const pendingSales = sales.filter(s => s.status === SALE_STATUS.PENDING);
+            const deniedSales = sales.filter(s => s.status === SALE_STATUS.DENIED);
+
+            // 2. Atualizar receitas pendentes e negadas
+            const pendingRevenue = pendingSales.reduce((acc, sale) => acc + (sale.totalRevenue || 0), 0);
+            const deniedRevenue = deniedSales.reduce((acc, sale) => acc + (sale.totalRevenue || 0), 0);
+            pendingRevenueEl.textContent = `R$ ${pendingRevenue.toFixed(2).replace('.', ',')}`;
+            deniedRevenueEl.textContent = `R$ ${deniedRevenue.toFixed(2).replace('.', ',')}`;
+
+            // 3. Calcular performance baseada nas vendas aceitas
+            const { totalRevenue, productsSoldSummary } = calculatePerformance(acceptedSales);
+
+            // 4. Determinar a faixa atual
+            const currentTier = determineCurrentTier(totalRevenue, productsSoldSummary);
+            
+            // 5. Calcular comissão
+            const { totalCommission, commissionDetails } = calculateCommission(acceptedSales, totalRevenue, currentTier);
+
+            // 6. Atualizar os elementos principais do dashboard
+            totalRevenueEl.textContent = `R$ ${totalRevenue.toFixed(2).replace('.', ',')}`;
+            estimatedCommissionEl.textContent = `R$ ${totalCommission.toFixed(2).replace('.', ',')}`;
+            currentTierEl.textContent = `Faixa ${currentTier}`;
+            
+            // 7. Atualizar barra de progresso
+            const revenueGoals = goalData['Receita (R$)'];
+            let progressPercentage = 0;
+            const nextRevenueGoalIndex = revenueGoals.findIndex(goal => totalRevenue < goal);
+            
+            if (nextRevenueGoalIndex !== -1) {
+                const nextTierGoal = revenueGoals[nextRevenueGoalIndex];
+                progressPercentage = Math.min(100, (totalRevenue / nextTierGoal) * 100);
+                progressTextEl.textContent = `Progresso para a próxima meta de receita:`;
+            } else {
+                progressPercentage = 100;
+                progressTextEl.textContent = 'Parabéns! Você alcançou a meta de receita mais alta!';
+            }
+
+            progressFillEl.style.width = `${progressPercentage}%`;
+            progressFillEl.className = `progress-fill ${progressPercentage >= 100 ? 'bg-green-500' : 'bg-blue-500'}`;
+            
+            // 8. Renderizar tabelas de detalhes
+            renderRevenueGoals(totalRevenue);
+            renderProductGoals(productsSoldSummary);
+            renderCommissionDetails(commissionDetails);
+        }
+        
+        function renderSalesList(sales) {
+            salesListBodyEl.innerHTML = '';
+            sales.sort((a, b) => {
+                const dateA = a.timestamp?.toDate() || new Date(0);
+                const dateB = b.timestamp?.toDate() || new Date(0);
+                return dateB.getTime() - dateA.getTime();
+            });
+            
+            if (sales.length === 0) {
+                salesListBodyEl.innerHTML = `<tr><td colspan="7" class="p-4 text-center text-gray-500">Nenhuma venda registrada neste período.</td></tr>`;
+                return;
+            }
+
+            sales.forEach(sale => {
+                const saleProducts = JSON.parse(sale.products);
+                const productsText = saleProducts.map(p => {
+                    const description = p.description ? ` - ${p.description}` : '';
+                    return `${p.name}${description}: ${p.quantity} (R$ ${p.revenue.toFixed(2).replace('.', ',')})`;
+                }).join('<br>');
+
+                const date = sale.timestamp ? new Date(sale.timestamp.seconds * 1000).toLocaleString('pt-BR') : 'N/A';
+                const totalRevenueFormatted = (sale.totalRevenue || 0).toFixed(2).replace('.', ',');
+                const status = sale.status || SALE_STATUS.PENDING;
+
+                const row = document.createElement('tr');
+                row.className = "border-t border-gray-200";
+                row.innerHTML = `
+                    <td class="p-4 text-gray-800">${sale.cnpj || 'N/A'}</td>
+                    <td class="p-4 text-gray-800">${sale.companyName}</td>
+                    <td class="p-4 text-sm">${productsText}</td>
+                    <td class="p-4 text-gray-500 text-sm">${date}</td>
+                    <td class="p-4">R$ ${totalRevenueFormatted}</td>
+                    <td class="p-4">
+                        <select class="status-select mt-1 block w-full p-2 rounded-md border-gray-300 shadow-sm focus:ring-blue-500 focus:border-blue-500 bg-white" data-sale-id="${sale.id}">
+                            <option value="${SALE_STATUS.PENDING}" ${status === SALE_STATUS.PENDING ? 'selected' : ''}>Enviado</option>
+                            <option value="${SALE_STATUS.ACCEPTED}" ${status === SALE_STATUS.ACCEPTED ? 'selected' : ''}>Realizado</option>
+                            <option value="${SALE_STATUS.DENIED}" ${status === SALE_STATUS.DENIED ? 'selected' : ''}>Negado</option>
+                        </select>
+                    </td>
+                    <td class="p-4">
+                        <button class="text-red-500 hover:text-red-700 delete-btn" data-sale-id="${sale.id}">Excluir</button>
+                    </td>
+                `;
+                salesListBodyEl.appendChild(row);
+            });
+            
+            document.querySelectorAll('.delete-btn').forEach(button => {
+                button.addEventListener('click', (e) => {
+                    saleIdToDelete = e.target.getAttribute('data-sale-id');
+                    deleteModal.classList.remove('hidden');
+                });
+            });
+
+            document.querySelectorAll('.status-select').forEach(select => {
+                select.addEventListener('change', (e) => {
+                    const saleId = e.target.getAttribute('data-sale-id');
+                    const newStatus = e.target.value;
+                    updateSaleStatus(saleId, newStatus);
+                });
+            });
+        }
+
+        function renderCommissionDetails(details) {
+            commissionDetailsBodyEl.innerHTML = '';
+            
+            const sortedKeys = Object.keys(details).sort();
+
+            sortedKeys.forEach(key => {
+                const detail = details[key];
+                const row = document.createElement('tr');
+                row.className = "border-t border-gray-200";
+                
+                let itemName = key;
+                if (detail.quantity) {
+                    itemName = `${key} (${detail.quantity})`;
+                }
+
+                row.innerHTML = `
+                    <td class="p-4">${itemName}</td>
+                    <td class="p-4">R$ ${detail.value.toFixed(2).replace('.', ',')}</td>
+                    <td class="p-4">${detail.rate}</td>
+                `;
+                commissionDetailsBodyEl.appendChild(row);
+            });
+        }
+        
+        function renderRevenueGoals(totalRevenue) {
+            revenueGoalsBodyEl.innerHTML = '';
+            const goals = goalData['Receita (R$)'];
+            
+            goals.forEach(goal => {
+                const isMet = totalRevenue >= goal;
+                const status = isMet ? 'Atingida' : 'Ainda não';
+                const statusClass = isMet ? 'text-green-500 font-bold' : 'text-gray-500';
+                
+                const row = document.createElement('tr');
+                row.className = "border-t border-gray-200";
+                row.innerHTML = `
+                    <td class="p-4">R$ ${goal.toFixed(2).replace('.', ',')}</td>
+                    <td class="p-4 ${statusClass}">${status}</td>
+                `;
+                revenueGoalsBodyEl.appendChild(row);
+            });
+        }
+
+        function renderProductGoals(productsSoldSummary) {
+            productGoalsBodyEl.innerHTML = '';
+            
+            productsForGoals.forEach(product => {
+                const sold = productsSoldSummary[product] || 0;
+                const goals = goalData[product] || [0, 0, 0];
+                
+                const row = document.createElement('tr');
+                row.className = "border-t border-gray-200";
+
+                const goal75Met = sold >= goals[0];
+                const goal150Met = sold >= goals[1];
+                const goal200Met = sold >= goals[2];
+
+                let soldValue = sold;
+                if (product === 'Aparelhos (R$)') {
+                    soldValue = `R$ ${sold.toFixed(2).replace('.', ',')}`;
+                }
+
+                row.innerHTML = `
+                    <td class="p-4">${product}</td>
+                    <td class="p-4 text-center">${soldValue}</td>
+                    <td class="p-4 text-center ${goal75Met ? 'text-green-500 font-bold' : ''}">${product === 'Aparelhos (R$)' ? `R$ ${goals[0].toFixed(2).replace('.', ',')}` : goals[0]}</td>
+                    <td class="p-4 text-center ${goal150Met ? 'text-green-500 font-bold' : ''}">${product === 'Aparelhos (R$)' ? `R$ ${goals[1].toFixed(2).replace('.', ',')}` : goals[1]}</td>
+                    <td class="p-4 text-center ${goal200Met ? 'text-green-500 font-bold' : ''}">${product === 'Aparelhos (R$)' ? `R$ ${goals[2].toFixed(2).replace('.', ',')}` : goals[2]}</td>
+                `;
+                productGoalsBodyEl.appendChild(row);
+            });
+        }
+
+        function createProductInputGroup() {
+            const group = document.createElement('div');
+            group.className = "product-input-group grid grid-cols-1 sm:grid-cols-2 md:grid-cols-5 gap-4 items-end border-t pt-4 mt-4";
+            group.innerHTML = `
+                <div class="w-full md:col-span-1">
+                    <label class="block text-sm font-medium text-gray-700">Produto</label>
+                    <select class="product-select mt-1 block w-full p-2 rounded-md border-gray-300 shadow-sm focus:ring-blue-500 focus:border-blue-500">
+                        <option value="Migração Up">Migração Up</option>
+                        <option value="Migração Mid">Migração Mid</option>
+                        <option value="Migração Down">Migração Down</option>
+                        <option value="GPON">GPON</option>
+                        <option value="Altas Portadas">Altas Portadas</option>
+                        <option value="Altas Novas">Altas Novas</option>
+                        <option value="VVN">VVN</option>
+                        <option value="Aparelhos (R$)">Aparelhos (R$)</option>
+                        <option value="Avançados">Avançados</option>
+                        <option value="Produtos de TI">Produtos de TI</option>
+                    </select>
+                </div>
+                <div class="w-full md:col-span-1">
+                    <label class="block text-sm font-medium text-gray-700">Descrição</label>
+                    <input type="text" placeholder="Opcional" class="product-description mt-1 block w-full p-2 rounded-md border-gray-300 shadow-sm focus:ring-blue-500 focus:ring-blue-500">
+                </div>
+                <div class="w-full md:col-span-1">
+                     <label class="block text-sm font-medium text-gray-700">Quantidade</label>
+                    <input type="number" placeholder="0" value="0" min="0" class="product-quantity mt-1 block w-full p-2 text-center rounded-md border-gray-300 shadow-sm focus:ring-blue-500 focus:ring-blue-500">
+                </div>
+                <div class="w-full md:col-span-1">
+                    <label class="block text-sm font-medium text-gray-700">Receita (R$)</label>
+                    <input type="number" placeholder="0,00" step="0.01" class="product-revenue mt-1 block w-full p-2 text-center rounded-md border-gray-300 shadow-sm focus:ring-blue-500 focus:ring-blue-500">
+                </div>
+                <div class="w-full flex justify-center md:col-span-1">
+                     <button type="button" class="remove-product-btn text-red-500 hover:text-red-700 text-2xl font-bold p-1 self-center">&times;</button>
+                </div>
+            `;
+            productsContainer.appendChild(group);
+            
+            group.querySelector('.remove-product-btn').addEventListener('click', () => {
+                if (productsContainer.childElementCount > 1) {
+                    group.remove();
+                }
+            });
+        }
+        
+        function formatCNPJ(value) {
+            let v = value.replace(/\D/g, "");
+            v = v.replace(/^(\d{2})(\d)/, "$1.$2");
+            v = v.replace(/^(\d{2})\.(\d{3})(\d)/, "$1.$2.$3");
+            v = v.replace(/\.(\d{3})(\d)/, ".$1/$2");
+            v = v.replace(/(\d{4})(\d)/, "$1-$2");
+            return v;
+        }
+
+        authForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const email = authEmailInput.value;
+            const password = authPasswordInput.value;
+            authMessageEl.style.display = 'none';
+
+            try {
+                if (isRegisterMode) {
+                    await createUserWithEmailAndPassword(auth, email, password);
+                    displayAuthMessage('Registro bem-sucedido! Por favor, faça login.', 'success');
+                    isRegisterMode = false;
+                    toggleAuthBtn.textContent = 'Não tem uma conta? Registrar';
+                    authBtn.textContent = 'Entrar';
+                } else {
+                    await signInWithEmailAndPassword(auth, email, password);
+                }
+            } catch (e) {
+                console.error("Erro de autenticação: ", e.message);
+                displayAuthMessage('Erro de autenticação. Verifique seu e-mail e senha.', 'error');
+            }
+        });
+
+        toggleAuthBtn.addEventListener('click', () => {
+            isRegisterMode = !isRegisterMode;
+            if (isRegisterMode) {
+                toggleAuthBtn.textContent = 'Já tem uma conta? Entrar';
+                authBtn.textContent = 'Registrar';
+            } else {
+                toggleAuthBtn.textContent = 'Não tem uma conta? Registrar';
+                authBtn.textContent = 'Entrar';
+            }
+        });
+
+        logoutBtn.addEventListener('click', async () => {
+            await signOut(auth);
+        });
+
+        salesForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const consultantName = consultantNameInput.value;
+            const companyName = document.getElementById('company-name').value;
+            const cnpj = cnpjInput.value;
+            const crm = document.getElementById('crm').value;
+            const status = document.getElementById('sale-status').value;
+            
+            saveConsultantName(consultantName);
+
+            const productInputs = productsContainer.querySelectorAll('.product-input-group');
+            const productsSold = [];
+            let totalRevenue = 0;
+            
+          __   let hasValidProduct = false;
+            productInputs.forEach(inputGroup => {
+                const productSelect = inputGroup.querySelector('.product-select');
+                const descriptionInput = inputGroup.querySelector('.product-description');
+                const quantityInput = inputGroup.querySelector('.product-quantity');
+                const revenueInput = inputGroup.querySelector('.product-revenue');
+                
+                const productName = productSelect.value;
+                const description = descriptionInput.value;
+                const quantity = parseFloat(quantityInput.value) || 0;
+                const revenue = parseFloat(revenueInput.value) || 0;
+
+                if (quantity > 0 || revenue > 0) {
+                    hasValidProduct = true;
+                    productsSold.push({ name: productName, description: description, quantity: quantity, revenue: revenue });
+                    if (productName === 'Aparelhos (R$)') {
+                        totalRevenue += revenue * 0.01;
+                    } else {
+                        totalRevenue += revenue;
+                    }
+                }
+            });
+
+            if (!hasValidProduct) {
+                displayMessage("Por favor, adicione pelo menos um produto à venda com quantidade ou receita maior que zero.", "error");
+                return;
+            }
+            
+            const newSale = {
+                consultantName,
+                companyName,
+                cnpj,
+                crm,
+                status,
+                products: JSON.stringify(productsSold),
+                totalRevenue,
+                timestamp: serverTimestamp()
+            };
+
+            await saveSale(newSale);
+        });
+
+        addProductBtn.addEventListener('click', () => {
+            createProductInputGroup();
+        });
+
+        cnpjInput.addEventListener('input', (e) => {
+            e.target.value = formatCNPJ(e.target.value);
+        });
+
+        confirmDeleteBtn.addEventListener('click', () => {
+            if (saleIdToDelete) {
+                deleteSale(saleIdToDelete);
+                saleIdToDelete = null;
+            }
+            deleteModal.classList.add('hidden');
+        });
+
+        cancelDeleteBtn.addEventListener('click', () => {
+            deleteModal.classList.add('hidden');
+            saleIdToDelete = null;
+        });
+        
+        periodFilterEl.addEventListener('change', () => {
+            listenToSales();
+        });
+
+        window.onload = () => {
+            initializeFirebase();
+            createProductInputGroup();
+        };
+
+    </script>
 </body>
 </html>
 
