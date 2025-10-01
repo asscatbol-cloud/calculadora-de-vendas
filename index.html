@@ -314,7 +314,7 @@
         // Importa os módulos necessários do Firebase
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
         import { getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword, onAuthStateChanged, signOut, signInWithCustomToken } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
-        import { getFirestore, collection, addDoc, onSnapshot, query, deleteDoc, doc, setDoc, getDoc, setLogLevel, serverTimestamp, where, orderBy } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+        import { getFirestore, collection, addDoc, onSnapshot, query, deleteDoc, doc, setDoc, getDoc, setLogLevel, serverTimestamp, where, updateDoc } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
         // Variáveis globais fornecidas pelo ambiente
         const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
@@ -498,6 +498,23 @@
             } catch (e) {
                 console.error("Erro ao excluir a venda: ", e);
                 displayMessage("Erro ao excluir a venda. Por favor, tente novamente.", "error");
+            }
+        }
+        
+        async function updateSaleStatus(saleId, newStatus) {
+            if (!db || !userId) {
+                displayMessage("Erro: O aplicativo não está pronto. Por favor, aguarde.", "error");
+                return;
+            }
+            try {
+                const saleRef = doc(db, `artifacts/${appId}/public/data/sales`, saleId);
+                await updateDoc(saleRef, {
+                    status: newStatus
+                });
+                displayMessage("Status da venda atualizado com sucesso!", "success");
+            } catch (e) {
+                console.error("Erro ao atualizar o status da venda: ", e);
+                displayMessage(`Erro ao atualizar o status. Detalhes: ${e.message}`, "error");
             }
         }
 
@@ -721,26 +738,7 @@
 
                 const date = sale.timestamp ? new Date(sale.timestamp.seconds * 1000).toLocaleString('pt-BR') : 'N/A';
                 const totalRevenueFormatted = (sale.totalRevenue || 0).toFixed(2).replace('.', ',');
-
                 const status = sale.status || 'aceite enviado';
-                let statusClass = '';
-                let statusText = '';
-
-                switch (status) {
-                    case 'aceite realizado':
-                        statusClass = 'text-green-800 bg-green-100';
-                        statusText = 'Realizado';
-                        break;
-                    case 'aceite negado':
-                        statusClass = 'text-red-800 bg-red-100';
-                        statusText = 'Negado';
-                        break;
-                    case 'aceite enviado':
-                    default:
-                        statusClass = 'text-yellow-800 bg-yellow-100';
-                        statusText = 'Enviado';
-                        break;
-                }
 
                 const row = document.createElement('tr');
                 row.className = "border-t border-gray-200";
@@ -751,9 +749,11 @@
                     <td class="p-4 text-gray-500 text-sm">${date}</td>
                     <td class="p-4">R$ ${totalRevenueFormatted}</td>
                     <td class="p-4">
-                        <span class="px-2 py-1 font-semibold leading-tight text-xs rounded-full ${statusClass}">
-                            ${statusText}
-                        </span>
+                        <select class="status-select mt-1 block w-full p-2 rounded-md border-gray-300 shadow-sm focus:ring-blue-500 focus:border-blue-500 bg-white" data-sale-id="${sale.id}">
+                            <option value="aceite enviado" ${status === 'aceite enviado' ? 'selected' : ''}>Enviado</option>
+                            <option value="aceite realizado" ${status === 'aceite realizado' ? 'selected' : ''}>Realizado</option>
+                            <option value="aceite negado" ${status === 'aceite negado' ? 'selected' : ''}>Negado</option>
+                        </select>
                     </td>
                     <td class="p-4">
                         <button class="text-red-500 hover:text-red-700 delete-btn" data-sale-id="${sale.id}">Excluir</button>
@@ -766,6 +766,14 @@
                 button.addEventListener('click', (e) => {
                     saleIdToDelete = e.target.getAttribute('data-sale-id');
                     deleteModal.classList.remove('hidden');
+                });
+            });
+
+            document.querySelectorAll('.status-select').forEach(select => {
+                select.addEventListener('change', (e) => {
+                    const saleId = e.target.getAttribute('data-sale-id');
+                    const newStatus = e.target.value;
+                    updateSaleStatus(saleId, newStatus);
                 });
             });
         }
