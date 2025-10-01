@@ -965,7 +965,16 @@
         // --- Event Listeners ---
         authForm.addEventListener('submit', async (e) => {
             e.preventDefault();
-            // ... (lógica inalterada)
+            const email = authEmailInput.value;
+            const password = authPasswordInput.value;
+            authMessageEl.style.display = 'none';
+
+            try {
+                await signInWithEmailAndPassword(auth, email, password);
+            } catch (e) {
+                console.error("Erro de autenticação: ", e.message);
+                displayAuthMessage('Falha no login. Verifique suas credenciais.', 'error');
+            }
         });
 
         logoutBtn.addEventListener('click', async () => await signOut(auth));
@@ -976,4 +985,9 @@
 
         dashboardTabBtn.addEventListener('click', () => showTab('dashboard'));
         goalsTabBtn.addEventListener('click', () => showTab('goals'));
+        comparisonTabBtn.addEventListener('click', () => showTab('comparison'));
+
+        dailyProductFilter.addEventListener('change', () => updateDashboard(allSalesData, allConsultantsData));
+
+        goalsMonthSelect.addEventListener('change', loadAndRenderGoals);
 
