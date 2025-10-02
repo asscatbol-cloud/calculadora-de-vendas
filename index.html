@@ -60,7 +60,7 @@
 <body class="bg-gray-100 flex items-center justify-center min-h-screen p-4">
 
     <!-- Login/Register Section -->
-    <div id="auth-section" class="container w-full max-w-md p-6 bg-white rounded-lg shadow-md">
+    <div id="auth-section" class="container w-full max-w-md p-6 bg-white rounded-lg shadow-md hidden">
         <h2 class="text-2xl font-bold text-center mb-6 text-gray-800">Acesso do Consultor</h2>
         <div id="auth-message" class="hidden p-4 mb-4 text-sm rounded-lg" role="alert"></div>
         <form id="auth-form" class="space-y-4">
@@ -99,12 +99,12 @@
             </select>
         </div>
         
-        <!-- Dashboard de Desempenho (Vendas Realizadas) -->
+        <!-- Dashboard de Desempenho -->
         <div>
-            <h2 class="text-xl font-semibold mb-4">Desempenho (Vendas com Aceite Realizado)</h2>
+            <h2 class="text-xl font-semibold mb-4">Seu Desempenho</h2>
             <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
                 <div class="bg-indigo-50 p-6 rounded-lg shadow-sm">
-                    <p class="text-sm font-medium text-indigo-700">Receita Realizada</p>
+                    <p class="text-sm font-medium text-indigo-700">Receita Total</p>
                     <p id="total-revenue" class="mt-1 text-2xl font-bold text-indigo-900">R$ 0,00</p>
                 </div>
                 <div class="bg-purple-50 p-6 rounded-lg shadow-sm">
@@ -128,36 +128,9 @@
 
         <hr class="my-8">
 
-        <!-- Vendas Pendentes -->
-        <div>
-            <h2 class="text-xl font-semibold mb-4">Vendas com Aceite Enviado (Pendentes)</h2>
-            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-                <div class="bg-yellow-50 p-6 rounded-lg shadow-sm">
-                    <p class="text-sm font-medium text-yellow-700">Receita Pendente</p>
-                    <p id="pending-revenue" class="mt-1 text-2xl font-bold text-yellow-900">R$ 0,00</p>
-                </div>
-            </div>
-        </div>
-
-        <hr class="my-8">
-
-        <!-- Vendas Negadas -->
-        <div>
-            <h2 class="text-xl font-semibold mb-4">Vendas com Aceite Negado</h2>
-            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-                <div class="bg-red-50 p-6 rounded-lg shadow-sm">
-                    <p class="text-sm font-medium text-red-700">Receita Negada</p>
-                    <p id="denied-revenue" class="mt-1 text-2xl font-bold text-red-900">R$ 0,00</p>
-                </div>
-            </div>
-        </div>
-
-
-        <hr class="my-8">
-
         <!-- Detalhes da Comissão -->
         <div class="mb-8">
-            <h2 class="text-xl font-semibold mb-4">Detalhes da Comissão (Vendas Realizadas)</h2>
+            <h2 class="text-xl font-semibold mb-4">Detalhes da Comissão</h2>
             <div class="overflow-x-auto">
                 <table class="min-w-full text-left border-collapse">
                     <thead>
@@ -197,15 +170,6 @@
                     <label for="crm" class="block text-sm font-medium text-gray-700">CRM (Opcional)</label>
                     <input type="text" id="crm" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
                 </div>
-                <!-- Campo de Status do Aceite -->
-                <div>
-                    <label for="sale-status" class="block text-sm font-medium text-gray-700">Status do Aceite</label>
-                    <select id="sale-status" required class="mt-1 block w-full p-2 rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
-                        <option value="aceite enviado">Aceite Enviado</option>
-                        <option value="aceite realizado">Aceite Realizado</option>
-                        <option value="aceite negado">Aceite Negado</option>
-                    </select>
-                </div>
                 
                 <div id="products-container" class="space-y-4">
                     <!-- Products will be added here dynamically -->
@@ -226,7 +190,7 @@
 
         <!-- Lista de Vendas Registradas -->
         <div class="mb-8">
-            <h2 class="text-xl font-semibold mb-4">Vendas Registradas no Período</h2>
+            <h2 class="text-xl font-semibold mb-4">Vendas Registradas</h2>
             <div class="overflow-x-auto">
                 <table class="min-w-full text-left border-collapse">
                     <thead>
@@ -236,7 +200,6 @@
                             <th class="p-4">Produtos</th>
                             <th class="p-4">Data</th>
                             <th class="p-4">Receita</th>
-                            <th class="p-4">Status</th>
                             <th class="p-4 rounded-tr-lg">Ações</th>
                         </tr>
                     </thead>
@@ -251,7 +214,7 @@
 
         <!-- Acompanhamento de Metas -->
         <div class="mb-8">
-            <h3 class="text-lg font-semibold mb-4">Metas de Receita (Vendas Realizadas)</h3>
+            <h3 class="text-lg font-semibold mb-4">Metas de Receita</h3>
             <div class="overflow-x-auto">
                 <table class="w-full text-left border-collapse">
                     <thead>
@@ -270,7 +233,7 @@
         <hr class="my-8">
 
         <div>
-            <h3 class="text-lg font-semibold mb-4">Metas de Produto por Faixa (Vendas Realizadas)</h3>
+            <h3 class="text-lg font-semibold mb-4">Metas de Produto por Faixa</h3>
             <div class="overflow-x-auto">
                 <table class="w-full text-left border-collapse">
                     <thead>
@@ -314,7 +277,7 @@
         // Importa os módulos necessários do Firebase
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
         import { getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword, onAuthStateChanged, signOut, signInWithCustomToken } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
-        import { getFirestore, collection, addDoc, onSnapshot, query, deleteDoc, doc, setDoc, getDoc, setLogLevel, serverTimestamp, where, updateDoc } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+        import { getFirestore, collection, addDoc, onSnapshot, query, deleteDoc, doc, setDoc, getDoc, setLogLevel, serverTimestamp, where, orderBy } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
         // Variáveis globais fornecidas pelo ambiente
         const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
@@ -334,13 +297,13 @@
 
         // Dados para comissão, receita e metas
         const commissionData = {
-            'Migração Up': [8, 8, 9, 10, 11, 12, 13, 14],
-            'Migração Mid': [4, 4, 5, 6, 7, 8, 9, 10],
-            'Migração Down': [2, 2, 3, 4, 5, 6, 7, 8],
-            'GPON': [20, 20, 22, 25, 28, 31, 35, 40],
+            'Migração Up':    [8, 8, 9, 10, 11, 12, 13, 14],
+            'Migração Mid':   [4, 4, 5, 6, 7, 8, 9, 10],
+            'Migração Down':  [2, 2, 3, 4, 5, 6, 7, 8],
+            'GPON':           [20, 20, 22, 25, 28, 31, 35, 40],
             'Altas Portadas': [6, 6, 8, 10, 12, 14, 16, 20],
-            'Altas Novas': [3, 3, 4, 5, 6, 7, 8, 10],
-            'VVN': [10, 10, 12, 14, 16, 18, 20, 22],
+            'Altas Novas':    [3, 3, 4, 5, 6, 7, 8, 10],
+            'VVN':            [10, 10, 12, 14, 16, 18, 20, 22],
         };
 
         const revenuePercentages = [11, 11, 13, 16, 19, 22, 28, 35];
@@ -390,15 +353,7 @@
         const toggleAuthBtn = document.getElementById('toggle-auth-btn');
         const logoutBtn = document.getElementById('logout-btn');
         const periodFilterEl = document.getElementById('period-filter');
-        const pendingRevenueEl = document.getElementById('pending-revenue');
-        const deniedRevenueEl = document.getElementById('denied-revenue');
 
-
-        const SALE_STATUS = {
-            PENDING: 'aceite enviado',
-            ACCEPTED: 'aceite realizado',
-            DENIED: 'aceite negado'
-        };
 
         let isRegisterMode = false;
         let saleIdToDelete = null;
@@ -435,7 +390,7 @@
         async function initializeFirebase() {
             try {
                 if (Object.keys(firebaseConfig).length === 0) {
-                    displayAuthMessage("Erro: A configuração do Firebase está faltando.", "error");
+                    displayMessage("Erro: A configuração do Firebase está faltando.", "error");
                     console.error("Firebase config is missing.");
                     return;
                 }
@@ -444,24 +399,24 @@
                 auth = getAuth(app);
                 db = getFirestore(app);
 
+                setSaveLoading(true);
+
                 onAuthStateChanged(auth, async (user) => {
                     if (user) {
                         userId = user.uid;
                         authSection.classList.add('hidden');
                         appSection.classList.remove('hidden');
-                        
-                        // Ações pós-login
-                        if (!saveSaleBtn.disabled) { // Evitar múltiplas execuções
-                            setSaveLoading(true); // Mostrar carregamento enquanto os dados são buscados
-                            await loadConsultantName();
-                            createPeriodOptions();
-                            listenToSales();
-                            setSaveLoading(false);
-                        }
+                        loadConsultantName();
+                        createPeriodOptions();
+                        listenToSales();
+                        setSaveLoading(false);
 
                     } else {
                         authSection.classList.remove('hidden');
                         appSection.classList.add('hidden');
+                        salesListBodyEl.innerHTML = '';
+                        updateDashboard([]);
+                        setSaveLoading(true);
                     }
                 });
 
@@ -470,7 +425,7 @@
                 }
             } catch (e) {
                 console.error("Erro ao inicializar Firebase: ", e);
-                displayAuthMessage("Erro crítico na inicialização. Verifique a configuração e recarregue.", "error");
+                displayMessage("Erro ao inicializar o aplicativo. Por favor, tente novamente.", "error");
             }
         }
 
@@ -497,7 +452,6 @@
         }
 
         async function deleteSale(saleId) {
-            if (!userId || !db) return;
             try {
                 const saleRef = doc(db, `artifacts/${appId}/public/data/sales`, saleId);
                 await deleteDoc(saleRef);
@@ -507,29 +461,12 @@
                 displayMessage("Erro ao excluir a venda. Por favor, tente novamente.", "error");
             }
         }
-        
-        async function updateSaleStatus(saleId, newStatus) {
-            if (!db || !userId) {
-                displayMessage("Erro: O aplicativo não está pronto. Por favor, aguarde.", "error");
-                return;
-            }
-            try {
-                const saleRef = doc(db, `artifacts/${appId}/public/data/sales`, saleId);
-                await updateDoc(saleRef, {
-                    status: newStatus
-                });
-                displayMessage("Status da venda atualizado com sucesso!", "success");
-            } catch (e) {
-                console.error("Erro ao atualizar o status da venda: ", e);
-                displayMessage(`Erro ao atualizar o status. Detalhes: ${e.message}`, "error");
-            }
-        }
 
         async function saveConsultantName(name) {
             if (!name || !userId) return;
             try {
-                const consultantProfileRef = doc(db, `artifacts/${appId}/public/data/consultants`, userId);
-                await setDoc(consultantProfileRef, { consultantName: name }, { merge: true });
+                const userDocRef = doc(db, `artifacts/${appId}/users/${userId}`);
+                await setDoc(userDocRef, { consultantName: name }, { merge: true });
             } catch (e) {
                 console.error("Erro ao salvar o nome do consultor: ", e);
             }
@@ -538,10 +475,10 @@
         async function loadConsultantName() {
             if (!userId) return;
             try {
-                const consultantProfileRef = doc(db, `artifacts/${appId}/public/data/consultants`, userId);
-                const docSnap = await getDoc(consultantProfileRef);
-                if (docSnap.exists()) {
-                    consultantNameInput.value = docSnap.data().consultantName || '';
+                const userDocRef = doc(db, `artifacts/${appId}/users/${userId}`);
+                const userDocSnap = await getDoc(userDocRef);
+                if (userDocSnap.exists()) {
+                    consultantNameInput.value = userDocSnap.data().consultantName || '';
                 }
             } catch (e) {
                 console.error("Erro ao carregar o nome do consultor: ", e);
@@ -601,13 +538,13 @@
             });
         }
         
-        function calculatePerformance(acceptedSales) {
+        function updateDashboard(sales) {
             let totalRevenue = 0;
             const productsSoldSummary = {};
             let totalMigracaoSold = 0;
             let totalAparelhosSoldValue = 0;
 
-            acceptedSales.forEach(sale => {
+            sales.forEach(sale => {
                 const saleProducts = JSON.parse(sale.products);
                 saleProducts.forEach(p => {
                     const productNameKey = p.name.includes('Migração') ? 'Migração' : p.name;
@@ -628,11 +565,7 @@
             productsSoldSummary['Migração'] = totalMigracaoSold;
             productsSoldSummary['Aparelhos (R$)'] = totalAparelhosSoldValue;
             totalRevenue += totalAparelhosSoldValue * 0.01;
-            
-            return { totalRevenue, productsSoldSummary };
-        }
 
-        function determineCurrentTier(totalRevenue, productsSoldSummary) {
             let currentTier = 0;
             const revenueGoals = goalData['Receita (R$)'];
             
@@ -647,15 +580,13 @@
                 if (goals.length > 1 && sold >= goals[1]) currentTier++;
                 if (goals.length > 2 && sold >= goals[2]) currentTier++;
             });
-
-            return currentTier;
-        }
-
-        function calculateCommission(acceptedSales, totalRevenue, tierIndexForCommission) {
+            
             let totalCommission = 0;
             const commissionDetails = {};
 
-            acceptedSales.forEach(sale => {
+            const tierIndexForCommission = currentTier; 
+
+            sales.forEach(sale => {
                 const saleProducts = JSON.parse(sale.products);
                 saleProducts.forEach(p => {
                     const maxIndex = (commissionData[p.name]?.length || 1) - 1;
@@ -691,53 +622,26 @@
 
             totalCommission = Object.values(commissionDetails).reduce((sum, item) => sum + item.value, 0);
 
-            return { totalCommission, commissionDetails };
-        }
-
-        function updateDashboard(sales) {
-            // 1. Separar vendas por status
-            const acceptedSales = sales.filter(s => s.status === SALE_STATUS.ACCEPTED);
-            const pendingSales = sales.filter(s => s.status === SALE_STATUS.PENDING);
-            const deniedSales = sales.filter(s => s.status === SALE_STATUS.DENIED);
-
-            // 2. Atualizar receitas pendentes e negadas
-            const pendingRevenue = pendingSales.reduce((acc, sale) => acc + (sale.totalRevenue || 0), 0);
-            const deniedRevenue = deniedSales.reduce((acc, sale) => acc + (sale.totalRevenue || 0), 0);
-            pendingRevenueEl.textContent = `R$ ${pendingRevenue.toFixed(2).replace('.', ',')}`;
-            deniedRevenueEl.textContent = `R$ ${deniedRevenue.toFixed(2).replace('.', ',')}`;
-
-            // 3. Calcular performance baseada nas vendas aceitas
-            const { totalRevenue, productsSoldSummary } = calculatePerformance(acceptedSales);
-
-            // 4. Determinar a faixa atual
-            const currentTier = determineCurrentTier(totalRevenue, productsSoldSummary);
-            
-            // 5. Calcular comissão
-            const { totalCommission, commissionDetails } = calculateCommission(acceptedSales, totalRevenue, currentTier);
-
-            // 6. Atualizar os elementos principais do dashboard
             totalRevenueEl.textContent = `R$ ${totalRevenue.toFixed(2).replace('.', ',')}`;
             estimatedCommissionEl.textContent = `R$ ${totalCommission.toFixed(2).replace('.', ',')}`;
             currentTierEl.textContent = `Faixa ${currentTier}`;
             
-            // 7. Atualizar barra de progresso
-            const revenueGoals = goalData['Receita (R$)'];
+            let nextTierGoal = 0;
             let progressPercentage = 0;
+
             const nextRevenueGoalIndex = revenueGoals.findIndex(goal => totalRevenue < goal);
-            
             if (nextRevenueGoalIndex !== -1) {
-                const nextTierGoal = revenueGoals[nextRevenueGoalIndex];
+                nextTierGoal = revenueGoals[nextRevenueGoalIndex];
                 progressPercentage = Math.min(100, (totalRevenue / nextTierGoal) * 100);
-                progressTextEl.textContent = `Progresso para a próxima meta de receita:`;
+                progressTextEl.textContent = `Progresso para a Faixa ${currentTier + 1}:`;
             } else {
                 progressPercentage = 100;
-                progressTextEl.textContent = 'Parabéns! Você alcançou a meta de receita mais alta!';
+                progressTextEl.textContent = 'Parabéns! Você alcançou a Faixa mais alta!';
             }
 
             progressFillEl.style.width = `${progressPercentage}%`;
             progressFillEl.className = `progress-fill ${progressPercentage >= 100 ? 'bg-green-500' : 'bg-blue-500'}`;
             
-            // 8. Renderizar tabelas de detalhes
             renderRevenueGoals(totalRevenue);
             renderProductGoals(productsSoldSummary);
             renderCommissionDetails(commissionDetails);
@@ -752,7 +656,7 @@
             });
             
             if (sales.length === 0) {
-                salesListBodyEl.innerHTML = `<tr><td colspan="7" class="p-4 text-center text-gray-500">Nenhuma venda registrada neste período.</td></tr>`;
+                salesListBodyEl.innerHTML = `<tr><td colspan="6" class="p-4 text-center text-gray-500">Nenhuma venda registrada neste período.</td></tr>`;
                 return;
             }
 
@@ -765,7 +669,6 @@
 
                 const date = sale.timestamp ? new Date(sale.timestamp.seconds * 1000).toLocaleString('pt-BR') : 'N/A';
                 const totalRevenueFormatted = (sale.totalRevenue || 0).toFixed(2).replace('.', ',');
-                const status = sale.status || SALE_STATUS.PENDING;
 
                 const row = document.createElement('tr');
                 row.className = "border-t border-gray-200";
@@ -775,13 +678,6 @@
                     <td class="p-4 text-sm">${productsText}</td>
                     <td class="p-4 text-gray-500 text-sm">${date}</td>
                     <td class="p-4">R$ ${totalRevenueFormatted}</td>
-                    <td class="p-4">
-                        <select class="status-select mt-1 block w-full p-2 rounded-md border-gray-300 shadow-sm focus:ring-blue-500 focus:border-blue-500 bg-white" data-sale-id="${sale.id}">
-                            <option value="${SALE_STATUS.PENDING}" ${status === SALE_STATUS.PENDING ? 'selected' : ''}>Enviado</option>
-                            <option value="${SALE_STATUS.ACCEPTED}" ${status === SALE_STATUS.ACCEPTED ? 'selected' : ''}>Realizado</option>
-                            <option value="${SALE_STATUS.DENIED}" ${status === SALE_STATUS.DENIED ? 'selected' : ''}>Negado</option>
-                        </select>
-                    </td>
                     <td class="p-4">
                         <button class="text-red-500 hover:text-red-700 delete-btn" data-sale-id="${sale.id}">Excluir</button>
                     </td>
@@ -793,14 +689,6 @@
                 button.addEventListener('click', (e) => {
                     saleIdToDelete = e.target.getAttribute('data-sale-id');
                     deleteModal.classList.remove('hidden');
-                });
-            });
-
-            document.querySelectorAll('.status-select').forEach(select => {
-                select.addEventListener('change', (e) => {
-                    const saleId = e.target.getAttribute('data-sale-id');
-                    const newStatus = e.target.value;
-                    updateSaleStatus(saleId, newStatus);
                 });
             });
         }
@@ -937,49 +825,24 @@
             const password = authPasswordInput.value;
             authMessageEl.style.display = 'none';
 
-            authBtn.disabled = true;
-            authBtn.textContent = isRegisterMode ? 'Registrando...' : 'Entrando...';
-
             try {
                 if (isRegisterMode) {
                     await createUserWithEmailAndPassword(auth, email, password);
+                    displayAuthMessage('Registro bem-sucedido! Por favor, faça login.', 'success');
+                    isRegisterMode = false;
+                    toggleAuthBtn.textContent = 'Não tem uma conta? Registrar';
+                    authBtn.textContent = 'Entrar';
                 } else {
                     await signInWithEmailAndPassword(auth, email, password);
                 }
             } catch (e) {
-                console.error("Authentication Error Code:", e.code);
-                console.error("Authentication Error Message:", e.message);
-
-                let userMessage = 'Ocorreu um erro. Por favor, tente novamente.';
-                switch (e.code) {
-                    case 'auth/invalid-email':
-                        userMessage = 'O formato do e-mail é inválido.';
-                        break;
-                    case 'auth/user-not-found':
-                    case 'auth/wrong-password':
-                    case 'auth/invalid-credential':
-                        userMessage = 'E-mail ou senha incorretos. Verifique seus dados.';
-                        break;
-                    case 'auth/too-many-requests':
-                        userMessage = 'Muitas tentativas de login. Tente novamente mais tarde.';
-                        break;
-                    case 'auth/network-request-failed':
-                        userMessage = 'Erro de rede. Verifique sua conexão com a internet.';
-                        break;
-                    default:
-                        userMessage = 'Erro de autenticação. Verifique os dados e a sua conexão.';
-                        break;
-                }
-                displayAuthMessage(userMessage, 'error');
-
-                authBtn.disabled = false;
-                authBtn.textContent = isRegisterMode ? 'Registrar' : 'Entrar';
+                console.error("Erro de autenticação: ", e.message);
+                displayAuthMessage('Erro de autenticação. Verifique seu e-mail e senha.', 'error');
             }
         });
 
         toggleAuthBtn.addEventListener('click', () => {
             isRegisterMode = !isRegisterMode;
-            authBtn.disabled = false; 
             if (isRegisterMode) {
                 toggleAuthBtn.textContent = 'Já tem uma conta? Entrar';
                 authBtn.textContent = 'Registrar';
@@ -999,7 +862,6 @@
             const companyName = document.getElementById('company-name').value;
             const cnpj = cnpjInput.value;
             const crm = document.getElementById('crm').value;
-            const status = document.getElementById('sale-status').value;
             
             saveConsultantName(consultantName);
 
@@ -1040,7 +902,6 @@
                 companyName,
                 cnpj,
                 crm,
-                status,
                 products: JSON.stringify(productsSold),
                 totalRevenue,
                 timestamp: serverTimestamp()
@@ -1082,4 +943,3 @@
     </script>
 </body>
 </html>
-
