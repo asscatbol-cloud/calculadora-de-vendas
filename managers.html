@@ -392,7 +392,7 @@
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
         import { getAuth, signInWithEmailAndPassword, onAuthStateChanged, signOut, signInWithCustomToken } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
-        import { getFirestore, collection, onSnapshot, query, where, getDocs, doc, getDoc, setDoc, updateDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+        import { getFirestore, collection, onSnapshot, query, where, getDocs, doc, getDoc, setDoc, updateDoc, serverTimestamp, deleteDoc } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
         
         // Variáveis globais fornecidas pelo ambiente
         const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
@@ -862,12 +862,18 @@
                     <td class="p-4 align-top">${saleDate}${editedInfo}</td>
                     <td class="p-4 align-top text-right">R$ ${(sale.totalRevenue || 0).toFixed(2).replace('.', ',')}</td>
                     <td class="p-4 align-top text-center">
-                        <button class="edit-sale-btn text-red-500 hover:text-red-700" data-sale-id="${sale.id}">Excluir</button>
+                        <button class="edit-sale-btn text-blue-500 hover:text-blue-700 mr-2" data-sale-id="${sale.id}">Editar</button>
+                        <button class="delete-sale-btn text-red-500 hover:text-red-700" data-sale-id="${sale.id}">Excluir</button>
                     </td>
                 `;
                 consultantSalesListBody.appendChild(row);
             });
             document.querySelectorAll('.edit-sale-btn').forEach(btn => {
+                btn.addEventListener('click', (e) => {
+                    openEditModal(e.target.dataset.saleId);
+                });
+            });
+            document.querySelectorAll('.delete-sale-btn').forEach(btn => {
                  btn.addEventListener('click', (e) => {
                     const saleId = e.target.dataset.saleId;
                     // Aqui você pode adicionar uma confirmação antes de excluir
@@ -1064,4 +1070,5 @@
     </script>
 </body>
 </html>
+
 
