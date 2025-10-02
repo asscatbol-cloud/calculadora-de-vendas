@@ -3,9 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Painel de Gestão de Vendas</title>
+    <title>Calculadora de Vendas Avançada</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
         body {
@@ -14,9 +13,9 @@
             color: #1f2937;
         }
         .container {
-            max-width: 1200px;
-            margin: 1.5rem auto;
-            padding: 1.5rem;
+            max-width: 1000px;
+            margin: 2rem auto;
+            padding: 2rem;
             background-color: #ffffff;
             border-radius: 12px;
             box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
@@ -45,12 +44,24 @@
             0% { transform: rotate(0deg); }
             100% { transform: rotate(360deg); }
         }
+        .animate-pulse {
+            animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+        }
+        @keyframes pulse {
+            0%, 100% {
+                opacity: 1;
+            }
+            50% {
+                opacity: .5;
+            }
+        }
     </style>
 </head>
 <body class="bg-gray-100 flex items-center justify-center min-h-screen p-4">
 
+    <!-- Login/Register Section -->
     <div id="auth-section" class="container w-full max-w-md p-6 bg-white rounded-lg shadow-md">
-        <h2 class="text-2xl font-bold text-center mb-6 text-gray-800">Acesso de Gerência</h2>
+        <h2 class="text-2xl font-bold text-center mb-6 text-gray-800">Acesso do Consultor</h2>
         <div id="auth-message" class="hidden p-4 mb-4 text-sm rounded-lg" role="alert"></div>
         <form id="auth-form" class="space-y-4">
             <div>
@@ -62,207 +73,90 @@
                 <input type="password" id="auth-password" required class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
             </div>
             <button type="submit" id="auth-btn" class="w-full px-4 py-2 bg-blue-600 text-white font-medium rounded-lg shadow-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2">
-                Entrar como Gerente
+                Entrar
             </button>
+            <button type="button" id="toggle-auth-btn" class="w-full text-center text-blue-600 hover:text-blue-800 text-sm mt-2">Não tem uma conta? Registrar</button>
         </form>
     </div>
 
-    <div id="main-section" class="container hidden">
-        <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 space-y-4 sm:space-y-0">
-            <h1 id="main-title" class="text-2xl sm:text-3xl font-bold text-gray-800">Painel de Gerência</h1>
-            <div class="flex space-x-2">
-                <button id="dashboard-tab-btn" class="px-4 py-2 bg-blue-600 text-white font-medium rounded-lg shadow-md hover:bg-blue-700">Painel</button>
-                <button id="goals-tab-btn" class="px-4 py-2 bg-gray-200 text-gray-800 font-medium rounded-lg shadow-md hover:bg-gray-300">Metas</button>
-                <button id="logout-btn" class="px-4 py-2 bg-red-600 text-white font-medium rounded-lg shadow-md hover:bg-red-700">Sair</button>
-            </div>
+    <!-- Main App Section -->
+    <div id="app-section" class="container hidden">
+        <div class="flex justify-center mb-6">
+            <img src="https://firebasestorage.googleapis.com/v0/b/calculadora-de-vendas.appspot.com/o/logo.png?alt=media"
+            alt="Logo Assertiva Vivo Empresas" class="h-24 mx-auto object-contain">
+        </div>
+        <div class="flex justify-between items-center mb-4">
+            <h1 class="text-3xl font-bold text-gray-800">Calculadora de Metas</h1>
+            <button id="logout-btn" class="px-4 py-2 bg-red-600 text-white font-medium rounded-lg shadow-md hover:bg-red-700">Sair</button>
+        </div>
+        <p class="text-gray-500 mb-8">Acompanhe seu desempenho e comissão em tempo real!</p>
+        
+        <!-- Filtro de Período -->
+        <div class="mb-6">
+            <label for="period-filter" class="block text-sm font-medium text-gray-700 mb-2">Visualizar Período:</label>
+            <select id="period-filter" class="w-full md:w-1/3 p-2 rounded-md border-gray-300 shadow-sm focus:ring-blue-500 focus:border-blue-500">
+                <!-- As opções serão preenchidas dinamicamente pelo JavaScript -->
+            </select>
         </div>
         
-        <!-- Conteúdo do Painel -->
-        <div id="dashboard-content">
-            <div class="flex justify-between items-center mb-6">
-                <p class="text-gray-500">Visão consolidada da performance da equipe.</p>
-                <button id="view-products-btn" class="px-4 py-2 bg-teal-600 text-white font-medium rounded-lg shadow-md hover:bg-teal-700">Ver Vendas de Produtos</button>
-            </div>
-            
-            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mb-6">
-                <!-- Cards de Vendas e Receita atualizados -->
-                <div class="bg-purple-50 p-5 rounded-lg shadow-sm">
-                    <p class="text-sm font-medium text-purple-700">Total de Vendas</p>
-                    <div class="mt-2 space-y-1">
-                        <p class="text-lg font-semibold text-purple-900">Mês Atual: <span id="total-sales-current">0</span></p>
-                        <p class="text-md text-gray-600">Mês Anterior: <span id="total-sales-previous">0</span></p>
-                    </div>
-                </div>
-                <div class="bg-pink-50 p-5 rounded-lg shadow-sm">
-                    <p class="text-sm font-medium text-pink-700">Receita Total da Equipe</p>
-                    <div class="mt-2 space-y-1">
-                        <p class="text-lg font-semibold text-pink-900">Mês Atual: <span id="total-revenue-current">R$ 0,00</span></p>
-                        <p class="text-md text-gray-600">Mês Anterior: <span id="total-revenue-previous">R$ 0,00</span></p>
-                    </div>
-                </div>
-                <div class="bg-green-50 p-5 rounded-lg shadow-sm">
-                    <p class="text-sm font-medium text-green-700">Projeção da Equipe</p>
-                    <p id="projected-team-revenue" class="mt-1 text-2xl font-bold text-green-900">R$ 0,00</p>
-                </div>
-            </div>
-
-            <hr class="my-6">
-
-            <!-- Gráfico de Vendas Diárias -->
-            <div class="mb-6">
-                <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-4 gap-4">
-                    <h2 class="text-xl font-semibold">Vendas Diárias por Produto/Receita</h2>
-                    <div class="flex items-center gap-2">
-                        <label for="product-filter-select" class="text-sm font-medium text-gray-700">Filtrar por:</label>
-                        <select id="product-filter-select" class="rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"></select>
-                    </div>
-                </div>
-                <div class="bg-gray-50 p-4 rounded-lg shadow-sm">
-                    <canvas id="daily-sales-chart" class="h-72"></canvas>
-                </div>
-            </div>
-
-            <hr class="my-6">
-            
-            <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
-                 <div class="w-full">
-                    <h2 class="text-xl font-semibold mb-4">Evolução Coletiva (Últimos 6 Meses)</h2>
-                    <div class="bg-gray-50 p-4 rounded-lg shadow-sm">
-                        <canvas id="collective-sales-chart"></canvas>
-                    </div>
-                </div>
-                <div class="w-full">
-                    <h2 class="text-xl font-semibold mb-4">Produtos Vendidos (Total do Mês Atual)</h2>
-                    <div class="bg-gray-50 p-4 rounded-lg shadow-sm">
-                        <canvas id="products-sold-chart" class="h-64"></canvas>
-                    </div>
-                </div>
-            </div>
-
-            <hr class="my-6">
-
-            <!-- Desempenho Individual de Consultores -->
-            <div class="mb-6">
-                <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-4 gap-4">
-                    <h2 class="text-xl font-semibold">Desempenho Individual de Consultores</h2>
-                    <div class="flex items-center gap-4">
-                        <div>
-                            <label for="consultant-month-filter" class="text-sm font-medium text-gray-700 mr-2">Mês:</label>
-                            <select id="consultant-month-filter" class="rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"></select>
-                        </div>
-                        <div>
-                            <label for="consultant-year-filter" class="text-sm font-medium text-gray-700 mr-2">Ano:</label>
-                            <select id="consultant-year-filter" class="rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"></select>
-                        </div>
-                    </div>
-                </div>
-                <div class="overflow-x-auto">
-                    <table class="min-w-full text-left border-collapse">
-                        <thead>
-                            <tr class="bg-gray-200">
-                                <th class="p-4 rounded-tl-lg">Consultor</th>
-                                <th class="p-4 text-center">Vendas</th>
-                                <th class="p-4 text-center">Receita</th>
-                                <th class="p-4 text-center">Ticket Médio</th>
-                                <th class="p-4 rounded-tr-lg">Ações</th>
-                            </tr>
-                        </thead>
-                        <tbody id="consultants-performance-body">
-                            <!-- Conteúdo preenchido via JS -->
-                        </tbody>
-                    </table>
-                </div>
-            </div>
-        </div>
-
-        <!-- Nova seção para Vendas de Produtos -->
-        <div id="product-sales-content" class="hidden">
-            <div class="flex justify-between items-center mb-6">
-                <h2 class="text-2xl font-bold text-gray-800">Vendas de Produtos por Mês</h2>
-                <button id="back-to-dashboard-from-products-btn" class="px-4 py-2 bg-gray-600 text-white font-medium rounded-lg shadow-md hover:bg-gray-700">Voltar</button>
-            </div>
-            <div class="overflow-x-auto">
-                <table class="min-w-full text-left border-collapse">
-                    <thead>
-                        <tr class="bg-gray-200">
-                            <th class="p-4 rounded-tl-lg">Produto</th>
-                            <th class="p-4 text-center">Vendas Mês Atual</th>
-                            <th class="p-4 text-center rounded-tr-lg">Vendas Mês Anterior</th>
-                        </tr>
-                    </thead>
-                    <tbody id="product-sales-table-body">
-                        <!-- Conteúdo preenchido via JS -->
-                    </tbody>
-                </table>
-            </div>
-        </div>
-
-        <!-- Conteúdo de Gestão de Metas (inalterado) -->
-        <div id="goals-content" class="hidden">
-            <p class="text-gray-500 mb-6">Gerencie as metas mensais para os consultores.</p>
-            <div class="mb-4 flex flex-col sm:flex-row space-y-4 sm:space-y-0 sm:space-x-4">
-                <div class="w-full sm:w-1/2">
-                    <label for="goals-month" class="block text-sm font-medium text-gray-700">Mês</label>
-                    <select id="goals-month" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
-                    </select>
-                </div>
-                <div class="w-full sm:w-1/2">
-                    <label for="goals-year" class="block text-sm font-medium text-gray-700">Ano</label>
-                    <select id="goals-year" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
-                    </select>
-                </div>
-            </div>
-            <table class="min-w-full text-left border-collapse mb-6">
-                <thead>
-                    <tr class="bg-gray-200">
-                        <th class="p-4 rounded-tl-lg">Produto</th>
-                        <th class="p-4">Meta</th>
-                        <th class="p-4">Efetivado</th>
-                        <th class="p-4 rounded-tr-lg">Falta</th>
-                    </tr>
-                </thead>
-                <tbody id="goals-table-body">
-                </tbody>
-            </table>
-            <button id="save-goals-btn" class="w-full sm:w-auto px-4 py-2 bg-blue-600 text-white font-medium rounded-lg shadow-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2">
-                Salvar Metas
-            </button>
-            <div id="goals-message" class="hidden p-4 mt-4 text-sm rounded-lg" role="alert"></div>
-        </div>
-    </div>
-    
-    <!-- Seção de Visão de Consultor (inalterada) -->
-    <div id="consultant-view-section" class="container hidden">
-        <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 space-y-4 sm:space-y-0">
-            <h1 id="consultant-view-title" class="text-2xl sm:text-3xl font-bold text-gray-800"></h1>
-            <button id="back-to-dashboard-btn" class="px-4 py-2 bg-gray-600 text-white font-medium rounded-lg shadow-md hover:bg-gray-700">Voltar</button>
-        </div>
+        <!-- Seção de Desempenho Principal: Focada 100% nas vendas com "Aceite Realizado". -->
         <div>
-            <h2 class="text-xl font-semibold mb-4">Seu Desempenho</h2>
-            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-                <div class="bg-indigo-50 p-5 rounded-lg shadow-sm">
-                    <p class="text-sm font-medium text-indigo-700">Receita Total</p>
-                    <p id="individual-total-revenue" class="mt-1 text-2xl font-bold text-indigo-900">R$ 0,00</p>
+            <h2 class="text-xl font-semibold mb-4">Desempenho (Vendas com Aceite Realizado)</h2>
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+                <div class="bg-indigo-50 p-6 rounded-lg shadow-sm">
+                    <p class="text-sm font-medium text-indigo-700">Receita Realizada</p>
+                    <p id="total-revenue" class="mt-1 text-2xl font-bold text-indigo-900">R$ 0,00</p>
                 </div>
-                <div class="bg-purple-50 p-5 rounded-lg shadow-sm">
+                <div class="bg-purple-50 p-6 rounded-lg shadow-sm">
                     <p class="text-sm font-medium text-purple-700">Comissão Estimada</p>
-                    <p id="individual-estimated-commission" class="mt-1 text-2xl font-bold text-purple-900">R$ 0,00</p>
+                    <p id="estimated-commission" class="mt-1 text-2xl font-bold text-purple-900">R$ 0,00</p>
                 </div>
-                <div class="bg-pink-50 p-5 rounded-lg shadow-sm">
-                    <p id="individual-current-tier-text" class="text-sm font-medium text-pink-700">Sua Faixa Atual</p>
-                    <p id="individual-current-tier" class="mt-1 text-2xl font-bold text-pink-900">Faixa 0</p>
+                <div class="bg-pink-50 p-6 rounded-lg shadow-sm">
+                    <p id="current-tier-text" class="text-sm font-medium text-pink-700">Sua Faixa Atual</p>
+                    <p id="current-tier" class="mt-1 text-2xl font-bold text-pink-900">Faixa 0</p>
                 </div>
             </div>
-            <div class="mt-6">
-                <h3 id="individual-progress-text" class="text-lg font-medium text-gray-700 mb-2"></h3>
+            
+            <div class="mt-8">
+                <h3 id="progress-text" class="text-lg font-medium text-gray-700 mb-2">Progresso para a Próxima Faixa</h3>
                 <div class="progress-bar">
-                    <div id="individual-progress-fill" class="progress-fill bg-blue-500" style="width: 0%;"></div>
+                    <div id="progress-fill" class="progress-fill bg-blue-500" style="width: 0%;"></div>
                 </div>
             </div>
         </div>
-        <hr class="my-6">
-        <div class="mb-6">
-            <h2 class="text-xl font-semibold mb-4">Detalhes da Comissão</h2>
+
+        <hr class="my-8">
+
+        <!-- Nova Seção de Pendentes: Vendas com "Aceite Enviado" -->
+        <div>
+            <h2 class="text-xl font-semibold mb-4">Vendas com Aceite Enviado (Aguardando Aprovação)</h2>
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+                <div class="bg-yellow-50 p-6 rounded-lg shadow-sm">
+                    <p class="text-sm font-medium text-yellow-700">Receita Pendente</p>
+                    <p id="pending-revenue" class="mt-1 text-2xl font-bold text-yellow-900">R$ 0,00</p>
+                </div>
+            </div>
+        </div>
+
+        <hr class="my-8">
+
+        <!-- Nova Seção de Negados: Vendas com "Aceite Negado" -->
+        <div>
+            <h2 class="text-xl font-semibold mb-4">Vendas com Aceite Negado</h2>
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+                <div class="bg-red-50 p-6 rounded-lg shadow-sm">
+                    <p class="text-sm font-medium text-red-700">Receita Negada</p>
+                    <p id="denied-revenue" class="mt-1 text-2xl font-bold text-red-900">R$ 0,00</p>
+                </div>
+            </div>
+        </div>
+
+
+        <hr class="my-8">
+
+        <!-- Detalhes da Comissão -->
+        <div class="mb-8">
+            <h2 class="text-xl font-semibold mb-4">Detalhes da Comissão (Vendas Realizadas)</h2>
             <div class="overflow-x-auto">
                 <table class="min-w-full text-left border-collapse">
                     <thead>
@@ -272,14 +166,90 @@
                             <th class="p-4 rounded-tr-lg">Faixa de Comissão</th>
                         </tr>
                     </thead>
-                    <tbody id="individual-commission-details-body">
+                    <tbody id="commission-details-body">
+                        <!-- Os detalhes da comissão serão preenchidos aqui -->
                     </tbody>
                 </table>
             </div>
         </div>
-        <hr class="my-6">
-        <div class="mb-6">
-            <h3 class="text-lg font-semibold mb-4">Metas de Receita</h3>
+
+        <hr class="my-8">
+
+        <!-- Formulário de Registro de Venda -->
+        <div class="mb-8">
+            <h2 class="text-xl font-semibold mb-4">Registrar Nova Venda</h2>
+            <div id="sales-message" class="hidden p-4 mb-4 text-sm rounded-lg" role="alert"></div>
+            <form id="sale-form" class="space-y-4">
+                <div>
+                    <label for="consultant-name" class="block text-sm font-medium text-gray-700">Nome do Consultor</label>
+                    <input type="text" id="consultant-name" required class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
+                </div>
+                <div>
+                    <label for="company-name" class="block text-sm font-medium text-gray-700">Nome da Empresa</label>
+                    <input type="text" id="company-name" required class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
+                </div>
+                <div>
+                    <label for="cnpj" class="block text-sm font-medium text-gray-700">CNPJ</label>
+                    <input type="text" id="cnpj" required class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
+                </div>
+                <div>
+                    <label for="crm" class="block text-sm font-medium text-gray-700">CRM (Opcional)</label>
+                    <input type="text" id="crm" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
+                </div>
+                <div>
+                    <label for="sale-status" class="block text-sm font-medium text-gray-700">Status do Aceite</label>
+                    <select id="sale-status" required class="mt-1 block w-full p-2 rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
+                        <option value="aceite enviado">Aceite Enviado</option>
+                        <option value="aceite realizado">Aceite Realizado</option>
+                        <option value="aceite negado">Aceite Negado</option>
+                    </select>
+                </div>
+                
+                <div id="products-container" class="space-y-4">
+                    <!-- Os produtos serão adicionados dinamicamente aqui -->
+                </div>
+                
+                <button type="button" id="add-product-btn" class="w-full sm:w-auto px-4 py-2 bg-green-500 text-white font-medium rounded-lg shadow-md hover:bg-green-600 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2">
+                    Adicionar Produto
+                </button>
+                
+                <button type="submit" id="save-sale-btn" class="w-full px-4 py-2 bg-blue-600 text-white font-medium rounded-lg shadow-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 flex justify-center items-center space-x-2" disabled>
+                    <span id="save-sale-btn-text">Carregando...</span>
+                    <div id="save-sale-spinner" class="spinner hidden"></div>
+                </button>
+            </form>
+        </div>
+
+        <hr class="my-8">
+
+        <!-- Lista de Vendas Registradas -->
+        <div class="mb-8">
+            <h2 class="text-xl font-semibold mb-4">Vendas Registradas no Período</h2>
+            <div class="overflow-x-auto">
+                <table class="min-w-full text-left border-collapse">
+                    <thead>
+                        <tr class="bg-gray-200">
+                            <th class="p-4 rounded-tl-lg">CNPJ</th>
+                            <th class="p-4">Empresa</th>
+                            <th class="p-4">Produtos</th>
+                            <th class="p-4">Data</th>
+                            <th class="p-4">Receita</th>
+                            <th class="p-4">Status</th>
+                            <th class="p-4 rounded-tr-lg">Ações</th>
+                        </tr>
+                    </thead>
+                    <tbody id="sales-list-body">
+                        <!-- As vendas serão preenchidas aqui -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        
+        <hr class="my-8">
+
+        <!-- Acompanhamento de Metas -->
+        <div class="mb-8">
+            <h3 class="text-lg font-semibold mb-4">Metas de Receita (Vendas Realizadas)</h3>
             <div class="overflow-x-auto">
                 <table class="w-full text-left border-collapse">
                     <thead>
@@ -288,14 +258,17 @@
                             <th class="p-4 rounded-tr-lg">Status</th>
                         </tr>
                     </thead>
-                    <tbody id="individual-revenue-goals-body">
+                    <tbody id="revenue-goals-body">
+                        <!-- As metas de receita serão preenchidas aqui -->
                     </tbody>
                 </table>
             </div>
         </div>
-        <hr class="my-6">
+        
+        <hr class="my-8">
+
         <div>
-            <h3 class="text-lg font-semibold mb-4">Metas de Produto por Faixa</h3>
+            <h3 class="text-lg font-semibold mb-4">Metas de Produto por Faixa (Vendas Realizadas)</h3>
             <div class="overflow-x-auto">
                 <table class="w-full text-left border-collapse">
                     <thead>
@@ -307,18 +280,40 @@
                             <th class="p-4 rounded-tr-lg">Meta Faixa 200</th>
                         </tr>
                     </thead>
-                    <tbody id="individual-product-goals-body">
+                    <tbody id="product-goals-body">
+                        <!-- As metas de produto serão preenchidas aqui -->
                     </tbody>
                 </table>
             </div>
         </div>
     </div>
 
+    <!-- Modal de Confirmação de Exclusão -->
+    <div id="delete-modal" class="fixed inset-0 bg-gray-600 bg-opacity-50 hidden overflow-y-auto h-full w-full">
+        <div class="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-md bg-white">
+            <div class="mt-3 text-center">
+                <h3 class="text-lg leading-6 font-medium text-gray-900">Confirmar Exclusão</h3>
+                <div class="mt-2 px-7 py-3">
+                    <p class="text-sm text-gray-500">Tem certeza que deseja excluir esta venda? Esta ação não pode ser desfeita.</p>
+                </div>
+                <div class="items-center px-4 py-3">
+                    <button id="confirm-delete-btn" class="px-4 py-2 bg-red-600 text-white text-base font-medium rounded-md w-full shadow-sm hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2">
+                        Excluir
+                    </button>
+                    <button id="cancel-delete-btn" class="mt-3 px-4 py-2 bg-gray-200 text-gray-800 text-base font-medium rounded-md w-full shadow-sm hover:bg-gray-300 focus:outline-none focus:ring-2 focus:ring-gray-400 focus:ring-offset-2">
+                        Cancelar
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <script type="module">
+        // Importa os módulos necessários do Firebase
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
-        import { getAuth, signInWithEmailAndPassword, onAuthStateChanged, signOut, signInWithCustomToken } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
-        import { getFirestore, collection, onSnapshot, query, where, getDocs, doc, getDoc, setDoc } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
-        
+        import { getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword, onAuthStateChanged, signOut, signInWithCustomToken } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import { getFirestore, collection, addDoc, onSnapshot, query, deleteDoc, doc, setDoc, getDoc, setLogLevel, serverTimestamp, where, updateDoc } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+
         // Variáveis globais fornecidas pelo ambiente
         const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
         const firebaseConfig = typeof __firebase_config !== 'undefined' ? JSON.parse(__firebase_config) : {
@@ -330,370 +325,305 @@
             appId: "1:633108525289:web:0b4147c2aa71e637aa4078"
         };
         const initialAuthToken = typeof __initial_auth_token !== 'undefined' ? __initial_auth_token : null;
+
+        // Inicializa o Firebase
+        let app, db, auth, userId;
+        setLogLevel('debug');
+
+        // Dados para comissão, receita e metas
+        const commissionData = {
+            'Migração Up':    [8, 8, 9, 10, 11, 12, 13, 14],
+            'Migração Mid':   [4, 4, 5, 6, 7, 8, 9, 10],
+            'Migração Down':  [2, 2, 3, 4, 5, 6, 7, 8],
+            'GPON':           [20, 20, 22, 25, 28, 31, 35, 40],
+            'Altas Portadas': [6, 6, 8, 10, 12, 14, 16, 20],
+            'Altas Novas':    [3, 3, 4, 5, 6, 7, 8, 10],
+            'VVN':            [10, 10, 12, 14, 16, 18, 20, 22],
+        };
+
+        const revenuePercentages = [11, 11, 13, 16, 19, 22, 28, 35];
+
+        const goalData = {
+            'Receita (R$)': [750, 1500, 3000],
+            'GPON': [3, 6, 9],
+            'Altas Portadas': [5, 15, 30],
+            'Altas Novas': [5, 15, 30],
+            'Contratos (CNPJ\'s)': [1, 1.5, 2],
+            'VVN': [5, 15, 25],
+            'Aparelhos (R$)': [8000, 20000, 30000],
+            'Migração': [75, 150, 200],
+        };
         
-        let app, db, auth, managerId;
-        
+        const productsForGoals = ['Migração', 'GPON', 'Altas Portadas', 'Altas Novas', 'VVN', 'Aparelhos (R$)'];
+
         // Elementos DOM
+        const totalRevenueEl = document.getElementById('total-revenue');
+        const estimatedCommissionEl = document.getElementById('estimated-commission');
+        const currentTierEl = document.getElementById('current-tier');
+        const progressFillEl = document.getElementById('progress-fill');
+        const progressTextEl = document.getElementById('progress-text');
+        const salesForm = document.getElementById('sale-form');
+        const salesListBodyEl = document.getElementById('sales-list-body');
+        const addProductBtn = document.getElementById('add-product-btn');
+        const productsContainer = document.getElementById('products-container');
+        const salesMessageEl = document.getElementById('sales-message');
+        const productGoalsBodyEl = document.getElementById('product-goals-body');
+        const revenueGoalsBodyEl = document.getElementById('revenue-goals-body');
+        const commissionDetailsBodyEl = document.getElementById('commission-details-body');
+        const consultantNameInput = document.getElementById('consultant-name');
+        const cnpjInput = document.getElementById('cnpj');
+        const deleteModal = document.getElementById('delete-modal');
+        const confirmDeleteBtn = document.getElementById('confirm-delete-btn');
+        const cancelDeleteBtn = document.getElementById('cancel-delete-btn');
+        const saveSaleBtn = document.getElementById('save-sale-btn');
+        const saveSaleBtnText = document.getElementById('save-sale-btn-text');
+        const saveSaleSpinner = document.getElementById('save-sale-spinner');
         const authSection = document.getElementById('auth-section');
-        const mainSection = document.getElementById('main-section');
-        const dashboardContent = document.getElementById('dashboard-content');
-        const goalsContent = document.getElementById('goals-content');
-        const productSalesContent = document.getElementById('product-sales-content');
-        const consultantViewSection = document.getElementById('consultant-view-section');
+        const appSection = document.getElementById('app-section');
         const authForm = document.getElementById('auth-form');
         const authEmailInput = document.getElementById('auth-email');
         const authPasswordInput = document.getElementById('auth-password');
         const authMessageEl = document.getElementById('auth-message');
+        const authBtn = document.getElementById('auth-btn');
+        const toggleAuthBtn = document.getElementById('toggle-auth-btn');
         const logoutBtn = document.getElementById('logout-btn');
-        const consultantsPerformanceBody = document.getElementById('consultants-performance-body');
-        const backToDashboardBtn = document.getElementById('back-to-dashboard-btn');
-        const consultantViewTitleEl = document.getElementById('consultant-view-title');
-        const dashboardTabBtn = document.getElementById('dashboard-tab-btn');
-        const goalsTabBtn = document.getElementById('goals-tab-btn');
-        const mainTitle = document.getElementById('main-title');
-        const viewProductsBtn = document.getElementById('view-products-btn');
-        const backToDashboardFromProductsBtn = document.getElementById('back-to-dashboard-from-products-btn');
+        const periodFilterEl = document.getElementById('period-filter');
+        const pendingRevenueEl = document.getElementById('pending-revenue');
+        const deniedRevenueEl = document.getElementById('denied-revenue');
+
+
+        let isRegisterMode = false;
+        let saleIdToDelete = null;
+
+        function displayMessage(message, type) {
+            salesMessageEl.textContent = message;
+            salesMessageEl.className = `p-4 mb-4 text-sm rounded-lg ${type === 'success' ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'}`;
+            salesMessageEl.style.display = 'block';
+            setTimeout(() => {
+                salesMessageEl.style.display = 'none';
+            }, 5000);
+        }
+
+        function displayAuthMessage(message, type) {
+            authMessageEl.textContent = message;
+            authMessageEl.className = `p-4 mb-4 text-sm rounded-lg ${type === 'success' ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'}`;
+            authMessageEl.style.display = 'block';
+        }
+
+        function setSaveLoading(isLoading) {
+            if (isLoading) {
+                saveSaleBtnText.textContent = 'Salvando...';
+                saveSaleSpinner.classList.remove('hidden');
+                saveSaleBtn.disabled = true;
+                saveSaleBtn.classList.add('animate-pulse');
+            } else {
+                saveSaleBtnText.textContent = 'Salvar Venda';
+                saveSaleSpinner.classList.add('hidden');
+                saveSaleBtn.disabled = false;
+                saveSaleBtn.classList.remove('animate-pulse');
+            }
+        }
         
-        // Elementos dos Cards
-        const totalSalesCurrentEl = document.getElementById('total-sales-current');
-        const totalSalesPreviousEl = document.getElementById('total-sales-previous');
-        const totalRevenueCurrentEl = document.getElementById('total-revenue-current');
-        const totalRevenuePreviousEl = document.getElementById('total-revenue-previous');
-        const projectedTeamRevenueEl = document.getElementById('projected-team-revenue');
-
-        // Elementos da Tabela de Vendas de Produtos
-        const productSalesTableBody = document.getElementById('product-sales-table-body');
-
-        // Elementos do Gráfico de Vendas Diárias
-        const productFilterSelect = document.getElementById('product-filter-select');
-        const consultantMonthFilter = document.getElementById('consultant-month-filter');
-        const consultantYearFilter = document.getElementById('consultant-year-filter');
-
-        // Elementos da Visão do Consultor
-        const individualTotalRevenueEl = document.getElementById('individual-total-revenue');
-        const individualEstimatedCommissionEl = document.getElementById('individual-estimated-commission');
-        const individualCurrentTierEl = document.getElementById('individual-current-tier');
-        const individualProgressTextEl = document.getElementById('individual-progress-text');
-        const individualProgressFillEl = document.getElementById('individual-progress-fill');
-        const individualCommissionDetailsBodyEl = document.getElementById('individual-commission-details-body');
-        const individualRevenueGoalsBodyEl = document.getElementById('individual-revenue-goals-body');
-        const individualProductGoalsBodyEl = document.getElementById('individual-product-goals-body');
-
-        // Elementos de Metas
-        const goalsMonthSelect = document.getElementById('goals-month');
-        const goalsYearSelect = document.getElementById('goals-year');
-        const goalsTableBody = document.getElementById('goals-table-body');
-        const saveGoalsBtn = document.getElementById('save-goals-btn');
-        const goalsMessageEl = document.getElementById('goals-message');
-
-        // --- Gráficos e Dados ---
-        let collectiveChart, productsSoldChart, dailySalesChart;
-        let allSalesData = [];
-        let allConsultantsData = [];
-        const currentGoals = {};
-
-        // Dados de comissão, receita e metas
-        const commissionData = { 'Migração Up': [8, 8, 9, 10, 11, 12, 13, 14], 'Migração Mid': [4, 4, 5, 7, 7, 8, 9, 10], 'Migração Down': [2, 2, 3, 4, 5, 6, 7, 8], 'GPON': [20, 22, 25, 28, 31, 35, 40], 'Altas Portadas': [6, 8, 10, 12, 14, 16, 20], 'Altas Novas': [3, 4, 5, 6, 7, 8, 10], 'VVN': [10, 12, 14, 16, 18, 20, 22], 'Avançados': [15, 17, 19, 21, 23, 25, 28], 'Produtos de TI': [10, 11, 12, 13, 14, 15, 16], };
-        const revenuePercentages = [11, 13, 16, 19, 22, 28, 35];
-        const goalData = { 'Receita (R$)': [750, 1500, 3000], 'GPON': [3, 6, 9], 'Altas Portadas': [5, 15, 30], 'Altas Novas': [5, 15, 30], 'Contratos (CNPJ\'s)': [1, 1.5, 2], 'VVN': [5, 15, 25], 'Aparelhos (R$)': [8000, 20000, 30000], 'Migração': [75, 150, 200], };
-        const productsForGoals = ['Migração', 'GPON', 'Altas Portadas', 'Altas Novas', 'VVN', 'Aparelhos (R$)'];
-        const goalProductsList = ['Migração', 'GPON', 'Altas Portadas', 'Altas Novas', 'VVN', 'Avançados', 'Produtos de TI'];
-
-
-        function displayAuthMessage(message, type) { authMessageEl.textContent = message; authMessageEl.className = `p-4 mb-4 text-sm rounded-lg ${type === 'success' ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'}`; authMessageEl.style.display = 'block'; }
-        function displayGoalsMessage(message, type) { goalsMessageEl.textContent = message; goalsMessageEl.className = `p-4 mt-4 text-sm rounded-lg ${type === 'success' ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'}`; goalsMessageEl.style.display = 'block'; setTimeout(() => { goalsMessageEl.style.display = 'none'; }, 5000); }
-
         async function initializeFirebase() {
             try {
-                if (Object.keys(firebaseConfig).length === 0) { displayAuthMessage("Erro: A configuração do Firebase está faltando.", "error"); console.error("Firebase config is missing."); return; }
-                app = initializeApp(firebaseConfig); auth = getAuth(app); db = getFirestore(app);
+                if (Object.keys(firebaseConfig).length === 0) {
+                    displayMessage("Erro: A configuração do Firebase está faltando.", "error");
+                    console.error("Firebase config is missing.");
+                    return;
+                }
+                
+                app = initializeApp(firebaseConfig);
+                auth = getAuth(app);
+                db = getFirestore(app);
+
+                authSection.classList.remove('hidden');
+                setSaveLoading(false);
+
+
                 onAuthStateChanged(auth, async (user) => {
                     if (user) {
-                        managerId = user.uid;
-                        const isManager = await checkManagerStatus(managerId);
-                        if (isManager) {
-                            authSection.classList.add('hidden'); mainSection.classList.remove('hidden'); dashboardContent.classList.remove('hidden'); goalsContent.classList.add('hidden'); productSalesContent.classList.add('hidden'); consultantViewSection.classList.add('hidden');
-                            listenToSalesAndConsultants(); populateGoalsSelectors(); populateConsultantFilters(); loadAndRenderGoals();
-                        } else { await signOut(auth); displayAuthMessage('Acesso negado. Esta conta não é de um gerente.', 'error'); }
-                    } else { authSection.classList.remove('hidden'); mainSection.classList.add('hidden'); consultantViewSection.classList.add('hidden'); }
-                });
-                if (initialAuthToken) { await signInWithCustomToken(auth, initialAuthToken); }
-            } catch (e) { console.error("Erro ao inicializar Firebase: ", e); displayAuthMessage("Erro ao inicializar o aplicativo. Por favor, tente novamente.", "error"); }
-        }
-
-        async function checkManagerStatus(uid) { if (!db) return false; try { const managerRef = doc(db, `artifacts/${appId}/managers`, uid); const docSnap = await getDoc(managerRef); return docSnap.exists(); } catch (e) { console.error("Erro ao verificar status de gerente: ", e); return false; } }
-
-        function listenToSalesAndConsultants() {
-            if (!db) return;
-            const salesRef = collection(db, `artifacts/${appId}/public/data/sales`);
-            onSnapshot(salesRef, (snapshot) => { 
-                allSalesData = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })); 
-                updateDashboard(); 
-            }, (error) => { console.error("Erro ao ouvir vendas: ", error); });
-            const consultantsRef = collection(db, `artifacts/${appId}/users`);
-            onSnapshot(consultantsRef, (snapshot) => { 
-                allConsultantsData = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })); 
-                updateDashboard(); 
-            }, (error) => { console.error("Erro ao ouvir perfis de consultores: ", error); });
-        }
-        
-        function updateDashboard() {
-            if (!allSalesData || !allConsultantsData) return;
-
-            const today = new Date();
-            const currentMonth = today.getMonth(); const currentYear = today.getFullYear();
-            const previousMonth = currentMonth === 0 ? 11 : currentMonth - 1;
-            const previousMonthYear = currentMonth === 0 ? currentYear - 1 : currentYear;
-
-            const currentMonthSales = allSalesData.filter(s => { const d = s.timestamp?.seconds ? new Date(s.timestamp.seconds * 1000) : null; return d && d.getMonth() === currentMonth && d.getFullYear() === currentYear; });
-            const previousMonthSales = allSalesData.filter(s => { const d = s.timestamp?.seconds ? new Date(s.timestamp.seconds * 1000) : null; return d && d.getMonth() === previousMonth && d.getFullYear() === previousMonthYear; });
-            
-            const totalRevenueCurrent = currentMonthSales.reduce((sum, sale) => sum + (sale.totalRevenue || 0), 0);
-            const totalRevenuePrevious = previousMonthSales.reduce((sum, sale) => sum + (sale.totalRevenue || 0), 0);
-
-            totalSalesCurrentEl.textContent = currentMonthSales.length;
-            totalSalesPreviousEl.textContent = previousMonthSales.length;
-            totalRevenueCurrentEl.textContent = `R$ ${totalRevenueCurrent.toFixed(2).replace('.', ',')}`;
-            totalRevenuePreviousEl.textContent = `R$ ${totalRevenuePrevious.toFixed(2).replace('.', ',')}`;
-
-            renderCollectiveChart(allSalesData);
-            renderProductsSoldChart(currentMonthSales);
-            populateProductFilter(allSalesData);
-            renderDailySalesChart(allSalesData, productFilterSelect.value);
-            calculateAndDisplayTeamProjection(allSalesData);
-            renderConsultantsPerformance();
-            renderProductSalesTable(currentMonthSales, previousMonthSales);
-        }
-
-        function populateProductFilter(sales) {
-            const productSet = new Set(['Todos', 'Receita']);
-            sales.forEach(sale => { try { const prods = JSON.parse(sale.products); prods.forEach(p => productSet.add(p.name)); } catch(e) {} });
-            if (!productSet.has('GPON')) { productSet.add('GPON'); }
-            const currentSelection = productFilterSelect.value;
-            productFilterSelect.innerHTML = '';
-            Array.from(productSet).sort().forEach(product => { const option = document.createElement('option'); option.value = product; option.textContent = product; productFilterSelect.appendChild(option); });
-            if (Array.from(productSet).includes(currentSelection)) { productFilterSelect.value = currentSelection; }
-        }
-
-        function renderDailySalesChart(sales, selectedProduct = 'Todos') {
-            const today = new Date();
-            const currentMonth = today.getMonth(); const currentYear = today.getFullYear();
-            const previousMonth = currentMonth === 0 ? 11 : currentMonth - 1;
-            const previousMonthYear = currentMonth === 0 ? currentYear - 1 : currentYear;
-            const daysInCurrentMonth = new Date(currentYear, currentMonth + 1, 0).getDate();
-            const labels = Array.from({ length: daysInCurrentMonth }, (_, i) => i + 1);
-
-            const currentMonthData = new Array(daysInCurrentMonth).fill(0);
-            const previousMonthData = new Array(daysInCurrentMonth).fill(0);
-
-            const isRevenueView = selectedProduct === 'Receita';
-            const yAxisLabel = isRevenueView ? 'Receita (R$)' : 'Quantidade Vendida';
-
-            const filterSales = (saleSet, dataArray, month, year) => {
-                saleSet.forEach(sale => {
-                    const saleDate = sale.timestamp?.seconds ? new Date(sale.timestamp.seconds * 1000) : null;
-                    if (saleDate && saleDate.getMonth() === month && saleDate.getFullYear() === year) {
-                        const dayIndex = saleDate.getDate() - 1;
-                        if (isRevenueView) {
-                            dataArray[dayIndex] += (sale.totalRevenue || 0);
-                        } else {
-                            try {
-                                const products = JSON.parse(sale.products);
-                                products.forEach(p => { if (selectedProduct === 'Todos' || p.name === selectedProduct) { dataArray[dayIndex] += (p.quantity || 0); } });
-                            } catch (e) {}
-                        }
+                        userId = user.uid;
+                        authSection.classList.add('hidden');
+                        appSection.classList.remove('hidden');
+                        loadConsultantName();
+                        createPeriodOptions();
+                        listenToSales();
+                    } else {
+                        authSection.classList.remove('hidden');
+                        appSection.classList.add('hidden');
+                        salesListBodyEl.innerHTML = '';
+                        updateDashboard([]);
                     }
                 });
-            };
-            filterSales(sales, currentMonthData, currentMonth, currentYear);
-            filterSales(sales, previousMonthData, previousMonth, previousMonthYear);
-            
-            if (dailySalesChart) { dailySalesChart.destroy(); }
-            const ctx = document.getElementById('daily-sales-chart').getContext('2d');
-            dailySalesChart = new Chart(ctx, {
-                type: 'bar',
-                data: {
-                    labels: labels,
-                    datasets: [
-                        { label: `Mês Atual (${selectedProduct})`, data: currentMonthData, backgroundColor: 'rgba(54, 162, 235, 0.6)', borderColor: 'rgba(54, 162, 235, 1)', borderWidth: 1 },
-                        { label: `Mês Anterior (${selectedProduct})`, data: previousMonthData, backgroundColor: 'rgba(255, 99, 132, 0.6)', borderColor: 'rgba(255, 99, 132, 1)', borderWidth: 1 }
-                    ]
-                },
-                options: { responsive: true, maintainAspectRatio: false, scales: { y: { beginAtZero: true, title: { display: true, text: yAxisLabel } }, x: { title: { display: true, text: 'Dia do Mês' } } } }
-            });
+
+                if (initialAuthToken) {
+                    await signInWithCustomToken(auth, initialAuthToken);
+                }
+            } catch (e) {
+                console.error("Erro ao inicializar Firebase: ", e);
+                displayMessage("Erro ao inicializar o aplicativo. Por favor, tente novamente.", "error");
+            }
+        }
+
+        async function saveSale(saleData) {
+            if (!userId || !db) {
+                displayMessage("Erro: O aplicativo não está pronto. Por favor, aguarde.", "error");
+                return;
+            }
+
+            setSaveLoading(true);
+            try {
+                const salesRef = collection(db, `artifacts/${appId}/public/data/sales`);
+                await addDoc(salesRef, { ...saleData, consultantId: userId, consultantName: consultantNameInput.value });
+                displayMessage("Venda salva com sucesso!", "success");
+                salesForm.reset();
+                productsContainer.innerHTML = '';
+                createProductInputGroup();
+            } catch (e) {
+                console.error("Erro ao salvar a venda: ", e);
+                displayMessage(`Erro ao salvar a venda. Detalhes: ${e.message}`, "error");
+            } finally {
+                setSaveLoading(false);
+            }
+        }
+
+        async function deleteSale(saleId) {
+            if (!userId || !db) return;
+            try {
+                const saleRef = doc(db, `artifacts/${appId}/public/data/sales`, saleId);
+                await deleteDoc(saleRef);
+                displayMessage("Venda excluída com sucesso!", "success");
+            } catch (e) {
+                console.error("Erro ao excluir a venda: ", e);
+                displayMessage("Erro ao excluir a venda. Por favor, tente novamente.", "error");
+            }
         }
         
-        function populateConsultantFilters() {
+        async function updateSaleStatus(saleId, newStatus) {
+            if (!db || !userId) {
+                displayMessage("Erro: O aplicativo não está pronto. Por favor, aguarde.", "error");
+                return;
+            }
+            try {
+                const saleRef = doc(db, `artifacts/${appId}/public/data/sales`, saleId);
+                await updateDoc(saleRef, {
+                    status: newStatus
+                });
+                displayMessage("Status da venda atualizado com sucesso!", "success");
+            } catch (e) {
+                console.error("Erro ao atualizar o status da venda: ", e);
+                displayMessage(`Erro ao atualizar o status. Detalhes: ${e.message}`, "error");
+            }
+        }
+
+        async function saveConsultantName(name) {
+            if (!name || !userId) return;
+            try {
+                const consultantProfileRef = doc(db, `artifacts/${appId}/public/data/consultants`, userId);
+                await setDoc(consultantProfileRef, { consultantName: name }, { merge: true });
+            } catch (e) {
+                console.error("Erro ao salvar o nome do consultor: ", e);
+            }
+        }
+
+        async function loadConsultantName() {
+            if (!userId) return;
+            try {
+                const consultantProfileRef = doc(db, `artifacts/${appId}/public/data/consultants`, userId);
+                const docSnap = await getDoc(consultantProfileRef);
+                if (docSnap.exists()) {
+                    consultantNameInput.value = docSnap.data().consultantName || '';
+                }
+            } catch (e) {
+                console.error("Erro ao carregar o nome do consultor: ", e);
+            }
+        }
+        
+        function createPeriodOptions() {
+            periodFilterEl.innerHTML = '';
             const today = new Date();
             const months = ['Janeiro', 'Fevereiro', 'Março', 'Abril', 'Maio', 'Junho', 'Julho', 'Agosto', 'Setembro', 'Outubro', 'Novembro', 'Dezembro'];
-            consultantMonthFilter.innerHTML = '';
-            months.forEach((month, index) => { const option = document.createElement('option'); option.value = index; option.textContent = month; if (index === today.getMonth()) { option.selected = true; } consultantMonthFilter.appendChild(option); });
-            const currentYear = today.getFullYear();
-            consultantYearFilter.innerHTML = '';
-            for (let i = 0; i < 5; i++) { const year = currentYear - i; const option = document.createElement('option'); option.value = year; option.textContent = year; if (year === currentYear) { option.selected = true; } consultantYearFilter.appendChild(option); }
+
+            for (let i = 0; i < 3; i++) {
+                const date = new Date(today.getFullYear(), today.getMonth() - i, 1);
+                const monthName = months[date.getMonth()];
+                const year = date.getFullYear();
+                const option = document.createElement('option');
+                option.value = `${year}-${(date.getMonth() + 1).toString().padStart(2, '0')}`;
+                option.textContent = `${monthName} ${year}`;
+                periodFilterEl.appendChild(option);
+            }
         }
 
-        function getPastMonths(count) { const months = []; const today = new Date(); for (let i = count - 1; i >= 0; i--) { const d = new Date(today.getFullYear(), today.getMonth() - i, 1); months.push(d); } return months; }
-        
-        function calculateAndDisplayTeamProjection(sales) {
-            const months = getPastMonths(6);
-            const teamMonthlyRevenue = months.map(month => sales.reduce((sum, sale) => { const saleDate = sale.timestamp ? new Date(sale.timestamp.seconds * 1000) : null; if (saleDate && saleDate.getMonth() === month.getMonth() && saleDate.getFullYear() === month.getFullYear()) { return sum + (sale.totalRevenue || 0); } return sum; }, 0));
+        function listenToSales() {
+            if (!db || !userId) {
+                return;
+            }
+            const salesRef = collection(db, `artifacts/${appId}/public/data/sales`);
             
-            let totalGrowth = 0; let countGrowth = 0;
-            for (let i = 1; i < teamMonthlyRevenue.length; i++) { if (teamMonthlyRevenue[i-1] > 0) { const growthRate = (teamMonthlyRevenue[i] - teamMonthlyRevenue[i-1]) / teamMonthlyRevenue[i-1]; totalGrowth += growthRate; countGrowth++; } }
-            const averageGrowth = countGrowth > 0 ? totalGrowth / countGrowth : 0;
-            const lastMonthRevenue = teamMonthlyRevenue.length > 0 ? teamMonthlyRevenue[teamMonthlyRevenue.length - 1] : 0;
-            const projectedTeamRevenue = lastMonthRevenue * (1 + averageGrowth);
-            projectedTeamRevenueEl.textContent = `R$ ${projectedTeamRevenue.toFixed(2).replace('.', ',')}`;
-        }
+            const salesQuery = query(salesRef, where('consultantId', '==', userId));
 
-        function renderProductsSoldChart(sales) {
-            const productCategories = {};
-            sales.forEach(sale => { try { const saleProducts = JSON.parse(sale.products); saleProducts.forEach(p => { const productName = p.name || 'Desconhecido'; productCategories[productName] = (productCategories[productName] || 0) + (p.quantity || 0); }); } catch (e) {} });
-            
-            const productNames = Object.keys(productCategories);
-            const productQuantities = Object.values(productCategories);
-            if (productsSoldChart) { productsSoldChart.destroy(); }
-            const ctx = document.getElementById('products-sold-chart').getContext('2d');
-            productsSoldChart = new Chart(ctx, { type: 'doughnut', data: { labels: productNames, datasets: [{ label: 'Quantidade Vendida', data: productQuantities, backgroundColor: [ 'rgba(255, 99, 132, 0.6)', 'rgba(54, 162, 235, 0.6)', 'rgba(255, 206, 86, 0.6)', 'rgba(75, 192, 192, 0.6)', 'rgba(153, 102, 255, 0.6)', 'rgba(255, 159, 64, 0.6)', 'rgba(199, 199, 199, 0.6)' ], borderWidth: 1 }] }, options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'top' } } } });
-        }
-        
-        function renderCollectiveChart(sales) {
-            const months = getPastMonths(6);
-            const monthlyRevenue = months.map(month => sales.reduce((sum, sale) => { const saleDate = sale.timestamp ? new Date(sale.timestamp.seconds * 1000) : null; if (saleDate && saleDate.getMonth() === month.getMonth() && saleDate.getFullYear() === month.getFullYear()) { return sum + (sale.totalRevenue || 0); } return sum; }, 0));
-            if (collectiveChart) { collectiveChart.destroy(); }
-            const ctx = document.getElementById('collective-sales-chart').getContext('2d');
-            collectiveChart = new Chart(ctx, { type: 'bar', data: { labels: months.map(m => m.toLocaleString('pt-BR', { month: 'short', year: 'numeric' })), datasets: [{ label: 'Receita Total da Equipe (R$)', data: monthlyRevenue, backgroundColor: 'rgba(75, 192, 192, 0.6)', borderColor: 'rgba(75, 192, 192, 1)', borderWidth: 1 }] }, options: { responsive: true, maintainAspectRatio: false, scales: { y: { beginAtZero: true, title: { display: true, text: 'Receita (R$)' } } } } });
-        }
+            onSnapshot(salesQuery, (snapshot) => {
+                let sales = [];
+                snapshot.forEach((doc) => {
+                    sales.push({ id: doc.id, ...doc.data() });
+                });
 
-        function renderConsultantsPerformance() {
-            if (!allSalesData || !allConsultantsData) return;
-            const selectedMonth = parseInt(consultantMonthFilter.value);
-            const selectedYear = parseInt(consultantYearFilter.value);
-            const filteredSales = allSalesData.filter(s => { const d = s.timestamp?.seconds ? new Date(s.timestamp.seconds * 1000) : null; return d && d.getMonth() === selectedMonth && d.getFullYear() === selectedYear; });
-            const performanceMap = {};
-            allConsultantsData.forEach(c => { performanceMap[c.id] = { name: c.consultantName || 'Consultor sem nome', salesCount: 0, totalRevenue: 0, }; });
-            filteredSales.forEach(sale => { const consultantId = sale.consultantId; if (consultantId && performanceMap[consultantId]) { performanceMap[consultantId].salesCount++; performanceMap[consultantId].totalRevenue += sale.totalRevenue || 0; } });
-            consultantsPerformanceBody.innerHTML = '';
-            const sortedConsultants = Object.keys(performanceMap).sort((a, b) => performanceMap[b].totalRevenue - performanceMap[a].totalRevenue);
-            if (sortedConsultants.length === 0 || filteredSales.length === 0) { consultantsPerformanceBody.innerHTML = `<tr><td colspan="5" class="p-4 text-center text-gray-500">Nenhum dado encontrado para o período selecionado.</td></tr>`; return; }
-            sortedConsultants.forEach(id => {
-                const data = performanceMap[id];
-                const averageTicket = data.salesCount > 0 ? data.totalRevenue / data.salesCount : 0;
-                const row = document.createElement('tr');
-                row.className = "border-t border-gray-200 hover:bg-gray-100";
-                row.innerHTML = `
-                    <td class="p-4">${data.name}</td>
-                    <td class="p-4 text-center">${data.salesCount}</td>
-                    <td class="p-4 text-center">R$ ${data.totalRevenue.toFixed(2).replace('.', ',')}</td>
-                    <td class="p-4 text-center">R$ ${averageTicket.toFixed(2).replace('.', ',')}</td>
-                    <td class="p-4 text-center"><button class="view-details-btn text-blue-500 hover:text-blue-700" data-consultant-id="${id}" data-consultant-name="${data.name}">Exibir</button></td>`;
-                consultantsPerformanceBody.appendChild(row);
-            });
-            document.querySelectorAll('.view-details-btn').forEach(button => { button.addEventListener('click', (e) => { const consultantId = e.target.getAttribute('data-consultant-id'); const consultantName = e.target.getAttribute('data-consultant-name'); renderConsultantView(consultantId, consultantName, filteredSales); }); });
-        }
+                const selectedPeriod = periodFilterEl.value;
+                if (!selectedPeriod) return;
 
-        function renderProductSalesTable(currentMonthSales, previousMonthSales) {
-            const products = {};
-            const processSales = (sales, period) => { sales.forEach(sale => { try { const prods = JSON.parse(sale.products); prods.forEach(p => { if (!products[p.name]) { products[p.name] = { current: 0, previous: 0 }; } products[p.name][period] += (p.quantity || 0); }); } catch(e) {} }); };
-            processSales(currentMonthSales, 'current');
-            processSales(previousMonthSales, 'previous');
-            productSalesTableBody.innerHTML = '';
-            Object.keys(products).sort().forEach(productName => {
-                const data = products[productName];
-                const row = document.createElement('tr');
-                row.className = "border-t border-gray-200 hover:bg-gray-100 even:bg-gray-50";
-                row.innerHTML = `<td class="p-4 font-medium">${productName}</td><td class="p-4 text-center">${data.current}</td><td class="p-4 text-center">${data.previous}</td>`;
-                productSalesTableBody.appendChild(row);
+                const [year, month] = selectedPeriod.split('-');
+                const startDate = new Date(year, month - 1, 1);
+                const endDate = new Date(year, month, 1);
+                
+                const filteredSales = sales.filter(sale => {
+                    if (sale.timestamp && sale.timestamp.toDate) {
+                        const saleDate = sale.timestamp.toDate();
+                        return saleDate >= startDate && saleDate < endDate;
+                    }
+                    return false;
+                });
+                
+                updateDashboard(filteredSales);
+                renderSalesList(filteredSales);
+            }, (error) => {
+                console.error("Erro ao ouvir atualizações do Firestore: ", error);
+                displayMessage("Erro de conexão com o banco de dados. Os dados podem não estar atualizados.", "error");
             });
         }
-
-        function populateGoalsSelectors() {
-            const today = new Date(); const months = ['Janeiro', 'Fevereiro', 'Março', 'Abril', 'Maio', 'Junho', 'Julho', 'Agosto', 'Setembro', 'Outubro', 'Novembro', 'Dezembro'];
-            months.forEach((month, index) => { const option = document.createElement('option'); option.value = index + 1; option.textContent = month; if (index === today.getMonth()) { option.selected = true; } goalsMonthSelect.appendChild(option); });
-            const currentYear = today.getFullYear();
-            for (let i = 0; i < 5; i++) { const year = currentYear + i; const option = document.createElement('option'); option.value = year; option.textContent = year; if (i === 0) { option.selected = true; } goalsYearSelect.appendChild(option); }
-        }
-
-        async function loadAndRenderGoals() {
-            if (!managerId) return;
-            const month = parseInt(goalsMonthSelect.value); const year = parseInt(goalsYearSelect.value);
-            const goalDocId = `${year}-${month}`;
-            let salesSummary = {};
-            const salesInPeriod = allSalesData.filter(sale => { const d = sale.timestamp?.seconds ? new Date(sale.timestamp.seconds * 1000) : null; return d && d.getMonth() + 1 === month && d.getFullYear() === year; });
-            salesInPeriod.forEach(sale => { try { const prods = JSON.parse(sale.products); prods.forEach(p => { const pName = p.name.includes('Migração') ? 'Migração' : p.name; salesSummary[pName] = (salesSummary[pName] || 0) + (p.quantity || 0); }); } catch (e) {} });
-
-            try {
-                const goalsRef = doc(db, `artifacts/${appId}/managers/${managerId}/manager_goals`, goalDocId);
-                const goalsSnap = await getDoc(goalsRef);
-                if (goalsSnap.exists()) { Object.assign(currentGoals, goalsSnap.data().goals); } else { Object.keys(currentGoals).forEach(key => delete currentGoals[key]); }
-            } catch (e) { console.error("Erro ao carregar metas:", e); displayGoalsMessage("Erro ao carregar as metas.", "error"); }
-            renderGoalsTable(salesSummary);
-        }
-
-        function renderGoalsTable(salesSummary) {
-            goalsTableBody.innerHTML = '';
-            goalProductsList.forEach(product => {
-                const currentGoal = currentGoals[product] || 0;
-                const effective = salesSummary[product] || 0;
-                const missing = Math.max(0, currentGoal - effective);
-                const row = document.createElement('tr');
-                row.className = "border-t border-gray-200";
-                row.innerHTML = `<td class="p-4">${product}</td><td class="p-4"><input type="number" data-product="${product}" value="${currentGoal}" min="0" class="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"></td><td class="p-4 text-center">${effective}</td><td class="p-4 text-center">${missing}</td>`;
-                goalsTableBody.appendChild(row);
-            });
-        }
-
-        async function saveGoals() {
-            if (!managerId) return;
-            const month = goalsMonthSelect.value; const year = goalsYearSelect.value;
-            const goalDocId = `${year}-${month}`;
-            const inputs = goalsTableBody.querySelectorAll('input');
-            const newGoals = {};
-            inputs.forEach(input => { newGoals[input.getAttribute('data-product')] = parseInt(input.value, 10) || 0; });
-            try {
-                const goalsRef = doc(db, `artifacts/${appId}/managers/${managerId}/manager_goals`, goalDocId);
-                await setDoc(goalsRef, { goals: newGoals });
-                displayGoalsMessage("Metas salvas com sucesso!", "success");
-            } catch (e) { console.error("Erro ao salvar metas:", e); displayGoalsMessage("Erro ao salvar as metas.", "error"); }
-        }
-
-        // --- Event Listeners ---
-        authForm.addEventListener('submit', async (e) => { e.preventDefault(); const email = authEmailInput.value; const password = authPasswordInput.value; authMessageEl.style.display = 'none'; try { await signInWithEmailAndPassword(auth, email, password); } catch (e) { console.error("Erro de autenticação: ", e.message); displayAuthMessage('Falha no login. Verifique suas credenciais.', 'error'); } });
-        logoutBtn.addEventListener('click', async () => { await signOut(auth); });
-        backToDashboardBtn.addEventListener('click', () => { consultantViewSection.classList.add('hidden'); mainSection.classList.remove('hidden'); });
-        dashboardTabBtn.addEventListener('click', () => { dashboardContent.classList.remove('hidden'); goalsContent.classList.add('hidden'); productSalesContent.classList.add('hidden'); dashboardTabBtn.classList.remove('bg-gray-200', 'text-gray-800'); dashboardTabBtn.classList.add('bg-blue-600', 'text-white'); goalsTabBtn.classList.remove('bg-blue-600', 'text-white'); goalsTabBtn.classList.add('bg-gray-200', 'text-gray-800'); mainTitle.textContent = 'Painel de Gerência'; });
-        viewProductsBtn.addEventListener('click', () => { dashboardContent.classList.add('hidden'); goalsContent.classList.add('hidden'); productSalesContent.classList.remove('hidden'); });
-        backToDashboardFromProductsBtn.addEventListener('click', () => { dashboardContent.classList.remove('hidden'); goalsContent.classList.add('hidden'); productSalesContent.classList.add('hidden'); });
-        productFilterSelect.addEventListener('change', (e) => renderDailySalesChart(allSalesData, e.target.value));
-        consultantMonthFilter.addEventListener('change', () => renderConsultantsPerformance());
-        consultantYearFilter.addEventListener('change', () => renderConsultantsPerformance());
-        goalsTabBtn.addEventListener('click', () => { goalsContent.classList.remove('hidden'); dashboardContent.classList.add('hidden'); productSalesContent.classList.add('hidden'); goalsTabBtn.classList.remove('bg-gray-200', 'text-gray-800'); goalsTabBtn.classList.add('bg-blue-600', 'text-white'); dashboardTabBtn.classList.remove('bg-blue-600', 'text-white'); dashboardTabBtn.classList.add('bg-gray-200', 'text-gray-800'); mainTitle.textContent = 'Gestão de Metas'; loadAndRenderGoals(); });
-        goalsMonthSelect.addEventListener('change', loadAndRenderGoals); goalsYearSelect.addEventListener('change', loadAndRenderGoals); saveGoalsBtn.addEventListener('click', saveGoals);
         
-        function renderConsultantView(consultantId, consultantName, sales) {
-            mainSection.classList.add('hidden');
-            consultantViewSection.classList.remove('hidden');
-            consultantViewTitleEl.textContent = `Visão do Consultor: ${consultantName}`;
-            
-            // CORREÇÃO: Filtra as vendas para mostrar apenas as do consultor selecionado.
-            const consultantSales = sales.filter(sale => sale.consultantId === consultantId);
+        function updateDashboard(sales) {
+            const acceptedSales = sales.filter(s => s.status === 'aceite realizado');
+            const pendingSales = sales.filter(s => s.status === 'aceite enviado');
+            const deniedSales = sales.filter(s => s.status === 'aceite negado');
+
+            const pendingRevenue = pendingSales.reduce((acc, sale) => acc + (sale.totalRevenue || 0), 0);
+            const deniedRevenue = deniedSales.reduce((acc, sale) => acc + (sale.totalRevenue || 0), 0);
+
+            pendingRevenueEl.textContent = `R$ ${pendingRevenue.toFixed(2).replace('.', ',')}`;
+            deniedRevenueEl.textContent = `R$ ${deniedRevenue.toFixed(2).replace('.', ',')}`;
 
             let totalRevenue = 0;
             const productsSoldSummary = {};
             let totalMigracaoSold = 0;
             let totalAparelhosSoldValue = 0;
-            
-            consultantSales.forEach(sale => {
-                try {
-                    const saleProducts = JSON.parse(sale.products);
-                    saleProducts.forEach(p => {
-                        const productNameKey = p.name.includes('Migração') ? 'Migração' : p.name;
-                        if (productNameKey in productsSoldSummary) { productsSoldSummary[productNameKey] = (productsSoldSummary[productNameKey] || 0) + (p.quantity || 0); } else { productsSoldSummary[productNameKey] = (p.quantity || 0); }
-                        if (['Migração Up', 'Migração Mid', 'Migração Down'].includes(p.name)) { totalMigracaoSold += (p.quantity || 0); }
-                        if (p.name === 'Aparelhos (R$)') { totalAparelhosSoldValue += (p.revenue || 0); } else { totalRevenue += (p.revenue || 0); }
-                    });
-                } catch (e) { console.error("Erro ao analisar JSON de produtos na visão do consultor:", e); }
+
+            acceptedSales.forEach(sale => {
+                const saleProducts = JSON.parse(sale.products);
+                saleProducts.forEach(p => {
+                    const productNameKey = p.name.includes('Migração') ? 'Migração' : p.name;
+                    productsSoldSummary[productNameKey] = (productsSoldSummary[productNameKey] || 0) + p.quantity;
+                    
+                    if (['Migração Up', 'Migração Mid', 'Migração Down'].includes(p.name)) {
+                        totalMigracaoSold += p.quantity;
+                    }
+
+                    if (p.name === 'Aparelhos (R$)') {
+                        totalAparelhosSoldValue += p.revenue;
+                    } else {
+                        totalRevenue += p.revenue;
+                    }
+                });
             });
 
             productsSoldSummary['Migração'] = totalMigracaoSold;
@@ -702,90 +632,398 @@
 
             let currentTier = 0;
             const revenueGoals = goalData['Receita (R$)'];
-            if (totalRevenue >= revenueGoals[0]) currentTier++; if (totalRevenue >= revenueGoals[1]) currentTier++; if (totalRevenue >= revenueGoals[2]) currentTier++;
-            productsForGoals.forEach(product => { const sold = productsSoldSummary[product] || 0; const goals = goalData[product] || []; if (goals.length > 0 && sold >= goals[0]) currentTier++; if (goals.length > 1 && sold >= goals[1]) currentTier++; if (goals.length > 2 && sold >= goals[2]) currentTier++; });
+            
+            if (totalRevenue >= revenueGoals[0]) currentTier++;
+            if (totalRevenue >= revenueGoals[1]) currentTier++;
+            if (totalRevenue >= revenueGoals[2]) currentTier++;
+
+            productsForGoals.forEach(product => {
+                const sold = productsSoldSummary[product] || 0;
+                const goals = goalData[product] || [];
+                if (goals.length > 0 && sold >= goals[0]) currentTier++;
+                if (goals.length > 1 && sold >= goals[1]) currentTier++;
+                if (goals.length > 2 && sold >= goals[2]) currentTier++;
+            });
             
             let totalCommission = 0;
             const commissionDetails = {};
-            let tierIndexForCommission = currentTier > 0 ? currentTier - 1 : 0;
-            tierIndexForCommission = Math.min(tierIndexForCommission, commissionData['Migração Mid'].length - 1);
-            
-            consultantSales.forEach(sale => { 
-                const saleProducts = JSON.parse(sale.products); 
-                saleProducts.forEach(p => { 
-                    const commissionRate = commissionData[p.name] ? commissionData[p.name][tierIndexForCommission] : 0; 
-                    const productCommission = (p.quantity || 0) * commissionRate; 
-                    if (commissionDetails[p.name]) { 
-                        commissionDetails[p.name].value += productCommission; 
-                        commissionDetails[p.name].quantity += (p.quantity || 0); 
-                    } else { 
-                        commissionDetails[p.name] = { value: productCommission, quantity: (p.quantity || 0), rate: commissionRate }; 
-                    } 
-                }); 
+            const tierIndexForCommission = currentTier; 
+
+            acceptedSales.forEach(sale => {
+                const saleProducts = JSON.parse(sale.products);
+                saleProducts.forEach(p => {
+                    const maxIndex = (commissionData[p.name]?.length || 1) - 1;
+                    const cappedTierIndex = Math.min(tierIndexForCommission, maxIndex);
+                    
+                    const commissionRate = commissionData[p.name] ? commissionData[p.name][cappedTierIndex] : 0;
+                    const productCommission = (p.quantity || 0) * commissionRate;
+                    
+                    if (productCommission > 0) {
+                        if (commissionDetails[p.name]) {
+                            commissionDetails[p.name].value += productCommission;
+                            commissionDetails[p.name].quantity += (p.quantity || 0);
+                        } else {
+                            commissionDetails[p.name] = {
+                                value: productCommission,
+                                quantity: (p.quantity || 0),
+                                rate: commissionRate
+                            };
+                        }
+                    }
+                });
             });
-            const revenueCommission = totalRevenue * (revenuePercentages[tierIndexForCommission] / 100);
-            commissionDetails['Receita Total'] = { value: revenueCommission, rate: revenuePercentages[tierIndexForCommission] + '%' };
+            
+            const maxRevenueIndex = revenuePercentages.length - 1;
+            const cappedRevenueTierIndex = Math.min(tierIndexForCommission, maxRevenueIndex);
+            const revenueCommissionPercentage = revenuePercentages[cappedRevenueTierIndex];
+            const revenueCommission = totalRevenue * (revenueCommissionPercentage / 100);
+
+            if(totalRevenue > 0){
+                commissionDetails['Receita Total'] = {
+                    value: revenueCommission,
+                    rate: `${revenueCommissionPercentage}%`
+                };
+            }
+
             totalCommission = Object.values(commissionDetails).reduce((sum, item) => sum + item.value, 0);
 
-            individualTotalRevenueEl.textContent = `R$ ${totalRevenue.toFixed(2).replace('.', ',')}`;
-            individualEstimatedCommissionEl.textContent = `R$ ${totalCommission.toFixed(2).replace('.', ',')}`;
-            individualCurrentTierEl.textContent = `Faixa ${currentTier}`;
+            totalRevenueEl.textContent = `R$ ${totalRevenue.toFixed(2).replace('.', ',')}`;
+            estimatedCommissionEl.textContent = `R$ ${totalCommission.toFixed(2).replace('.', ',')}`;
+            currentTierEl.textContent = `Faixa ${currentTier}`;
             
-            let nextTierGoal = 0; let progressPercentage = 0;
+            let nextTierGoal = 0;
+            let progressPercentage = 0;
             const nextRevenueGoalIndex = revenueGoals.findIndex(goal => totalRevenue < goal);
-            if (nextRevenueGoalIndex !== -1) { 
-                nextTierGoal = revenueGoals[nextRevenueGoalIndex]; 
-                progressPercentage = Math.min(100, (totalRevenue / nextTierGoal) * 100); 
-                individualProgressTextEl.textContent = `Progresso para a Faixa ${currentTier + 1}:`; 
-            } else { 
-                progressPercentage = 100; 
-                individualProgressTextEl.textContent = 'Parabéns! Você alcançou a Faixa mais alta!'; 
+
+            if (nextRevenueGoalIndex !== -1) {
+                nextTierGoal = revenueGoals[nextRevenueGoalIndex];
+                progressPercentage = Math.min(100, (totalRevenue / nextTierGoal) * 100);
+                progressTextEl.textContent = `Progresso para a Faixa ${currentTier + 1}:`;
+            } else {
+                progressPercentage = totalRevenue > 0 ? 100 : 0;
+                progressTextEl.textContent = totalRevenue > 0 ? 'Parabéns! Você alcançou a Faixa mais alta!' : 'Progresso para a Faixa 1:';
             }
-            individualProgressFillEl.style.width = `${progressPercentage}%`; 
-            individualProgressFillEl.className = `progress-fill ${progressPercentage >= 100 ? 'bg-green-500' : 'bg-blue-500'}`;
+
+            progressFillEl.style.width = `${progressPercentage}%`;
+            progressFillEl.className = `progress-fill ${progressPercentage >= 100 ? 'bg-green-500' : 'bg-blue-500'}`;
             
-            renderIndividualCommissionDetails(commissionDetails);
-            renderIndividualRevenueGoals(totalRevenue);
-            renderIndividualProductGoals(productsSoldSummary);
+            renderRevenueGoals(totalRevenue);
+            renderProductGoals(productsSoldSummary);
+            renderCommissionDetails(commissionDetails);
+        }
+        
+        function renderSalesList(sales) {
+            salesListBodyEl.innerHTML = '';
+            sales.sort((a, b) => {
+                const dateA = a.timestamp?.toDate() || new Date(0);
+                const dateB = b.timestamp?.toDate() || new Date(0);
+                return dateB.getTime() - dateA.getTime();
+            });
+            
+            if (sales.length === 0) {
+                salesListBodyEl.innerHTML = `<tr><td colspan="7" class="p-4 text-center text-gray-500">Nenhuma venda registrada neste período.</td></tr>`;
+                return;
+            }
+
+            sales.forEach(sale => {
+                const saleProducts = JSON.parse(sale.products);
+                const productsText = saleProducts.map(p => {
+                    const description = p.description ? ` - ${p.description}` : '';
+                    return `${p.name}${description}: ${p.quantity} (R$ ${p.revenue.toFixed(2).replace('.', ',')})`;
+                }).join('<br>');
+
+                const date = sale.timestamp ? new Date(sale.timestamp.seconds * 1000).toLocaleString('pt-BR') : 'N/A';
+                const totalRevenueFormatted = (sale.totalRevenue || 0).toFixed(2).replace('.', ',');
+                const saleStatusValue = sale.status || 'aceite enviado';
+
+                const row = document.createElement('tr');
+                row.className = "border-t border-gray-200";
+                row.innerHTML = `
+                    <td class="p-4 text-gray-800">${sale.cnpj || 'N/A'}</td>
+                    <td class="p-4 text-gray-800">${sale.companyName}</td>
+                    <td class="p-4 text-sm">${productsText}</td>
+                    <td class="p-4 text-gray-500 text-sm">${date}</td>
+                    <td class="p-4">R$ ${totalRevenueFormatted}</td>
+                    <td class="p-4">
+                        <select class="status-select mt-1 block w-full p-2 rounded-md border-gray-300 shadow-sm focus:ring-blue-500 focus:border-blue-500 bg-white" data-sale-id="${sale.id}">
+                            <option value="aceite enviado" ${saleStatusValue === 'aceite enviado' ? 'selected' : ''}>Enviado</option>
+                            <option value="aceite realizado" ${saleStatusValue === 'aceite realizado' ? 'selected' : ''}>Realizado</option>
+                            <option value="aceite negado" ${saleStatusValue === 'aceite negado' ? 'selected' : ''}>Negado</option>
+                        </select>
+                    </td>
+                    <td class="p-4">
+                        <button class="text-red-500 hover:text-red-700 delete-btn" data-sale-id="${sale.id}">Excluir</button>
+                    </td>
+                `;
+                salesListBodyEl.appendChild(row);
+            });
+            
+            document.querySelectorAll('.delete-btn').forEach(button => {
+                button.addEventListener('click', (e) => {
+                    saleIdToDelete = e.target.getAttribute('data-sale-id');
+                    deleteModal.classList.remove('hidden');
+                });
+            });
+
+            document.querySelectorAll('.status-select').forEach(select => {
+                select.addEventListener('change', (e) => {
+                    const saleId = e.target.getAttribute('data-sale-id');
+                    const newStatus = e.target.value;
+                    updateSaleStatus(saleId, newStatus);
+                });
+            });
         }
 
-        function renderIndividualCommissionDetails(details) {
-            individualCommissionDetailsBodyEl.innerHTML = '';
+        function renderCommissionDetails(details) {
+            commissionDetailsBodyEl.innerHTML = '';
+            
             const sortedKeys = Object.keys(details).sort();
+
             sortedKeys.forEach(key => {
-                const detail = details[key]; const row = document.createElement('tr'); row.className = "border-t border-gray-200"; let itemName = key; if (detail.quantity) { itemName = `${key} (${detail.quantity})`; }
-                row.innerHTML = `<td class="p-4">${itemName}</td><td class="p-4">R$ ${detail.value.toFixed(2).replace('.', ',')}</td><td class="p-4">${detail.rate}</td>`;
-                individualCommissionDetailsBodyEl.appendChild(row);
+                const detail = details[key];
+                const row = document.createElement('tr');
+                row.className = "border-t border-gray-200";
+                
+                let itemName = key;
+                if (detail.quantity) {
+                    itemName = `${key} (${detail.quantity})`;
+                }
+
+                row.innerHTML = `
+                    <td class="p-4">${itemName}</td>
+                    <td class="p-4">R$ ${detail.value.toFixed(2).replace('.', ',')}</td>
+                    <td class="p-4">${detail.rate}</td>
+                `;
+                commissionDetailsBodyEl.appendChild(row);
             });
         }
         
-        function renderIndividualRevenueGoals(totalRevenue) {
-            individualRevenueGoalsBodyEl.innerHTML = '';
+        function renderRevenueGoals(totalRevenue) {
+            revenueGoalsBodyEl.innerHTML = '';
             const goals = goalData['Receita (R$)'];
+            
             goals.forEach(goal => {
-                const isMet = totalRevenue >= goal; const status = isMet ? 'Atingida' : 'Ainda não'; const statusClass = isMet ? 'text-green-500' : 'text-gray-500';
-                const row = document.createElement('tr'); row.className = "border-t border-gray-200";
-                row.innerHTML = `<td class="p-4">R$ ${goal.toFixed(2).replace('.', ',')}</td><td class="p-4 ${statusClass}">${status}</td>`;
-                individualRevenueGoalsBodyEl.appendChild(row);
+                const isMet = totalRevenue >= goal;
+                const goalStatusValue = isMet ? 'Atingida' : 'Ainda não';
+                const statusClass = isMet ? 'text-green-500 font-bold' : 'text-gray-500';
+                
+                const row = document.createElement('tr');
+                row.className = "border-t border-gray-200";
+                row.innerHTML = `
+                    <td class="p-4">R$ ${goal.toFixed(2).replace('.', ',')}</td>
+                    <td class="p-4 ${statusClass}">${goalStatusValue}</td>
+                `;
+                revenueGoalsBodyEl.appendChild(row);
             });
         }
 
-        function renderIndividualProductGoals(productsSoldSummary) {
-            individualProductGoalsBodyEl.innerHTML = '';
+        function renderProductGoals(productsSoldSummary) {
+            productGoalsBodyEl.innerHTML = '';
+            
             productsForGoals.forEach(product => {
-                const sold = productsSoldSummary[product] || 0; const goals = goalData[product] || [0, 0, 0];
-                const row = document.createElement('tr'); row.className = "border-t border-gray-200";
-                const goal75Met = sold >= goals[0]; const goal150Met = sold >= goals[1]; const goal200Met = sold >= goals[2]; let soldValue = sold; if (product === 'Aparelhos (R$)') { soldValue = `R$ ${sold.toFixed(2).replace('.', ',')}`; }
+                const sold = productsSoldSummary[product] || 0;
+                const goals = goalData[product] || [0, 0, 0];
+                
+                const row = document.createElement('tr');
+                row.className = "border-t border-gray-200";
+
+                const goal75Met = sold >= goals[0];
+                const goal150Met = sold >= goals[1];
+                const goal200Met = sold >= goals[2];
+
+                let soldValue = sold;
+                if (product === 'Aparelhos (R$)') {
+                    soldValue = `R$ ${sold.toFixed(2).replace('.', ',')}`;
+                }
+
                 row.innerHTML = `
-                    <td class="p-4">${product}</td><td class="p-4 text-center">${soldValue}</td>
+                    <td class="p-4">${product}</td>
+                    <td class="p-4 text-center">${soldValue}</td>
                     <td class="p-4 text-center ${goal75Met ? 'text-green-500 font-bold' : ''}">${product === 'Aparelhos (R$)' ? `R$ ${goals[0].toFixed(2).replace('.', ',')}` : goals[0]}</td>
                     <td class="p-4 text-center ${goal150Met ? 'text-green-500 font-bold' : ''}">${product === 'Aparelhos (R$)' ? `R$ ${goals[1].toFixed(2).replace('.', ',')}` : goals[1]}</td>
-                    <td class="p-4 text-center ${goal200Met ? 'text-green-500 font-bold' : ''}">${product === 'Aparelhos (R$)' ? `R$ ${goals[2].toFixed(2).replace('.', ',')}` : goals[2]}</td>`;
-                individualProductGoalsBodyEl.appendChild(row);
+                    <td class="p-4 text-center ${goal200Met ? 'text-green-500 font-bold' : ''}">${product === 'Aparelhos (R$)' ? `R$ ${goals[2].toFixed(2).replace('.', ',')}` : goals[2]}</td>
+                `;
+                productGoalsBodyEl.appendChild(row);
+            });
+        }
+
+        function createProductInputGroup() {
+            const group = document.createElement('div');
+            group.className = "product-input-group grid grid-cols-1 sm:grid-cols-2 md:grid-cols-5 gap-4 items-end border-t pt-4 mt-4";
+            group.innerHTML = `
+                <div class="w-full md:col-span-1">
+                    <label class="block text-sm font-medium text-gray-700">Produto</label>
+                    <select class="product-select mt-1 block w-full p-2 rounded-md border-gray-300 shadow-sm focus:ring-blue-500 focus:border-blue-500">
+                        <option value="Migração Up">Migração Up</option>
+                        <option value="Migração Mid">Migração Mid</option>
+                        <option value="Migração Down">Migração Down</option>
+                        <option value="GPON">GPON</option>
+                        <option value="Altas Portadas">Altas Portadas</option>
+                        <option value="Altas Novas">Altas Novas</option>
+                        <option value="VVN">VVN</option>
+                        <option value="Aparelhos (R$)">Aparelhos (R$)</option>
+                        <option value="Avançados">Avançados</option>
+                        <option value="Produtos de TI">Produtos de TI</option>
+                    </select>
+                </div>
+                <div class="w-full md:col-span-1">
+                    <label class="block text-sm font-medium text-gray-700">Descrição</label>
+                    <input type="text" placeholder="Opcional" class="product-description mt-1 block w-full p-2 rounded-md border-gray-300 shadow-sm focus:ring-blue-500 focus:border-blue-500">
+                </div>
+                <div class="w-full md:col-span-1">
+                     <label class="block text-sm font-medium text-gray-700">Quantidade</label>
+                    <input type="number" placeholder="0" value="0" min="0" class="product-quantity mt-1 block w-full p-2 text-center rounded-md border-gray-300 shadow-sm focus:ring-blue-500 focus:ring-blue-500">
+                </div>
+                <div class="w-full md:col-span-1">
+                    <label class="block text-sm font-medium text-gray-700">Receita (R$)</label>
+                    <input type="number" placeholder="0,00" step="0.01" class="product-revenue mt-1 block w-full p-2 text-center rounded-md border-gray-300 shadow-sm focus:ring-blue-500 focus:ring-blue-500">
+                </div>
+                <div class="w-full flex justify-center md:col-span-1">
+                     <button type="button" class="remove-product-btn text-red-500 hover:text-red-700 text-2xl font-bold p-1 self-center">&times;</button>
+                </div>
+            `;
+            productsContainer.appendChild(group);
+            
+            group.querySelector('.remove-product-btn').addEventListener('click', () => {
+                if (productsContainer.childElementCount > 1) {
+                    group.remove();
+                }
             });
         }
         
-        initializeFirebase();
+        function formatCNPJ(value) {
+            let v = value.replace(/\D/g, "");
+            v = v.replace(/^(\d{2})(\d)/, "$1.$2");
+            v = v.replace(/^(\d{2})\.(\d{3})(\d)/, "$1.$2.$3");
+            v = v.replace(/\.(\d{3})(\d)/, ".$1/$2");
+            v = v.replace(/(\d{4})(\d)/, "$1-$2");
+            return v;
+        }
+
+        authForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const email = authEmailInput.value;
+            const password = authPasswordInput.value;
+            authMessageEl.style.display = 'none';
+
+            try {
+                if (isRegisterMode) {
+                    await createUserWithEmailAndPassword(auth, email, password);
+                    displayAuthMessage('Registro bem-sucedido! Por favor, faça login.', 'success');
+                    isRegisterMode = false;
+                    toggleAuthBtn.textContent = 'Não tem uma conta? Registrar';
+                    authBtn.textContent = 'Entrar';
+                } else {
+                    await signInWithEmailAndPassword(auth, email, password);
+                }
+            } catch (e) {
+                console.error("Erro de autenticação: ", e.message);
+                displayAuthMessage('Erro de autenticação. Verifique seu e-mail e senha.', 'error');
+            }
+        });
+
+        toggleAuthBtn.addEventListener('click', () => {
+            isRegisterMode = !isRegisterMode;
+            if (isRegisterMode) {
+                toggleAuthBtn.textContent = 'Já tem uma conta? Entrar';
+                authBtn.textContent = 'Registrar';
+            } else {
+                toggleAuthBtn.textContent = 'Não tem uma conta? Registrar';
+                authBtn.textContent = 'Entrar';
+            }
+        });
+
+        logoutBtn.addEventListener('click', async () => {
+            await signOut(auth);
+        });
+
+        salesForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const consultantName = consultantNameInput.value;
+            const companyName = document.getElementById('company-name').value;
+            const cnpj = cnpjInput.value;
+            const crm = document.getElementById('crm').value;
+            const saleStatusValue = document.getElementById('sale-status').value;
+            
+            saveConsultantName(consultantName);
+
+            const productInputs = productsContainer.querySelectorAll('.product-input-group');
+            const productsSold = [];
+            let totalRevenue = 0;
+            
+            let hasValidProduct = false;
+            productInputs.forEach(inputGroup => {
+                const productSelect = inputGroup.querySelector('.product-select');
+                const descriptionInput = inputGroup.querySelector('.product-description');
+                const quantityInput = inputGroup.querySelector('.product-quantity');
+                const revenueInput = inputGroup.querySelector('.product-revenue');
+                
+                const productName = productSelect.value;
+                const description = descriptionInput.value;
+                const quantity = parseFloat(quantityInput.value) || 0;
+                const revenue = parseFloat(revenueInput.value) || 0;
+
+                if (quantity > 0 || revenue > 0) {
+                    hasValidProduct = true;
+                    productsSold.push({ name: productName, description: description, quantity: quantity, revenue: revenue });
+                    if (productName === 'Aparelhos (R$)') {
+                        totalRevenue += revenue * 0.01;
+                    } else {
+                        totalRevenue += revenue;
+                    }
+                }
+            });
+
+            if (!hasValidProduct) {
+                displayMessage("Por favor, adicione pelo menos um produto à venda com quantidade ou receita maior que zero.", "error");
+                return;
+            }
+            
+            const newSale = {
+                consultantName,
+                companyName,
+                cnpj,
+                crm,
+                status: saleStatusValue,
+                products: JSON.stringify(productsSold),
+                totalRevenue,
+                timestamp: serverTimestamp()
+            };
+
+            await saveSale(newSale);
+        });
+
+        addProductBtn.addEventListener('click', () => {
+            createProductInputGroup();
+        });
+
+        cnpjInput.addEventListener('input', (e) => {
+            e.target.value = formatCNPJ(e.target.value);
+        });
+
+        confirmDeleteBtn.addEventListener('click', () => {
+            if (saleIdToDelete) {
+                deleteSale(saleIdToDelete);
+                saleIdToDelete = null;
+            }
+            deleteModal.classList.add('hidden');
+        });
+
+        cancelDeleteBtn.addEventListener('click', () => {
+            deleteModal.classList.add('hidden');
+            saleIdToDelete = null;
+        });
+        
+        periodFilterEl.addEventListener('change', () => {
+            listenToSales();
+        });
+
+        window.onload = () => {
+            initializeFirebase();
+            createProductInputGroup();
+        };
+
     </script>
 </body>
 </html>
+
