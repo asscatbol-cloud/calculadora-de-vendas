@@ -675,11 +675,16 @@
             mainSection.classList.add('hidden');
             consultantViewSection.classList.remove('hidden');
             consultantViewTitleEl.textContent = `Visão do Consultor: ${consultantName}`;
+            
+            // CORREÇÃO: Filtra as vendas para mostrar apenas as do consultor selecionado.
+            const consultantSales = sales.filter(sale => sale.consultantId === consultantId);
+
             let totalRevenue = 0;
             const productsSoldSummary = {};
             let totalMigracaoSold = 0;
             let totalAparelhosSoldValue = 0;
-            sales.forEach(sale => {
+            
+            consultantSales.forEach(sale => {
                 try {
                     const saleProducts = JSON.parse(sale.products);
                     saleProducts.forEach(p => {
@@ -690,28 +695,55 @@
                     });
                 } catch (e) { console.error("Erro ao analisar JSON de produtos na visão do consultor:", e); }
             });
+
             productsSoldSummary['Migração'] = totalMigracaoSold;
             productsSoldSummary['Aparelhos (R$)'] = totalAparelhosSoldValue;
             totalRevenue += totalAparelhosSoldValue * 0.01;
+
             let currentTier = 0;
             const revenueGoals = goalData['Receita (R$)'];
             if (totalRevenue >= revenueGoals[0]) currentTier++; if (totalRevenue >= revenueGoals[1]) currentTier++; if (totalRevenue >= revenueGoals[2]) currentTier++;
             productsForGoals.forEach(product => { const sold = productsSoldSummary[product] || 0; const goals = goalData[product] || []; if (goals.length > 0 && sold >= goals[0]) currentTier++; if (goals.length > 1 && sold >= goals[1]) currentTier++; if (goals.length > 2 && sold >= goals[2]) currentTier++; });
+            
             let totalCommission = 0;
             const commissionDetails = {};
             let tierIndexForCommission = currentTier > 0 ? currentTier - 1 : 0;
             tierIndexForCommission = Math.min(tierIndexForCommission, commissionData['Migração Mid'].length - 1);
-            sales.forEach(sale => { const saleProducts = JSON.parse(sale.products); saleProducts.forEach(p => { const commissionRate = commissionData[p.name] ? commissionData[p.name][tierIndexForCommission] : 0; const productCommission = (p.quantity || 0) * commissionRate; if (commissionDetails[p.name]) { commissionDetails[p.name].value += productCommission; commissionDetails[p.name].quantity += (p.quantity || 0); } else { commissionDetails[p.name] = { value: productCommission, quantity: (p.quantity || 0), rate: commissionRate }; } }); });
+            
+            consultantSales.forEach(sale => { 
+                const saleProducts = JSON.parse(sale.products); 
+                saleProducts.forEach(p => { 
+                    const commissionRate = commissionData[p.name] ? commissionData[p.name][tierIndexForCommission] : 0; 
+                    const productCommission = (p.quantity || 0) * commissionRate; 
+                    if (commissionDetails[p.name]) { 
+                        commissionDetails[p.name].value += productCommission; 
+                        commissionDetails[p.name].quantity += (p.quantity || 0); 
+                    } else { 
+                        commissionDetails[p.name] = { value: productCommission, quantity: (p.quantity || 0), rate: commissionRate }; 
+                    } 
+                }); 
+            });
             const revenueCommission = totalRevenue * (revenuePercentages[tierIndexForCommission] / 100);
             commissionDetails['Receita Total'] = { value: revenueCommission, rate: revenuePercentages[tierIndexForCommission] + '%' };
             totalCommission = Object.values(commissionDetails).reduce((sum, item) => sum + item.value, 0);
+
             individualTotalRevenueEl.textContent = `R$ ${totalRevenue.toFixed(2).replace('.', ',')}`;
             individualEstimatedCommissionEl.textContent = `R$ ${totalCommission.toFixed(2).replace('.', ',')}`;
             individualCurrentTierEl.textContent = `Faixa ${currentTier}`;
+            
             let nextTierGoal = 0; let progressPercentage = 0;
             const nextRevenueGoalIndex = revenueGoals.findIndex(goal => totalRevenue < goal);
-            if (nextRevenueGoalIndex !== -1) { nextTierGoal = revenueGoals[nextRevenueGoalIndex]; progressPercentage = Math.min(100, (totalRevenue / nextTierGoal) * 100); individualProgressTextEl.textContent = `Progresso para a Faixa ${currentTier + 1}:`; } else { progressPercentage = 100; individualProgressTextEl.textContent = 'Parabéns! Você alcançou a Faixa mais alta!'; }
-            individualProgressFillEl.style.width = `${progressPercentage}%`; individualProgressFillEl.className = `progress-fill ${progressPercentage >= 100 ? 'bg-green-500' : 'bg-blue-500'}`;
+            if (nextRevenueGoalIndex !== -1) { 
+                nextTierGoal = revenueGoals[nextRevenueGoalIndex]; 
+                progressPercentage = Math.min(100, (totalRevenue / nextTierGoal) * 100); 
+                individualProgressTextEl.textContent = `Progresso para a Faixa ${currentTier + 1}:`; 
+            } else { 
+                progressPercentage = 100; 
+                individualProgressTextEl.textContent = 'Parabéns! Você alcançou a Faixa mais alta!'; 
+            }
+            individualProgressFillEl.style.width = `${progressPercentage}%`; 
+            individualProgressFillEl.className = `progress-fill ${progressPercentage >= 100 ? 'bg-green-500' : 'bg-blue-500'}`;
+            
             renderIndividualCommissionDetails(commissionDetails);
             renderIndividualRevenueGoals(totalRevenue);
             renderIndividualProductGoals(productsSoldSummary);
