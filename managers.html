@@ -393,7 +393,7 @@
                 <div id="edit-products-container" class="space-y-3">
                     <!-- Produtos serão adicionados dinamicamente aqui -->
                 </div>
-                <button id="add-product-btn-modal" type="button" class="mt-2 text-sm text-blue-600 hover:text-blue-800">+ Adicionar Produto</button>
+                <button id="add-product-btn" type="button" class="mt-2 text-sm text-blue-600 hover:text-blue-800">+ Adicionar Produto</button>
             </div>
             <div class="mt-2 text-right font-bold">
                 Receita Total: <span id="edit-total-revenue">R$ 0,00</span>
@@ -497,7 +497,7 @@
 
         // Elementos do Modal de Edição
         const editSaleModal = document.getElementById('edit-sale-modal');
-        const addProductBtnModal = document.getElementById('add-product-btn-modal');
+        const addProductBtn = document.getElementById('add-product-btn');
         const cancelEditBtn = document.getElementById('cancel-edit-btn');
         const saveEditBtn = document.getElementById('save-edit-btn');
         let currentEditingSaleId = null;
@@ -633,12 +633,11 @@
         }
 
         function renderDailySalesChart(currentSales, previousSales, year, month, selectedProduct = 'Todos') {
-            // Labels alteradas para dias da semana para uma comparação mais assertiva
-            const labels = ['Dom', 'Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb'];
+            const daysInCurrentMonth = new Date(year, month + 1, 0).getDate();
+            const labels = Array.from({ length: daysInCurrentMonth }, (_, i) => i + 1);
 
-            // Arrays de dados com 7 posições (uma para cada dia da semana)
-            const currentMonthData = new Array(7).fill(0);
-            const previousMonthData = new Array(7).fill(0);
+            const currentMonthData = new Array(daysInCurrentMonth).fill(0);
+            const previousMonthData = new Array(daysInCurrentMonth).fill(0);
 
             const isRevenueView = selectedProduct === 'Receita';
             const yAxisLabel = isRevenueView ? 'Receita (R$)' : 'Quantidade Vendida';
@@ -647,18 +646,13 @@
                 saleSet.forEach(sale => {
                     const saleDate = sale.timestamp?.seconds ? new Date(sale.timestamp.seconds * 1000) : null;
                     if (saleDate) {
-                        // Agrupa pelo dia da semana (getDay() retorna 0 para Domingo, 1 para Segunda, etc.)
-                        const dayOfWeekIndex = saleDate.getDay();
+                        const dayIndex = saleDate.getDate() - 1;
                         if (isRevenueView) {
-                            dataArray[dayOfWeekIndex] += (sale.totalRevenue || 0);
+                            dataArray[dayIndex] += (sale.totalRevenue || 0);
                         } else {
                             try {
                                 const products = JSON.parse(sale.products);
-                                products.forEach(p => {
-                                    if (selectedProduct === 'Todos' || p.name === selectedProduct) {
-                                        dataArray[dayOfWeekIndex] += (p.quantity || 0);
-                                    }
-                                });
+                                products.forEach(p => { if (selectedProduct === 'Todos' || p.name === selectedProduct) { dataArray[dayIndex] += (p.quantity || 0); } });
                             } catch (e) {}
                         }
                     }
@@ -678,7 +672,7 @@
                         { label: `Mês Anterior (${selectedProduct})`, data: previousMonthData, backgroundColor: 'rgba(255, 99, 132, 0.6)', borderColor: 'rgba(255, 99, 132, 1)', borderWidth: 1 }
                     ]
                 },
-                options: { responsive: true, maintainAspectRatio: false, scales: { y: { beginAtZero: true, title: { display: true, text: yAxisLabel } }, x: { title: { display: true, text: 'Dia da Semana' } } } }
+                options: { responsive: true, maintainAspectRatio: false, scales: { y: { beginAtZero: true, title: { display: true, text: yAxisLabel } }, x: { title: { display: true, text: 'Dia do Mês' } } } }
             });
         }
         
@@ -1030,177 +1024,5 @@
             const productSelect = document.createElement('select');
             productSelect.className = 'product-name-input mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500';
             availableProducts.forEach(pName => {
-                const option = document.createElement('option');
-                option.value = pName;
-                option.textContent = pName;
-                if (pName === product.name) { option.selected = true; }
-                productSelect.appendChild(option);
-            });
-            selectContainer.appendChild(productSelect);
-            const quantityContainer = document.createElement('div');
-            quantityContainer.className = 'col-span-2';
-            quantityContainer.innerHTML = `<input type="number" class="product-quantity-input mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500" value="${product.quantity}" min="1">`;
-            const revenueContainer = document.createElement('div');
-            revenueContainer.className = 'col-span-3';
-            revenueContainer.innerHTML = `<input type="number" step="0.01" class="product-revenue-input mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500" value="${product.revenue || 0}">`;
-            const deleteBtnContainer = document.createElement('div');
-            deleteBtnContainer.className = 'col-span-2 text-right';
-            const deleteBtn = document.createElement('button');
-            deleteBtn.type = 'button';
-            deleteBtn.className = 'remove-product-btn text-red-500 hover:text-red-700 p-1 text-xl leading-none';
-            deleteBtn.innerHTML = '&times;';
-            deleteBtn.onclick = () => { productRow.remove(); updateModalTotalRevenue(); };
-            deleteBtnContainer.appendChild(deleteBtn);
-            productRow.appendChild(selectContainer);
-            productRow.appendChild(quantityContainer);
-            productRow.appendChild(revenueContainer);
-            productRow.appendChild(deleteBtnContainer);
-            productRow.querySelectorAll('input').forEach(input => input.addEventListener('input', updateModalTotalRevenue));
-            return productRow;
-        }
-
-        function openEditModal(saleId) {
-            currentEditingSaleId = saleId;
-            const sale = allSalesData.find(s => s.id === saleId);
-            if (!sale) return;
-
-            document.getElementById('edit-client-name').value = sale.companyName || '';
-            document.getElementById('edit-client-cnpj').value = sale.cnpj || '';
-
-            const productsContainer = document.getElementById('edit-products-container');
-            productsContainer.innerHTML = '';
-            try {
-                const products = JSON.parse(sale.products);
-                products.forEach(p => { productsContainer.appendChild(createProductEditRow(p)); });
-            } catch (e) {
-                console.error("Erro ao parsear produtos para edição:", e);
-                productsContainer.appendChild(createProductEditRow());
-            }
-            updateModalTotalRevenue();
-            editSaleModal.classList.remove('hidden');
-        }
-
-        function closeEditModal() {
-            editSaleModal.classList.add('hidden');
-            currentEditingSaleId = null;
-        }
-
-        async function saveSaleEdit() {
-            if (!currentEditingSaleId) return;
-
-            const companyName = document.getElementById('edit-client-name').value;
-            const cnpj = document.getElementById('edit-client-cnpj').value;
-
-            const productsContainer = document.getElementById('edit-products-container');
-            const productRows = productsContainer.querySelectorAll('.p-2.border');
-            const updatedProducts = [];
-            let updatedTotalRevenue = 0;
-            productRows.forEach(row => {
-                const name = row.querySelector('.product-name-input').value;
-                const quantity = parseInt(row.querySelector('.product-quantity-input').value, 10) || 0;
-                const revenue = parseFloat(row.querySelector('.product-revenue-input').value) || 0;
-                if (name && quantity > 0) {
-                    updatedProducts.push({ name, quantity, revenue });
-                    updatedTotalRevenue += revenue;
-                }
-            });
-            if (updatedProducts.length === 0) {
-                console.error("Não é possível salvar uma venda sem produtos.");
-                return;
-            }
-            const saleRef = doc(db, `artifacts/${appId}/public/data/sales`, currentEditingSaleId);
-            try {
-                await updateDoc(saleRef, {
-                    companyName: companyName,
-                    cnpj: cnpj,
-                    products: JSON.stringify(updatedProducts),
-                    totalRevenue: updatedTotalRevenue,
-                    editedBy: managerEmail,
-                    editedAt: serverTimestamp(),
-                    isEdited: true
-                });
-                closeEditModal();
-            } catch (error) {
-                console.error("Erro ao salvar a edição da venda: ", error);
-            }
-        }
-
-        function renderIndividualCommissionDetails(details) {
-            individualCommissionDetailsBodyEl.innerHTML = '';
-            const sortedKeys = Object.keys(details).sort();
-            sortedKeys.forEach(key => {
-                const detail = details[key]; const row = document.createElement('tr'); row.className = "border-t border-gray-200"; let itemName = key; if (detail.quantity) { itemName = `${key} (${detail.quantity})`; }
-                row.innerHTML = `<td class="p-4">${itemName}</td><td class="p-4">R$ ${detail.value.toFixed(2).replace('.', ',')}</td><td class="p-4">${detail.rate}</td>`;
-                individualCommissionDetailsBodyEl.appendChild(row);
-            });
-        }
-        
-        function renderIndividualRevenueGoals(totalRevenue) {
-            individualRevenueGoalsBodyEl.innerHTML = '';
-            const goals = goalData['Receita (R$)'];
-            goals.forEach(goal => {
-                const isMet = totalRevenue >= goal; const status = isMet ? 'Atingida' : 'Ainda não'; const statusClass = isMet ? 'text-green-500' : 'text-gray-500';
-                const row = document.createElement('tr'); row.className = "border-t border-gray-200";
-                row.innerHTML = `<td class="p-4">R$ ${goal.toFixed(2).replace('.', ',')}</td><td class="p-4 ${statusClass}">${status}</td>`;
-                individualRevenueGoalsBodyEl.appendChild(row);
-            });
-        }
-
-        function renderIndividualProductGoals(productsSoldSummary) {
-            individualProductGoalsBodyEl.innerHTML = '';
-            productsForGoals.forEach(product => {
-                const sold = productsSoldSummary[product] || 0; const goals = goalData[product] || [0, 0, 0];
-                const row = document.createElement('tr'); row.className = "border-t border-gray-200";
-                const goal75Met = sold >= goals[0]; const goal150Met = sold >= goals[1]; const goal200Met = sold >= goals[2]; let soldValue = sold; if (product === 'Aparelhos (R$)') { soldValue = `R$ ${sold.toFixed(2).replace('.', ',')}`; }
-                row.innerHTML = `
-                    <td class="p-4">${product}</td><td class="p-4 text-center">${soldValue}</td>
-                    <td class="p-4 text-center ${goal75Met ? 'text-green-500 font-bold' : ''}">${product === 'Aparelhos (R$)' ? `R$ ${goals[0].toFixed(2).replace('.', ',')}` : goals[0]}</td>
-                    <td class="p-4 text-center ${goal150Met ? 'text-green-500 font-bold' : ''}">${product === 'Aparelhos (R$)' ? `R$ ${goals[1].toFixed(2).replace('.', ',')}` : goals[1]}</td>
-                    <td class="p-4 text-center ${goal200Met ? 'text-green-500 font-bold' : ''}">${product === 'Aparelhos (R$)' ? `R$ ${goals[2].toFixed(2).replace('.', ',')}` : goals[2]}</td>`;
-                individualProductGoalsBodyEl.appendChild(row);
-            });
-        }
-        
-        // --- Event Listeners ---
-        authForm.addEventListener('submit', async (e) => { e.preventDefault(); const email = authEmailInput.value; const password = authPasswordInput.value; authMessageEl.style.display = 'none'; try { await signInWithEmailAndPassword(auth, email, password); } catch (e) { console.error("Erro de autenticação: ", e.message); displayAuthMessage('Falha no login. Verifique suas credenciais.', 'error'); } });
-        logoutBtn.addEventListener('click', async () => { await signOut(auth); });
-        backToDashboardBtn.addEventListener('click', () => { consultantViewSection.classList.add('hidden'); mainSection.classList.remove('hidden'); });
-        dashboardTabBtn.addEventListener('click', () => { dashboardContent.classList.remove('hidden'); goalsContent.classList.add('hidden'); productSalesContent.classList.add('hidden'); dashboardTabBtn.classList.remove('bg-gray-200', 'text-gray-800'); dashboardTabBtn.classList.add('bg-blue-600', 'text-white'); goalsTabBtn.classList.remove('bg-blue-600', 'text-white'); goalsTabBtn.classList.add('bg-gray-200', 'text-gray-800'); mainTitle.textContent = 'Painel de Gerência'; });
-        viewProductsBtn.addEventListener('click', () => { dashboardContent.classList.add('hidden'); goalsContent.classList.add('hidden'); productSalesContent.classList.remove('hidden'); });
-        backToDashboardFromProductsBtn.addEventListener('click', () => { dashboardContent.classList.remove('hidden'); goalsContent.classList.add('hidden'); productSalesContent.classList.add('hidden'); });
-        productFilterSelect.addEventListener('change', updateDashboard);
-        consultantMonthFilter.addEventListener('change', () => renderConsultantsPerformance());
-        consultantYearFilter.addEventListener('change', () => renderConsultantsPerformance());
-        goalsTabBtn.addEventListener('click', () => { goalsContent.classList.remove('hidden'); dashboardContent.classList.add('hidden'); productSalesContent.classList.add('hidden'); goalsTabBtn.classList.remove('bg-gray-200', 'text-gray-800'); goalsTabBtn.classList.add('bg-blue-600', 'text-white'); dashboardTabBtn.classList.remove('bg-blue-600', 'text-white'); dashboardTabBtn.classList.add('bg-gray-200', 'text-gray-800'); mainTitle.textContent = 'Gestão de Metas'; loadAndRenderGoals(); });
-        goalsMonthSelect.addEventListener('change', loadAndRenderGoals); goalsYearSelect.addEventListener('change', loadAndRenderGoals); saveGoalsBtn.addEventListener('click', saveGoals);
-        
-        // Listeners do Modal de Edição
-        cancelEditBtn.addEventListener('click', closeEditModal);
-        saveEditBtn.addEventListener('click', saveSaleEdit);
-        addProductBtnModal.addEventListener('click', () => {
-            const productsContainer = document.getElementById('edit-products-container');
-            const firstProduct = Object.keys(commissionData)[0];
-            productsContainer.appendChild(createProductEditRow({name: firstProduct, quantity: 1, revenue: 0}));
-        });
-        
-        // Listeners do Modal de Exclusão
-        cancelDeleteBtn.addEventListener('click', () => {
-            saleIdToDelete = null;
-            deleteConfirmModal.classList.add('hidden');
-        });
-        confirmDeleteBtn.addEventListener('click', () => {
-            if (saleIdToDelete) {
-                deleteSale(saleIdToDelete);
-                saleIdToDelete = null;
-            }
-            deleteConfirmModal.classList.add('hidden');
-        });
-
-        dashboardMonthFilter.addEventListener('change', updateDashboard);
-        dashboardYearFilter.addEventListener('change', updateDashboard);
-        
-        initializeFirebase();
-    </script>
-</body>
-</html>
+      R
 
