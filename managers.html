@@ -100,29 +100,37 @@
         <!-- Conteúdo do Painel -->
         <div id="dashboard-content">
             <div class="flex justify-between items-center mb-6">
-                <p class="text-gray-500">Visão consolidada da performance da equipe.</p>
+                <p class="text-gray-500">Visão consolidada da performance da equipe (baseada em vendas com "Aceite Realizado").</p>
                 <button id="view-products-btn" class="px-4 py-2 bg-teal-600 text-white font-medium rounded-lg shadow-md hover:bg-teal-700">Ver Vendas de Produtos</button>
             </div>
             
-            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mb-6">
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-4 mb-6">
                 <!-- Cards de Vendas e Receita atualizados -->
                 <div class="bg-purple-50 p-5 rounded-lg shadow-sm">
-                    <p class="text-sm font-medium text-purple-700">Total de Vendas</p>
+                    <p class="text-sm font-medium text-purple-700">Vendas Realizadas</p>
                     <div class="mt-2 space-y-1">
                         <p class="text-lg font-semibold text-purple-900">Mês Atual: <span id="total-sales-current">0</span></p>
                         <p class="text-md text-gray-600">Mês Anterior: <span id="total-sales-previous">0</span></p>
                     </div>
                 </div>
                 <div class="bg-pink-50 p-5 rounded-lg shadow-sm">
-                    <p class="text-sm font-medium text-pink-700">Receita Total da Equipe</p>
+                    <p class="text-sm font-medium text-pink-700">Receita Realizada</p>
                     <div class="mt-2 space-y-1">
                         <p class="text-lg font-semibold text-pink-900">Mês Atual: <span id="total-revenue-current">R$ 0,00</span></p>
                         <p class="text-md text-gray-600">Mês Anterior: <span id="total-revenue-previous">R$ 0,00</span></p>
                     </div>
                 </div>
                 <div class="bg-green-50 p-5 rounded-lg shadow-sm">
-                    <p class="text-sm font-medium text-green-700">Projeção da Equipe</p>
+                    <p class="text-sm font-medium text-green-700">Projeção (Realizado)</p>
                     <p id="projected-team-revenue" class="mt-1 text-2xl font-bold text-green-900">R$ 0,00</p>
+                </div>
+                 <div class="bg-yellow-50 p-5 rounded-lg shadow-sm">
+                    <p class="text-sm font-medium text-yellow-700">Receita Pendente</p>
+                    <p id="pending-team-revenue" class="mt-1 text-2xl font-bold text-yellow-900">R$ 0,00</p>
+                </div>
+                <div class="bg-red-50 p-5 rounded-lg shadow-sm">
+                    <p class="text-sm font-medium text-red-700">Vendas Negadas</p>
+                    <p id="denied-sales-count" class="mt-1 text-2xl font-bold text-red-900">0</p>
                 </div>
             </div>
 
@@ -310,6 +318,7 @@
                             <th class="p-4 font-semibold text-sm text-gray-600">Produtos</th>
                             <th class="p-4 font-semibold text-sm text-gray-600">Data</th>
                             <th class="p-4 font-semibold text-sm text-gray-600 text-right">Receita</th>
+                            <th class="p-4 font-semibold text-sm text-gray-600 text-center">Status</th>
                             <th class="p-4 font-semibold text-sm text-gray-600 text-center rounded-tr-lg">Ações</th>
                         </tr>
                     </thead>
@@ -447,6 +456,8 @@
         const totalRevenueCurrentEl = document.getElementById('total-revenue-current');
         const totalRevenuePreviousEl = document.getElementById('total-revenue-previous');
         const projectedTeamRevenueEl = document.getElementById('projected-team-revenue');
+        const pendingTeamRevenueEl = document.getElementById('pending-team-revenue');
+        const deniedSalesCountEl = document.getElementById('denied-sales-count');
 
         // Elementos da Tabela de Vendas de Produtos
         const productSalesTableBody = document.getElementById('product-sales-table-body');
@@ -551,21 +562,31 @@
             const currentMonthSales = allSalesData.filter(s => { const d = s.timestamp?.seconds ? new Date(s.timestamp.seconds * 1000) : null; return d && d.getMonth() === currentMonth && d.getFullYear() === currentYear; });
             const previousMonthSales = allSalesData.filter(s => { const d = s.timestamp?.seconds ? new Date(s.timestamp.seconds * 1000) : null; return d && d.getMonth() === previousMonth && d.getFullYear() === previousMonthYear; });
             
-            const totalRevenueCurrent = currentMonthSales.reduce((sum, sale) => sum + (sale.totalRevenue || 0), 0);
-            const totalRevenuePrevious = previousMonthSales.reduce((sum, sale) => sum + (sale.totalRevenue || 0), 0);
+            // Filtrar vendas por status
+            const realizedCurrentSales = currentMonthSales.filter(s => s.status === 'aceite realizado');
+            const realizedPreviousSales = previousMonthSales.filter(s => s.status === 'aceite realizado');
+            const pendingCurrentSales = currentMonthSales.filter(s => s.status === 'aceite enviado');
+            const deniedCurrentSales = currentMonthSales.filter(s => s.status === 'aceite negado');
 
-            totalSalesCurrentEl.textContent = currentMonthSales.length;
-            totalSalesPreviousEl.textContent = previousMonthSales.length;
+            const totalRevenueCurrent = realizedCurrentSales.reduce((sum, sale) => sum + (sale.totalRevenue || 0), 0);
+            const totalRevenuePrevious = realizedPreviousSales.reduce((sum, sale) => sum + (sale.totalRevenue || 0), 0);
+            const pendingRevenueCurrent = pendingCurrentSales.reduce((sum, sale) => sum + (sale.totalRevenue || 0), 0);
+
+            totalSalesCurrentEl.textContent = realizedCurrentSales.length;
+            totalSalesPreviousEl.textContent = realizedPreviousSales.length;
             totalRevenueCurrentEl.textContent = `R$ ${totalRevenueCurrent.toFixed(2).replace('.', ',')}`;
             totalRevenuePreviousEl.textContent = `R$ ${totalRevenuePrevious.toFixed(2).replace('.', ',')}`;
+            pendingTeamRevenueEl.textContent = `R$ ${pendingRevenueCurrent.toFixed(2).replace('.', ',')}`;
+            deniedSalesCountEl.textContent = deniedCurrentSales.length;
 
-            renderCollectiveChart(allSalesData);
-            renderProductsSoldChart(currentMonthSales);
-            populateProductFilter(allSalesData);
-            renderDailySalesChart(allSalesData, productFilterSelect.value);
-            calculateAndDisplayTeamProjection(allSalesData);
+            const allRealizedSales = allSalesData.filter(s => s.status === 'aceite realizado');
+            renderCollectiveChart(allRealizedSales);
+            renderProductsSoldChart(realizedCurrentSales);
+            populateProductFilter(allRealizedSales);
+            renderDailySalesChart(allRealizedSales, productFilterSelect.value);
+            calculateAndDisplayTeamProjection(allRealizedSales);
             renderConsultantsPerformance();
-            renderProductSalesTable(currentMonthSales, previousMonthSales);
+            renderProductSalesTable(realizedCurrentSales, realizedPreviousSales);
         }
 
         function populateProductFilter(sales) {
@@ -673,7 +694,13 @@
             if (!allSalesData || !allConsultantsData) return;
             const selectedMonth = parseInt(consultantMonthFilter.value);
             const selectedYear = parseInt(consultantYearFilter.value);
-            const filteredSales = allSalesData.filter(s => { const d = s.timestamp?.seconds ? new Date(s.timestamp.seconds * 1000) : null; return d && d.getMonth() === selectedMonth && d.getFullYear() === selectedYear; });
+            
+            // Filtra apenas por vendas realizadas para a performance geral
+            const filteredSales = allSalesData.filter(s => { 
+                const d = s.timestamp?.seconds ? new Date(s.timestamp.seconds * 1000) : null; 
+                return d && d.getMonth() === selectedMonth && d.getFullYear() === selectedYear && s.status === 'aceite realizado';
+            });
+
             const performanceMap = {};
             allConsultantsData.forEach(c => { performanceMap[c.id] = { name: c.consultantName || 'Consultor sem nome', salesCount: 0, totalRevenue: 0, }; });
             filteredSales.forEach(sale => { const consultantId = sale.consultantId; if (consultantId && performanceMap[consultantId]) { performanceMap[consultantId].salesCount++; performanceMap[consultantId].totalRevenue += sale.totalRevenue || 0; } });
@@ -773,13 +800,16 @@
                 const saleDate = sale.timestamp?.seconds ? new Date(sale.timestamp.seconds * 1000) : null;
                 return sale.consultantId === consultantId && saleDate && saleDate.getMonth() === selectedMonth && saleDate.getFullYear() === selectedYear;
             });
+            
+            // Para os cálculos, consideramos apenas as vendas realizadas
+            const realizedConsultantSales = consultantSales.filter(s => s.status === 'aceite realizado');
 
             let totalRevenue = 0;
             const productsSoldSummary = {};
             let totalMigracaoSold = 0;
             let totalAparelhosSoldValue = 0;
             
-            consultantSales.forEach(sale => {
+            realizedConsultantSales.forEach(sale => {
                 try {
                     const saleProducts = JSON.parse(sale.products);
                     saleProducts.forEach(p => {
@@ -805,7 +835,7 @@
             let tierIndexForCommission = currentTier > 0 ? currentTier - 1 : 0;
             tierIndexForCommission = Math.min(tierIndexForCommission, commissionData['Migração Mid'].length - 1);
             
-            consultantSales.forEach(sale => { 
+            realizedConsultantSales.forEach(sale => { 
                 try {
                     const saleProducts = JSON.parse(sale.products); 
                     saleProducts.forEach(p => { 
@@ -844,13 +874,13 @@
             renderIndividualCommissionDetails(commissionDetails);
             renderIndividualRevenueGoals(totalRevenue);
             renderIndividualProductGoals(productsSoldSummary);
-            renderConsultantSalesList(consultantSales);
+            renderConsultantSalesList(consultantSales); // Passa todas as vendas para a lista
         }
 
         function renderConsultantSalesList(sales) {
             consultantSalesListBody.innerHTML = '';
             if (sales.length === 0) {
-                consultantSalesListBody.innerHTML = `<tr><td colspan="6" class="p-4 text-center text-gray-500">Nenhuma venda encontrada para este período.</td></tr>`;
+                consultantSalesListBody.innerHTML = `<tr><td colspan="7" class="p-4 text-center text-gray-500">Nenhuma venda encontrada para este período.</td></tr>`;
                 return;
             }
             sales.sort((a, b) => b.timestamp.seconds - a.timestamp.seconds);
@@ -862,6 +892,16 @@
                     productsHtml = products.map(p => `Qt: ${p.quantity} - ${p.name} (R$ ${p.revenue.toFixed(2).replace('.',',')})`).join('<br>');
                 } catch (e) { console.error("Erro ao parsear produtos da venda:", e); }
                 
+                const statusText = sale.status || 'aceite enviado';
+                let statusBadge = '';
+                if (statusText === 'aceite realizado') {
+                    statusBadge = `<span class="px-2 py-1 text-xs font-semibold text-green-800 bg-green-100 rounded-full">Realizado</span>`;
+                } else if (statusText === 'aceite enviado') {
+                    statusBadge = `<span class="px-2 py-1 text-xs font-semibold text-yellow-800 bg-yellow-100 rounded-full">Enviado</span>`;
+                } else { // aceite negado
+                    statusBadge = `<span class="px-2 py-1 text-xs font-semibold text-red-800 bg-red-100 rounded-full">Negado</span>`;
+                }
+
                 const row = document.createElement('tr');
                 row.className = "border-t border-gray-200 hover:bg-gray-50";
                 if(sale.isEdited) {
@@ -879,6 +919,7 @@
                     <td class="p-4 align-top text-sm">${productsHtml}</td>
                     <td class="p-4 align-top">${saleDate}${editedInfo}</td>
                     <td class="p-4 align-top text-right">R$ ${(sale.totalRevenue || 0).toFixed(2).replace('.', ',')}</td>
+                    <td class="p-4 align-top text-center">${statusBadge}</td>
                     <td class="p-4 align-top text-center">
                         <button class="edit-sale-btn text-blue-500 hover:text-blue-700 mr-2" data-sale-id="${sale.id}">Editar</button>
                         <button class="delete-sale-btn text-red-500 hover:text-red-700" data-sale-id="${sale.id}">Excluir</button>
@@ -1098,5 +1139,6 @@
     </script>
 </body>
 </html>
+
 
 
