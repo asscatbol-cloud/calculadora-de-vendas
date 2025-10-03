@@ -99,6 +99,14 @@
         
         <!-- Conteúdo do Painel -->
         <div id="dashboard-content">
+            <!-- FILTRO DE PERÍODO ADICIONADO -->
+            <div class="flex items-center gap-4 mb-6 bg-gray-50 p-4 rounded-lg shadow-sm">
+                <label for="dashboard-month-filter" class="text-sm font-medium text-gray-700">Visualizar Mês:</label>
+                <select id="dashboard-month-filter" class="rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"></select>
+                <label for="dashboard-year-filter" class="text-sm font-medium text-gray-700">Ano:</label>
+                <select id="dashboard-year-filter" class="rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"></select>
+            </div>
+
             <div class="flex justify-between items-center mb-6">
                 <p class="text-gray-500">Visão consolidada da performance da equipe (baseada em vendas com "Aceite Realizado").</p>
                 <button id="view-products-btn" class="px-4 py-2 bg-teal-600 text-white font-medium rounded-lg shadow-md hover:bg-teal-700">Ver Vendas de Produtos</button>
@@ -449,6 +457,8 @@
         const mainTitle = document.getElementById('main-title');
         const viewProductsBtn = document.getElementById('view-products-btn');
         const backToDashboardFromProductsBtn = document.getElementById('back-to-dashboard-from-products-btn');
+        const dashboardMonthFilter = document.getElementById('dashboard-month-filter');
+        const dashboardYearFilter = document.getElementById('dashboard-year-filter');
         
         // Elementos dos Cards
         const totalSalesCurrentEl = document.getElementById('total-sales-current');
@@ -527,7 +537,7 @@
                         const isManager = await checkManagerStatus(managerId);
                         if (isManager) {
                             authSection.classList.add('hidden'); mainSection.classList.remove('hidden'); dashboardContent.classList.remove('hidden'); goalsContent.classList.add('hidden'); productSalesContent.classList.add('hidden'); consultantViewSection.classList.add('hidden');
-                            listenToSalesAndConsultants(); populateGoalsSelectors(); populateConsultantFilters(); loadAndRenderGoals();
+                            listenToSalesAndConsultants(); populateGoalsSelectors(); populateConsultantFilters(); populateDashboardFilters(); loadAndRenderGoals();
                         } else { await signOut(auth); displayAuthMessage('Acesso negado. Esta conta não é de um gerente.', 'error'); }
                     } else { authSection.classList.remove('hidden'); mainSection.classList.add('hidden'); consultantViewSection.classList.add('hidden'); }
                 });
@@ -554,12 +564,13 @@
         function updateDashboard() {
             if (!allSalesData || !allConsultantsData) return;
 
-            const today = new Date();
-            const currentMonth = today.getMonth(); const currentYear = today.getFullYear();
-            const previousMonth = currentMonth === 0 ? 11 : currentMonth - 1;
-            const previousMonthYear = currentMonth === 0 ? currentYear - 1 : currentYear;
+            const selectedMonth = parseInt(dashboardMonthFilter.value);
+            const selectedYear = parseInt(dashboardYearFilter.value);
 
-            const currentMonthSales = allSalesData.filter(s => { const d = s.timestamp?.seconds ? new Date(s.timestamp.seconds * 1000) : null; return d && d.getMonth() === currentMonth && d.getFullYear() === currentYear; });
+            const previousMonth = selectedMonth === 0 ? 11 : selectedMonth - 1;
+            const previousMonthYear = selectedMonth === 0 ? selectedYear - 1 : selectedYear;
+
+            const currentMonthSales = allSalesData.filter(s => { const d = s.timestamp?.seconds ? new Date(s.timestamp.seconds * 1000) : null; return d && d.getMonth() === selectedMonth && d.getFullYear() === selectedYear; });
             const previousMonthSales = allSalesData.filter(s => { const d = s.timestamp?.seconds ? new Date(s.timestamp.seconds * 1000) : null; return d && d.getMonth() === previousMonth && d.getFullYear() === previousMonthYear; });
             
             // Filtrar vendas por status
@@ -579,14 +590,36 @@
             pendingTeamRevenueEl.textContent = `R$ ${pendingRevenueCurrent.toFixed(2).replace('.', ',')}`;
             deniedSalesCountEl.textContent = deniedCurrentSales.length;
 
-            const allRealizedSales = allSalesData.filter(s => s.status === 'aceite realizado');
-            renderCollectiveChart(allRealizedSales);
+            renderCollectiveChart(allSalesData, selectedYear, selectedMonth);
             renderProductsSoldChart(realizedCurrentSales);
-            populateProductFilter(allRealizedSales);
-            renderDailySalesChart(allRealizedSales, productFilterSelect.value);
-            calculateAndDisplayTeamProjection(allRealizedSales);
+            populateProductFilter(realizedCurrentSales);
+            renderDailySalesChart(realizedCurrentSales, realizedPreviousSales, selectedYear, selectedMonth, productFilterSelect.value);
+            calculateAndDisplayTeamProjection(allSalesData, selectedYear, selectedMonth);
             renderConsultantsPerformance();
             renderProductSalesTable(realizedCurrentSales, realizedPreviousSales);
+        }
+
+        function populateDashboardFilters() {
+            const today = new Date();
+            const months = ['Janeiro', 'Fevereiro', 'Março', 'Abril', 'Maio', 'Junho', 'Julho', 'Agosto', 'Setembro', 'Outubro', 'Novembro', 'Dezembro'];
+            dashboardMonthFilter.innerHTML = '';
+            months.forEach((month, index) => { 
+                const option = document.createElement('option'); 
+                option.value = index; 
+                option.textContent = month; 
+                if (index === today.getMonth()) { option.selected = true; } 
+                dashboardMonthFilter.appendChild(option); 
+            });
+            const currentYear = today.getFullYear();
+            dashboardYearFilter.innerHTML = '';
+            for (let i = 0; i < 5; i++) { 
+                const year = currentYear - i; 
+                const option = document.createElement('option'); 
+                option.value = year; 
+                option.textContent = year; 
+                if (year === currentYear) { option.selected = true; } 
+                dashboardYearFilter.appendChild(option); 
+            }
         }
 
         function populateProductFilter(sales) {
@@ -599,12 +632,8 @@
             if (Array.from(productSet).includes(currentSelection)) { productFilterSelect.value = currentSelection; }
         }
 
-        function renderDailySalesChart(sales, selectedProduct = 'Todos') {
-            const today = new Date();
-            const currentMonth = today.getMonth(); const currentYear = today.getFullYear();
-            const previousMonth = currentMonth === 0 ? 11 : currentMonth - 1;
-            const previousMonthYear = currentMonth === 0 ? currentYear - 1 : currentYear;
-            const daysInCurrentMonth = new Date(currentYear, currentMonth + 1, 0).getDate();
+        function renderDailySalesChart(currentSales, previousSales, year, month, selectedProduct = 'Todos') {
+            const daysInCurrentMonth = new Date(year, month + 1, 0).getDate();
             const labels = Array.from({ length: daysInCurrentMonth }, (_, i) => i + 1);
 
             const currentMonthData = new Array(daysInCurrentMonth).fill(0);
@@ -613,10 +642,10 @@
             const isRevenueView = selectedProduct === 'Receita';
             const yAxisLabel = isRevenueView ? 'Receita (R$)' : 'Quantidade Vendida';
 
-            const filterSales = (saleSet, dataArray, month, year) => {
+            const processSalesForChart = (saleSet, dataArray) => {
                 saleSet.forEach(sale => {
                     const saleDate = sale.timestamp?.seconds ? new Date(sale.timestamp.seconds * 1000) : null;
-                    if (saleDate && saleDate.getMonth() === month && saleDate.getFullYear() === year) {
+                    if (saleDate) {
                         const dayIndex = saleDate.getDate() - 1;
                         if (isRevenueView) {
                             dataArray[dayIndex] += (sale.totalRevenue || 0);
@@ -629,8 +658,8 @@
                     }
                 });
             };
-            filterSales(sales, currentMonthData, currentMonth, currentYear);
-            filterSales(sales, previousMonthData, previousMonth, previousMonthYear);
+            processSalesForChart(currentSales, currentMonthData);
+            processSalesForChart(previousSales, previousMonthData);
             
             if (dailySalesChart) { dailySalesChart.destroy(); }
             const ctx = document.getElementById('daily-sales-chart').getContext('2d');
@@ -659,15 +688,28 @@
 
         function getPastMonths(count) { const months = []; const today = new Date(); for (let i = count - 1; i >= 0; i--) { const d = new Date(today.getFullYear(), today.getMonth() - i, 1); months.push(d); } return months; }
         
-        function calculateAndDisplayTeamProjection(sales) {
-            const months = getPastMonths(6);
-            const teamMonthlyRevenue = months.map(month => sales.reduce((sum, sale) => { const saleDate = sale.timestamp ? new Date(sale.timestamp.seconds * 1000) : null; if (saleDate && saleDate.getMonth() === month.getMonth() && saleDate.getFullYear() === month.getFullYear()) { return sum + (sale.totalRevenue || 0); } return sum; }, 0));
+        function calculateAndDisplayTeamProjection(allSales, selectedYear, selectedMonth) {
+            const months = [];
+            for (let i = 5; i >= 0; i--) {
+                months.push(new Date(selectedYear, selectedMonth - i, 1));
+            }
+
+            const realizedSales = allSales.filter(s => s.status === 'aceite realizado');
+
+            const teamMonthlyRevenue = months.map(month =>
+                realizedSales.reduce((sum, sale) => {
+                    const saleDate = sale.timestamp ? new Date(sale.timestamp.seconds * 1000) : null;
+                    if (saleDate && saleDate.getMonth() === month.getMonth() && saleDate.getFullYear() === month.getFullYear()) {
+                        return sum + (sale.totalRevenue || 0);
+                    }
+                    return sum;
+                }, 0));
             
             let totalGrowth = 0; let countGrowth = 0;
             for (let i = 1; i < teamMonthlyRevenue.length; i++) { if (teamMonthlyRevenue[i-1] > 0) { const growthRate = (teamMonthlyRevenue[i] - teamMonthlyRevenue[i-1]) / teamMonthlyRevenue[i-1]; totalGrowth += growthRate; countGrowth++; } }
             const averageGrowth = countGrowth > 0 ? totalGrowth / countGrowth : 0;
-            const lastMonthRevenue = teamMonthlyRevenue.length > 0 ? teamMonthlyRevenue[teamMonthlyRevenue.length - 1] : 0;
-            const projectedTeamRevenue = lastMonthRevenue * (1 + averageGrowth);
+            const currentMonthRevenue = teamMonthlyRevenue.length > 0 ? teamMonthlyRevenue[teamMonthlyRevenue.length - 1] : 0;
+            const projectedTeamRevenue = currentMonthRevenue * (1 + averageGrowth);
             projectedTeamRevenueEl.textContent = `R$ ${projectedTeamRevenue.toFixed(2).replace('.', ',')}`;
         }
 
@@ -682,9 +724,22 @@
             productsSoldChart = new Chart(ctx, { type: 'doughnut', data: { labels: productNames, datasets: [{ label: 'Quantidade Vendida', data: productQuantities, backgroundColor: [ 'rgba(255, 99, 132, 0.6)', 'rgba(54, 162, 235, 0.6)', 'rgba(255, 206, 86, 0.6)', 'rgba(75, 192, 192, 0.6)', 'rgba(153, 102, 255, 0.6)', 'rgba(255, 159, 64, 0.6)', 'rgba(199, 199, 199, 0.6)' ], borderWidth: 1 }] }, options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'top' } } } });
         }
         
-        function renderCollectiveChart(sales) {
-            const months = getPastMonths(6);
-            const monthlyRevenue = months.map(month => sales.reduce((sum, sale) => { const saleDate = sale.timestamp ? new Date(sale.timestamp.seconds * 1000) : null; if (saleDate && saleDate.getMonth() === month.getMonth() && saleDate.getFullYear() === month.getFullYear()) { return sum + (sale.totalRevenue || 0); } return sum; }, 0));
+        function renderCollectiveChart(allSales, selectedYear, selectedMonth) {
+            const months = [];
+            for (let i = 5; i >= 0; i--) {
+                months.push(new Date(selectedYear, selectedMonth - i, 1));
+            }
+
+            const realizedSales = allSales.filter(s => s.status === 'aceite realizado');
+
+            const monthlyRevenue = months.map(month =>
+                realizedSales.reduce((sum, sale) => {
+                    const saleDate = sale.timestamp ? new Date(sale.timestamp.seconds * 1000) : null;
+                    if (saleDate && saleDate.getMonth() === month.getMonth() && saleDate.getFullYear() === month.getFullYear()) {
+                        return sum + (sale.totalRevenue || 0);
+                    }
+                    return sum;
+                }, 0));
             if (collectiveChart) { collectiveChart.destroy(); }
             const ctx = document.getElementById('collective-sales-chart').getContext('2d');
             collectiveChart = new Chart(ctx, { type: 'bar', data: { labels: months.map(m => m.toLocaleString('pt-BR', { month: 'short', year: 'numeric' })), datasets: [{ label: 'Receita Total da Equipe (R$)', data: monthlyRevenue, backgroundColor: 'rgba(75, 192, 192, 0.6)', borderColor: 'rgba(75, 192, 192, 1)', borderWidth: 1 }] }, options: { responsive: true, maintainAspectRatio: false, scales: { y: { beginAtZero: true, title: { display: true, text: 'Receita (R$)' } } } } });
@@ -1122,23 +1177,12 @@
             productsContainer.appendChild(createProductEditRow({name: firstProduct, quantity: 1, revenue: 0}));
         });
         
-        // Listeners do Modal de Exclusão
-        function closeDeleteConfirmModal() {
-            deleteConfirmModal.classList.add('hidden');
-            saleIdToDelete = null;
-        }
-        cancelDeleteBtn.addEventListener('click', closeDeleteConfirmModal);
-        confirmDeleteBtn.addEventListener('click', async () => {
-            if (saleIdToDelete) {
-                await deleteSale(saleIdToDelete);
-            }
-            closeDeleteConfirmModal();
-        });
-
+        dashboardMonthFilter.addEventListener('change', updateDashboard);
+        dashboardYearFilter.addEventListener('change', updateDashboard);
+        
         initializeFirebase();
     </script>
 </body>
 </html>
-
 
 
