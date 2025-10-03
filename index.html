@@ -60,7 +60,7 @@
 <body class="bg-gray-100 flex items-center justify-center min-h-screen p-4">
 
     <!-- Login/Register Section -->
-    <div id="auth-section" class="container w-full max-w-md p-6 bg-white rounded-lg shadow-md hidden">
+    <div id="auth-section" class="container w-full max-w-md p-6 bg-white rounded-lg shadow-md">
         <h2 class="text-2xl font-bold text-center mb-6 text-gray-800">Acesso do Consultor</h2>
         <div id="auth-message" class="hidden p-4 mb-4 text-sm rounded-lg" role="alert"></div>
         <form id="auth-form" class="space-y-4">
@@ -99,12 +99,12 @@
             </select>
         </div>
         
-        <!-- Dashboard de Desempenho -->
+        <!-- Seção de Desempenho Principal: Focada 100% nas vendas com "Aceite Realizado". -->
         <div>
-            <h2 class="text-xl font-semibold mb-4">Seu Desempenho</h2>
+            <h2 class="text-xl font-semibold mb-4">Desempenho (Vendas com Aceite Realizado)</h2>
             <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
                 <div class="bg-indigo-50 p-6 rounded-lg shadow-sm">
-                    <p class="text-sm font-medium text-indigo-700">Receita Total</p>
+                    <p class="text-sm font-medium text-indigo-700">Receita Realizada</p>
                     <p id="total-revenue" class="mt-1 text-2xl font-bold text-indigo-900">R$ 0,00</p>
                 </div>
                 <div class="bg-purple-50 p-6 rounded-lg shadow-sm">
@@ -117,9 +117,8 @@
                 </div>
             </div>
             
-            <!-- Progresso para a Próxima Faixa -->
             <div class="mt-8">
-                <h3 id="progress-text" class="text-lg font-medium text-gray-700 mb-2"></h3>
+                <h3 id="progress-text" class="text-lg font-medium text-gray-700 mb-2">Progresso para a Próxima Faixa</h3>
                 <div class="progress-bar">
                     <div id="progress-fill" class="progress-fill bg-blue-500" style="width: 0%;"></div>
                 </div>
@@ -128,9 +127,36 @@
 
         <hr class="my-8">
 
+        <!-- Nova Seção de Pendentes: Vendas com "Aceite Enviado" -->
+        <div>
+            <h2 class="text-xl font-semibold mb-4">Vendas com Aceite Enviado (Aguardando Aprovação)</h2>
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+                <div class="bg-yellow-50 p-6 rounded-lg shadow-sm">
+                    <p class="text-sm font-medium text-yellow-700">Receita Pendente</p>
+                    <p id="pending-revenue" class="mt-1 text-2xl font-bold text-yellow-900">R$ 0,00</p>
+                </div>
+            </div>
+        </div>
+
+        <hr class="my-8">
+
+        <!-- Nova Seção de Negados: Vendas com "Aceite Negado" -->
+        <div>
+            <h2 class="text-xl font-semibold mb-4">Vendas com Aceite Negado</h2>
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+                <div class="bg-red-50 p-6 rounded-lg shadow-sm">
+                    <p class="text-sm font-medium text-red-700">Receita Negada</p>
+                    <p id="denied-revenue" class="mt-1 text-2xl font-bold text-red-900">R$ 0,00</p>
+                </div>
+            </div>
+        </div>
+
+
+        <hr class="my-8">
+
         <!-- Detalhes da Comissão -->
         <div class="mb-8">
-            <h2 class="text-xl font-semibold mb-4">Detalhes da Comissão</h2>
+            <h2 class="text-xl font-semibold mb-4">Detalhes da Comissão (Vendas Realizadas)</h2>
             <div class="overflow-x-auto">
                 <table class="min-w-full text-left border-collapse">
                     <thead>
@@ -141,7 +167,7 @@
                         </tr>
                     </thead>
                     <tbody id="commission-details-body">
-                        <!-- Commission details will be populated here -->
+                        <!-- Os detalhes da comissão serão preenchidos aqui -->
                     </tbody>
                 </table>
             </div>
@@ -170,9 +196,17 @@
                     <label for="crm" class="block text-sm font-medium text-gray-700">CRM (Opcional)</label>
                     <input type="text" id="crm" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
                 </div>
+                <div>
+                    <label for="sale-status" class="block text-sm font-medium text-gray-700">Status do Aceite</label>
+                    <select id="sale-status" required class="mt-1 block w-full p-2 rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
+                        <option value="aceite enviado">Aceite Enviado</option>
+                        <option value="aceite realizado">Aceite Realizado</option>
+                        <option value="aceite negado">Aceite Negado</option>
+                    </select>
+                </div>
                 
                 <div id="products-container" class="space-y-4">
-                    <!-- Products will be added here dynamically -->
+                    <!-- Os produtos serão adicionados dinamicamente aqui -->
                 </div>
                 
                 <button type="button" id="add-product-btn" class="w-full sm:w-auto px-4 py-2 bg-green-500 text-white font-medium rounded-lg shadow-md hover:bg-green-600 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2">
@@ -181,7 +215,7 @@
                 
                 <button type="submit" id="save-sale-btn" class="w-full px-4 py-2 bg-blue-600 text-white font-medium rounded-lg shadow-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 flex justify-center items-center space-x-2" disabled>
                     <span id="save-sale-btn-text">Carregando...</span>
-                    <div id="save-sale-spinner" class="spinner"></div>
+                    <div id="save-sale-spinner" class="spinner hidden"></div>
                 </button>
             </form>
         </div>
@@ -190,7 +224,7 @@
 
         <!-- Lista de Vendas Registradas -->
         <div class="mb-8">
-            <h2 class="text-xl font-semibold mb-4">Vendas Registradas</h2>
+            <h2 class="text-xl font-semibold mb-4">Vendas Registradas no Período</h2>
             <div class="overflow-x-auto">
                 <table class="min-w-full text-left border-collapse">
                     <thead>
@@ -200,11 +234,12 @@
                             <th class="p-4">Produtos</th>
                             <th class="p-4">Data</th>
                             <th class="p-4">Receita</th>
+                            <th class="p-4">Status</th>
                             <th class="p-4 rounded-tr-lg">Ações</th>
                         </tr>
                     </thead>
                     <tbody id="sales-list-body">
-                        <!-- Sales will be populated here -->
+                        <!-- As vendas serão preenchidas aqui -->
                     </tbody>
                 </table>
             </div>
@@ -214,7 +249,7 @@
 
         <!-- Acompanhamento de Metas -->
         <div class="mb-8">
-            <h3 class="text-lg font-semibold mb-4">Metas de Receita</h3>
+            <h3 class="text-lg font-semibold mb-4">Metas de Receita (Vendas Realizadas)</h3>
             <div class="overflow-x-auto">
                 <table class="w-full text-left border-collapse">
                     <thead>
@@ -224,7 +259,7 @@
                         </tr>
                     </thead>
                     <tbody id="revenue-goals-body">
-                        <!-- Revenue goals will be populated here -->
+                        <!-- As metas de receita serão preenchidas aqui -->
                     </tbody>
                 </table>
             </div>
@@ -233,7 +268,7 @@
         <hr class="my-8">
 
         <div>
-            <h3 class="text-lg font-semibold mb-4">Metas de Produto por Faixa</h3>
+            <h3 class="text-lg font-semibold mb-4">Metas de Produto por Faixa (Vendas Realizadas)</h3>
             <div class="overflow-x-auto">
                 <table class="w-full text-left border-collapse">
                     <thead>
@@ -246,7 +281,7 @@
                         </tr>
                     </thead>
                     <tbody id="product-goals-body">
-                        <!-- Product goals will be populated here -->
+                        <!-- As metas de produto serão preenchidas aqui -->
                     </tbody>
                 </table>
             </div>
@@ -277,7 +312,7 @@
         // Importa os módulos necessários do Firebase
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
         import { getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword, onAuthStateChanged, signOut, signInWithCustomToken } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
-        import { getFirestore, collection, addDoc, onSnapshot, query, deleteDoc, doc, setDoc, getDoc, setLogLevel, serverTimestamp, where, orderBy } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+        import { getFirestore, collection, addDoc, onSnapshot, query, deleteDoc, doc, setDoc, getDoc, setLogLevel, serverTimestamp, where, updateDoc } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
         // Variáveis globais fornecidas pelo ambiente
         const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
@@ -353,6 +388,8 @@
         const toggleAuthBtn = document.getElementById('toggle-auth-btn');
         const logoutBtn = document.getElementById('logout-btn');
         const periodFilterEl = document.getElementById('period-filter');
+        const pendingRevenueEl = document.getElementById('pending-revenue');
+        const deniedRevenueEl = document.getElementById('denied-revenue');
 
 
         let isRegisterMode = false;
@@ -399,7 +436,9 @@
                 auth = getAuth(app);
                 db = getFirestore(app);
 
-                setSaveLoading(true);
+                authSection.classList.remove('hidden');
+                setSaveLoading(false);
+
 
                 onAuthStateChanged(auth, async (user) => {
                     if (user) {
@@ -409,14 +448,11 @@
                         loadConsultantName();
                         createPeriodOptions();
                         listenToSales();
-                        setSaveLoading(false);
-
                     } else {
                         authSection.classList.remove('hidden');
                         appSection.classList.add('hidden');
                         salesListBodyEl.innerHTML = '';
                         updateDashboard([]);
-                        setSaveLoading(true);
                     }
                 });
 
@@ -452,6 +488,7 @@
         }
 
         async function deleteSale(saleId) {
+            if (!userId || !db) return;
             try {
                 const saleRef = doc(db, `artifacts/${appId}/public/data/sales`, saleId);
                 await deleteDoc(saleRef);
@@ -461,12 +498,29 @@
                 displayMessage("Erro ao excluir a venda. Por favor, tente novamente.", "error");
             }
         }
+        
+        async function updateSaleStatus(saleId, newStatus) {
+            if (!db || !userId) {
+                displayMessage("Erro: O aplicativo não está pronto. Por favor, aguarde.", "error");
+                return;
+            }
+            try {
+                const saleRef = doc(db, `artifacts/${appId}/public/data/sales`, saleId);
+                await updateDoc(saleRef, {
+                    status: newStatus
+                });
+                displayMessage("Status da venda atualizado com sucesso!", "success");
+            } catch (e) {
+                console.error("Erro ao atualizar o status da venda: ", e);
+                displayMessage(`Erro ao atualizar o status. Detalhes: ${e.message}`, "error");
+            }
+        }
 
         async function saveConsultantName(name) {
             if (!name || !userId) return;
             try {
-                const userDocRef = doc(db, `artifacts/${appId}/users/${userId}`);
-                await setDoc(userDocRef, { consultantName: name }, { merge: true });
+                const consultantProfileRef = doc(db, `artifacts/${appId}/public/data/consultants`, userId);
+                await setDoc(consultantProfileRef, { consultantName: name }, { merge: true });
             } catch (e) {
                 console.error("Erro ao salvar o nome do consultor: ", e);
             }
@@ -475,10 +529,10 @@
         async function loadConsultantName() {
             if (!userId) return;
             try {
-                const userDocRef = doc(db, `artifacts/${appId}/users/${userId}`);
-                const userDocSnap = await getDoc(userDocRef);
-                if (userDocSnap.exists()) {
-                    consultantNameInput.value = userDocSnap.data().consultantName || '';
+                const consultantProfileRef = doc(db, `artifacts/${appId}/public/data/consultants`, userId);
+                const docSnap = await getDoc(consultantProfileRef);
+                if (docSnap.exists()) {
+                    consultantNameInput.value = docSnap.data().consultantName || '';
                 }
             } catch (e) {
                 console.error("Erro ao carregar o nome do consultor: ", e);
@@ -539,12 +593,22 @@
         }
         
         function updateDashboard(sales) {
+            const acceptedSales = sales.filter(s => s.status === 'aceite realizado');
+            const pendingSales = sales.filter(s => s.status === 'aceite enviado');
+            const deniedSales = sales.filter(s => s.status === 'aceite negado');
+
+            const pendingRevenue = pendingSales.reduce((acc, sale) => acc + (sale.totalRevenue || 0), 0);
+            const deniedRevenue = deniedSales.reduce((acc, sale) => acc + (sale.totalRevenue || 0), 0);
+
+            pendingRevenueEl.textContent = `R$ ${pendingRevenue.toFixed(2).replace('.', ',')}`;
+            deniedRevenueEl.textContent = `R$ ${deniedRevenue.toFixed(2).replace('.', ',')}`;
+
             let totalRevenue = 0;
             const productsSoldSummary = {};
             let totalMigracaoSold = 0;
             let totalAparelhosSoldValue = 0;
 
-            sales.forEach(sale => {
+            acceptedSales.forEach(sale => {
                 const saleProducts = JSON.parse(sale.products);
                 saleProducts.forEach(p => {
                     const productNameKey = p.name.includes('Migração') ? 'Migração' : p.name;
@@ -583,10 +647,9 @@
             
             let totalCommission = 0;
             const commissionDetails = {};
-
             const tierIndexForCommission = currentTier; 
 
-            sales.forEach(sale => {
+            acceptedSales.forEach(sale => {
                 const saleProducts = JSON.parse(sale.products);
                 saleProducts.forEach(p => {
                     const maxIndex = (commissionData[p.name]?.length || 1) - 1;
@@ -613,12 +676,14 @@
             const maxRevenueIndex = revenuePercentages.length - 1;
             const cappedRevenueTierIndex = Math.min(tierIndexForCommission, maxRevenueIndex);
             const revenueCommissionPercentage = revenuePercentages[cappedRevenueTierIndex];
-
             const revenueCommission = totalRevenue * (revenueCommissionPercentage / 100);
-            commissionDetails['Receita Total'] = {
-                value: revenueCommission,
-                rate: `${revenueCommissionPercentage}%`
-            };
+
+            if(totalRevenue > 0){
+                commissionDetails['Receita Total'] = {
+                    value: revenueCommission,
+                    rate: `${revenueCommissionPercentage}%`
+                };
+            }
 
             totalCommission = Object.values(commissionDetails).reduce((sum, item) => sum + item.value, 0);
 
@@ -628,15 +693,15 @@
             
             let nextTierGoal = 0;
             let progressPercentage = 0;
-
             const nextRevenueGoalIndex = revenueGoals.findIndex(goal => totalRevenue < goal);
+
             if (nextRevenueGoalIndex !== -1) {
                 nextTierGoal = revenueGoals[nextRevenueGoalIndex];
                 progressPercentage = Math.min(100, (totalRevenue / nextTierGoal) * 100);
                 progressTextEl.textContent = `Progresso para a Faixa ${currentTier + 1}:`;
             } else {
-                progressPercentage = 100;
-                progressTextEl.textContent = 'Parabéns! Você alcançou a Faixa mais alta!';
+                progressPercentage = totalRevenue > 0 ? 100 : 0;
+                progressTextEl.textContent = totalRevenue > 0 ? 'Parabéns! Você alcançou a Faixa mais alta!' : 'Progresso para a Faixa 1:';
             }
 
             progressFillEl.style.width = `${progressPercentage}%`;
@@ -656,7 +721,7 @@
             });
             
             if (sales.length === 0) {
-                salesListBodyEl.innerHTML = `<tr><td colspan="6" class="p-4 text-center text-gray-500">Nenhuma venda registrada neste período.</td></tr>`;
+                salesListBodyEl.innerHTML = `<tr><td colspan="7" class="p-4 text-center text-gray-500">Nenhuma venda registrada neste período.</td></tr>`;
                 return;
             }
 
@@ -669,6 +734,7 @@
 
                 const date = sale.timestamp ? new Date(sale.timestamp.seconds * 1000).toLocaleString('pt-BR') : 'N/A';
                 const totalRevenueFormatted = (sale.totalRevenue || 0).toFixed(2).replace('.', ',');
+                const saleStatusValue = sale.status || 'aceite enviado';
 
                 const row = document.createElement('tr');
                 row.className = "border-t border-gray-200";
@@ -678,6 +744,13 @@
                     <td class="p-4 text-sm">${productsText}</td>
                     <td class="p-4 text-gray-500 text-sm">${date}</td>
                     <td class="p-4">R$ ${totalRevenueFormatted}</td>
+                    <td class="p-4">
+                        <select class="status-select mt-1 block w-full p-2 rounded-md border-gray-300 shadow-sm focus:ring-blue-500 focus:border-blue-500 bg-white" data-sale-id="${sale.id}">
+                            <option value="aceite enviado" ${saleStatusValue === 'aceite enviado' ? 'selected' : ''}>Enviado</option>
+                            <option value="aceite realizado" ${saleStatusValue === 'aceite realizado' ? 'selected' : ''}>Realizado</option>
+                            <option value="aceite negado" ${saleStatusValue === 'aceite negado' ? 'selected' : ''}>Negado</option>
+                        </select>
+                    </td>
                     <td class="p-4">
                         <button class="text-red-500 hover:text-red-700 delete-btn" data-sale-id="${sale.id}">Excluir</button>
                     </td>
@@ -689,6 +762,14 @@
                 button.addEventListener('click', (e) => {
                     saleIdToDelete = e.target.getAttribute('data-sale-id');
                     deleteModal.classList.remove('hidden');
+                });
+            });
+
+            document.querySelectorAll('.status-select').forEach(select => {
+                select.addEventListener('change', (e) => {
+                    const saleId = e.target.getAttribute('data-sale-id');
+                    const newStatus = e.target.value;
+                    updateSaleStatus(saleId, newStatus);
                 });
             });
         }
@@ -723,14 +804,14 @@
             
             goals.forEach(goal => {
                 const isMet = totalRevenue >= goal;
-                const status = isMet ? 'Atingida' : 'Ainda não';
+                const goalStatusValue = isMet ? 'Atingida' : 'Ainda não';
                 const statusClass = isMet ? 'text-green-500 font-bold' : 'text-gray-500';
                 
                 const row = document.createElement('tr');
                 row.className = "border-t border-gray-200";
                 row.innerHTML = `
                     <td class="p-4">R$ ${goal.toFixed(2).replace('.', ',')}</td>
-                    <td class="p-4 ${statusClass}">${status}</td>
+                    <td class="p-4 ${statusClass}">${goalStatusValue}</td>
                 `;
                 revenueGoalsBodyEl.appendChild(row);
             });
@@ -862,6 +943,7 @@
             const companyName = document.getElementById('company-name').value;
             const cnpj = cnpjInput.value;
             const crm = document.getElementById('crm').value;
+            const saleStatusValue = document.getElementById('sale-status').value;
             
             saveConsultantName(consultantName);
 
@@ -902,6 +984,7 @@
                 companyName,
                 cnpj,
                 crm,
+                status: saleStatusValue,
                 products: JSON.stringify(productsSold),
                 totalRevenue,
                 timestamp: serverTimestamp()
@@ -943,3 +1026,4 @@
     </script>
 </body>
 </html>
+
