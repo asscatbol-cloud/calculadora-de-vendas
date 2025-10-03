@@ -388,6 +388,18 @@
         </div>
     </div>
 
+    <!-- Modal de Confirmação de Exclusão -->
+    <div id="delete-confirm-modal" class="modal-backdrop hidden">
+        <div class="modal-content max-w-sm">
+            <h3 class="text-lg font-semibold mb-4">Confirmar Exclusão</h3>
+            <p id="delete-confirm-message" class="text-gray-600 mb-6">Tem certeza de que deseja excluir esta venda? Esta ação não pode ser desfeita.</p>
+            <div class="flex justify-end space-x-2">
+                <button id="cancel-delete-btn" class="px-4 py-2 bg-gray-200 text-gray-800 font-medium rounded-lg shadow-md hover:bg-gray-300">Cancelar</button>
+                <button id="confirm-delete-btn" class="px-4 py-2 bg-red-600 text-white font-medium rounded-lg shadow-md hover:bg-red-700">Excluir</button>
+            </div>
+        </div>
+    </div>
+
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
@@ -468,6 +480,12 @@
         const cancelEditBtn = document.getElementById('cancel-edit-btn');
         const saveEditBtn = document.getElementById('save-edit-btn');
         let currentEditingSaleId = null;
+
+        // Elementos do Modal de Confirmação de Exclusão
+        const deleteConfirmModal = document.getElementById('delete-confirm-modal');
+        const cancelDeleteBtn = document.getElementById('cancel-delete-btn');
+        const confirmDeleteBtn = document.getElementById('confirm-delete-btn');
+        let saleIdToDelete = null;
 
         // --- Gráficos e Dados ---
         let collectiveChart, productsSoldChart, dailySalesChart;
@@ -856,8 +874,8 @@
                 }
 
                 row.innerHTML = `
-                    <td class="p-4 align-top">${sale.clientCNPJ || 'N/A'}</td>
-                    <td class="p-4 align-top">${sale.clientName || 'N/A'}</td>
+                    <td class="p-4 align-top">${sale.clientCNPJ || sale.clienteCnpj || 'N/A'}</td>
+                    <td class="p-4 align-top">${sale.clientName || sale.clienteNome || 'N/A'}</td>
                     <td class="p-4 align-top text-sm">${productsHtml}</td>
                     <td class="p-4 align-top">${saleDate}${editedInfo}</td>
                     <td class="p-4 align-top text-right">R$ ${(sale.totalRevenue || 0).toFixed(2).replace('.', ',')}</td>
@@ -875,11 +893,8 @@
             });
             document.querySelectorAll('.delete-sale-btn').forEach(btn => {
                  btn.addEventListener('click', (e) => {
-                    const saleId = e.target.dataset.saleId;
-                    // Aqui você pode adicionar uma confirmação antes de excluir
-                    // if (confirm('Tem certeza que deseja excluir esta venda?')) {
-                        deleteSale(saleId);
-                    // }
+                    saleIdToDelete = e.target.dataset.saleId;
+                    deleteConfirmModal.classList.remove('hidden');
                 });
             });
         }
@@ -947,8 +962,8 @@
             const sale = allSalesData.find(s => s.id === saleId);
             if (!sale) return;
 
-            document.getElementById('edit-client-name').value = sale.clientName || '';
-            document.getElementById('edit-client-cnpj').value = sale.clientCNPJ || '';
+            document.getElementById('edit-client-name').value = sale.clientName || sale.clienteNome || '';
+            document.getElementById('edit-client-cnpj').value = sale.clientCNPJ || sale.clienteCnpj || '';
 
             const productsContainer = document.getElementById('edit-products-container');
             productsContainer.innerHTML = '';
@@ -1066,9 +1081,21 @@
             productsContainer.appendChild(createProductEditRow({name: firstProduct, quantity: 1, revenue: 0}));
         });
         
+        // Listeners do Modal de Exclusão
+        function closeDeleteConfirmModal() {
+            deleteConfirmModal.classList.add('hidden');
+            saleIdToDelete = null;
+        }
+        cancelDeleteBtn.addEventListener('click', closeDeleteConfirmModal);
+        confirmDeleteBtn.addEventListener('click', async () => {
+            if (saleIdToDelete) {
+                await deleteSale(saleIdToDelete);
+            }
+            closeDeleteConfirmModal();
+        });
+
         initializeFirebase();
     </script>
 </body>
 </html>
-
 
