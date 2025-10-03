@@ -393,7 +393,7 @@
                 <div id="edit-products-container" class="space-y-3">
                     <!-- Produtos serão adicionados dinamicamente aqui -->
                 </div>
-                <button id="add-product-btn" type="button" class="mt-2 text-sm text-blue-600 hover:text-blue-800">+ Adicionar Produto</button>
+                <button id="add-product-btn-modal" type="button" class="mt-2 text-sm text-blue-600 hover:text-blue-800">+ Adicionar Produto</button>
             </div>
             <div class="mt-2 text-right font-bold">
                 Receita Total: <span id="edit-total-revenue">R$ 0,00</span>
@@ -497,7 +497,7 @@
 
         // Elementos do Modal de Edição
         const editSaleModal = document.getElementById('edit-sale-modal');
-        const addProductBtn = document.getElementById('add-product-btn');
+        const addProductBtnModal = document.getElementById('add-product-btn-modal');
         const cancelEditBtn = document.getElementById('cancel-edit-btn');
         const saveEditBtn = document.getElementById('save-edit-btn');
         let currentEditingSaleId = null;
@@ -1177,7 +1177,7 @@
         // Listeners do Modal de Edição
         cancelEditBtn.addEventListener('click', closeEditModal);
         saveEditBtn.addEventListener('click', saveSaleEdit);
-        addProductBtn.addEventListener('click', () => {
+        addProductBtnModal.addEventListener('click', () => {
             const productsContainer = document.getElementById('edit-products-container');
             const firstProduct = Object.keys(commissionData)[0];
             productsContainer.appendChild(createProductEditRow({name: firstProduct, quantity: 1, revenue: 0}));
