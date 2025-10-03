@@ -859,7 +859,7 @@
                 let productsHtml = 'Não informado';
                 try {
                     const products = JSON.parse(sale.products);
-                    productsHtml = products.map(p => `${p.name} (R$ ${p.revenue.toFixed(2).replace('.',',')})`).join('<br>');
+                    productsHtml = products.map(p => `Qt: ${p.quantity} - ${p.name} (R$ ${p.revenue.toFixed(2).replace('.',',')})`).join('<br>');
                 } catch (e) { console.error("Erro ao parsear produtos da venda:", e); }
                 
                 const row = document.createElement('tr');
@@ -874,8 +874,8 @@
                 }
 
                 row.innerHTML = `
-                    <td class="p-4 align-top">${sale.clientCNPJ || sale.clienteCnpj || 'N/A'}</td>
-                    <td class="p-4 align-top">${sale.clientName || sale.clienteNome || 'N/A'}</td>
+                    <td class="p-4 align-top">${sale.cnpj || 'N/A'}</td>
+                    <td class="p-4 align-top">${sale.companyName || 'N/A'}</td>
                     <td class="p-4 align-top text-sm">${productsHtml}</td>
                     <td class="p-4 align-top">${saleDate}${editedInfo}</td>
                     <td class="p-4 align-top text-right">R$ ${(sale.totalRevenue || 0).toFixed(2).replace('.', ',')}</td>
@@ -962,8 +962,8 @@
             const sale = allSalesData.find(s => s.id === saleId);
             if (!sale) return;
 
-            document.getElementById('edit-client-name').value = sale.clientName || sale.clienteNome || '';
-            document.getElementById('edit-client-cnpj').value = sale.clientCNPJ || sale.clienteCnpj || '';
+            document.getElementById('edit-client-name').value = sale.companyName || '';
+            document.getElementById('edit-client-cnpj').value = sale.cnpj || '';
 
             const productsContainer = document.getElementById('edit-products-container');
             productsContainer.innerHTML = '';
@@ -986,8 +986,8 @@
         async function saveSaleEdit() {
             if (!currentEditingSaleId) return;
 
-            const clientName = document.getElementById('edit-client-name').value;
-            const clientCNPJ = document.getElementById('edit-client-cnpj').value;
+            const companyName = document.getElementById('edit-client-name').value;
+            const cnpj = document.getElementById('edit-client-cnpj').value;
 
             const productsContainer = document.getElementById('edit-products-container');
             const productRows = productsContainer.querySelectorAll('.p-2.border');
@@ -1009,8 +1009,8 @@
             const saleRef = doc(db, `artifacts/${appId}/public/data/sales`, currentEditingSaleId);
             try {
                 await updateDoc(saleRef, {
-                    clientName: clientName,
-                    clientCNPJ: clientCNPJ,
+                    companyName: companyName,
+                    cnpj: cnpj,
                     products: JSON.stringify(updatedProducts),
                     totalRevenue: updatedTotalRevenue,
                     editedBy: managerEmail,
@@ -1098,4 +1098,5 @@
     </script>
 </body>
 </html>
+
 
