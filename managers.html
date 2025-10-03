@@ -1,2372 +1,1188 @@
 <!DOCTYPE html>
-
 <html lang="pt-BR">
-
 <head>
-
-    <meta charset="UTF-8">
-
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
-    <title>Painel de Gestão de Vendas</title>
-
-    <script src="https://cdn.tailwindcss.com"></script>
-
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-
-    <style>
-
-        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
-
-        body {
-
-            font-family: 'Inter', sans-serif;
-
-            background-color: #f3f4f6;
-
-            color: #1f2937;
-
-        }
-
-        .container {
-
-            max-width: 1200px;
-
-            margin: 1.5rem auto;
-
-            padding: 1.5rem;
-
-            background-color: #ffffff;
-
-            border-radius: 12px;
-
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-
-        }
-
-        .progress-bar {
-
-            height: 1.5rem;
-
-            background-color: #e5e7eb;
-
-            border-radius: 9999px;
-
-            overflow: hidden;
-
-        }
-
-        .progress-fill {
-
-            height: 100%;
-
-            border-radius: 9999px;
-
-            transition: width 0.5s ease-in-out;
-
-        }
-
-        /* Spinner */
-
-        .spinner {
-
-            border: 4px solid #f3f3f3;
-
-            border-top: 4px solid #3498db;
-
-            border-radius: 50%;
-
-            width: 24px;
-
-            height: 24px;
-
-            animation: spin 1s linear infinite;
-
-        }
-
-        @keyframes spin {
-
-            0% { transform: rotate(0deg); }
-
-            100% { transform: rotate(360deg); }
-
-        }
-
-        /* Modal Styles */
-
-        .modal-backdrop {
-
-            position: fixed;
-
-            top: 0;
-
-            left: 0;
-
-            width: 100%;
-
-            height: 100%;
-
-            background-color: rgba(0, 0, 0, 0.5);
-
-            display: flex;
-
-            justify-content: center;
-
-            align-items: center;
-
-            z-index: 1000;
-
-        }
-
-        .modal-content {
-
-            background-color: white;
-
-            padding: 2rem;
-
-            border-radius: 8px;
-
-            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
-
-            width: 90%;
-
-        }
-
-    </style>
-
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Painel de Gestão de Vendas</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f3f4f6;
+            color: #1f2937;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 1.5rem auto;
+            padding: 1.5rem;
+            background-color: #ffffff;
+            border-radius: 12px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        .progress-bar {
+            height: 1.5rem;
+            background-color: #e5e7eb;
+            border-radius: 9999px;
+            overflow: hidden;
+        }
+        .progress-fill {
+            height: 100%;
+            border-radius: 9999px;
+            transition: width 0.5s ease-in-out;
+        }
+        /* Spinner */
+        .spinner {
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #3498db;
+            border-radius: 50%;
+            width: 24px;
+            height: 24px;
+            animation: spin 1s linear infinite;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        /* Modal Styles */
+        .modal-backdrop {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+        }
+        .modal-content {
+            background-color: white;
+            padding: 2rem;
+            border-radius: 8px;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+            width: 90%;
+        }
+    </style>
 </head>
-
 <body class="bg-gray-100 flex items-center justify-center min-h-screen p-4">
 
-
-
-    <div id="auth-section" class="container w-full max-w-md p-6 bg-white rounded-lg shadow-md">
-
-        <h2 class="text-2xl font-bold text-center mb-6 text-gray-800">Acesso de Gerência</h2>
-
-        <div id="auth-message" class="hidden p-4 mb-4 text-sm rounded-lg" role="alert"></div>
-
-        <form id="auth-form" class="space-y-4">
-
-            <div>
-
-                <label for="auth-email" class="block text-sm font-medium text-gray-700">E-mail</label>
-
-                <input type="email" id="auth-email" required class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
-
-            </div>
-
-            <div>
-
-                <label for="auth-password" class="block text-sm font-medium text-gray-700">Senha</label>
-
-                <input type="password" id="auth-password" required class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
-
-            </div>
-
-            <button type="submit" id="auth-btn" class="w-full px-4 py-2 bg-blue-600 text-white font-medium rounded-lg shadow-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2">
-
-                Entrar como Gerente
-
-            </button>
-
-        </form>
-
-    </div>
-
-
-
-    <div id="main-section" class="container hidden">
-
-        <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 space-y-4 sm:space-y-0">
-
-            <h1 id="main-title" class="text-2xl sm:text-3xl font-bold text-gray-800">Painel de Gerência</h1>
-
-            <div class="flex space-x-2">
-
-                <button id="dashboard-tab-btn" class="px-4 py-2 bg-blue-600 text-white font-medium rounded-lg shadow-md hover:bg-blue-700">Painel</button>
-
-                <button id="goals-tab-btn" class="px-4 py-2 bg-gray-200 text-gray-800 font-medium rounded-lg shadow-md hover:bg-gray-300">Metas</button>
-
-                <button id="logout-btn" class="px-4 py-2 bg-red-600 text-white font-medium rounded-lg shadow-md hover:bg-red-700">Sair</button>
-
-            </div>
-
-        </div>
-
-        
-
-        <!-- Conteúdo do Painel -->
-
-        <div id="dashboard-content">
-
-            <!-- FILTRO DE PERÍODO ADICIONADO -->
-
-            <div class="flex items-center gap-4 mb-6 bg-gray-50 p-4 rounded-lg shadow-sm">
-
-                <label for="dashboard-month-filter" class="text-sm font-medium text-gray-700">Visualizar Mês:</label>
-
-                <select id="dashboard-month-filter" class="rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"></select>
-
-                <label for="dashboard-year-filter" class="text-sm font-medium text-gray-700">Ano:</label>
-
-                <select id="dashboard-year-filter" class="rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"></select>
-
-            </div>
-
-
-
-            <div class="flex justify-between items-center mb-6">
-
-                <p class="text-gray-500">Visão consolidada da performance da equipe (baseada em vendas com "Aceite Realizado").</p>
-
-                <button id="view-products-btn" class="px-4 py-2 bg-teal-600 text-white font-medium rounded-lg shadow-md hover:bg-teal-700">Ver Vendas de Produtos</button>
-
-            </div>
-
-            
-
-            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-4 mb-6">
-
-                <!-- Cards de Vendas e Receita atualizados -->
-
-                <div class="bg-purple-50 p-5 rounded-lg shadow-sm">
-
-                    <p class="text-sm font-medium text-purple-700">Vendas Realizadas</p>
-
-                    <div class="mt-2 space-y-1">
-
-                        <p class="text-lg font-semibold text-purple-900">Mês Atual: <span id="total-sales-current">0</span></p>
-
-                        <p class="text-md text-gray-600">Mês Anterior: <span id="total-sales-previous">0</span></p>
-
-                    </div>
-
-                </div>
-
-                <div class="bg-pink-50 p-5 rounded-lg shadow-sm">
-
-                    <p class="text-sm font-medium text-pink-700">Receita Realizada</p>
-
-                    <div class="mt-2 space-y-1">
-
-                        <p class="text-lg font-semibold text-pink-900">Mês Atual: <span id="total-revenue-current">R$ 0,00</span></p>
-
-                        <p class="text-md text-gray-600">Mês Anterior: <span id="total-revenue-previous">R$ 0,00</span></p>
-
-                    </div>
-
-                </div>
-
-                <div class="bg-green-50 p-5 rounded-lg shadow-sm">
-
-                    <p class="text-sm font-medium text-green-700">Projeção (Realizado)</p>
-
-                    <p id="projected-team-revenue" class="mt-1 text-2xl font-bold text-green-900">R$ 0,00</p>
-
-                </div>
-
-                 <div class="bg-yellow-50 p-5 rounded-lg shadow-sm">
-
-                    <p class="text-sm font-medium text-yellow-700">Receita Pendente</p>
-
-                    <p id="pending-team-revenue" class="mt-1 text-2xl font-bold text-yellow-900">R$ 0,00</p>
-
-                </div>
-
-                <div class="bg-red-50 p-5 rounded-lg shadow-sm">
-
-                    <p class="text-sm font-medium text-red-700">Vendas Negadas</p>
-
-                    <p id="denied-sales-count" class="mt-1 text-2xl font-bold text-red-900">0</p>
-
-                </div>
-
-            </div>
-
-
-
-            <hr class="my-6">
-
-
-
-            <!-- Gráfico de Vendas Diárias -->
-
-            <div class="mb-6">
-
-                <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-4 gap-4">
-
-                    <h2 class="text-xl font-semibold">Vendas Diárias por Produto/Receita</h2>
-
-                    <div class="flex items-center gap-2">
-
-                        <label for="product-filter-select" class="text-sm font-medium text-gray-700">Filtrar por:</label>
-
-                        <select id="product-filter-select" class="rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"></select>
-
-                    </div>
-
-                </div>
-
-                <div class="bg-gray-50 p-4 rounded-lg shadow-sm">
-
-                    <canvas id="daily-sales-chart" class="h-72"></canvas>
-
-                </div>
-
-            </div>
-
-
-
-            <hr class="my-6">
-
-            
-
-            <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
-
-                 <div class="w-full">
-
-                    <h2 class="text-xl font-semibold mb-4">Evolução Coletiva (Últimos 6 Meses)</h2>
-
-                    <div class="bg-gray-50 p-4 rounded-lg shadow-sm">
-
-                        <canvas id="collective-sales-chart"></canvas>
-
-                    </div>
-
-                </div>
-
-                <div class="w-full">
-
-                    <h2 class="text-xl font-semibold mb-4">Produtos Vendidos (Total do Mês Atual)</h2>
-
-                    <div class="bg-gray-50 p-4 rounded-lg shadow-sm">
-
-                        <canvas id="products-sold-chart" class="h-64"></canvas>
-
-                    </div>
-
-                </div>
-
-            </div>
-
-
-
-            <hr class="my-6">
-
-
-
-            <!-- Desempenho Individual de Consultores -->
-
-            <div class="mb-6">
-
-                <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-4 gap-4">
-
-                    <h2 class="text-xl font-semibold">Desempenho Individual de Consultores</h2>
-
-                    <div class="flex items-center gap-4">
-
-                        <div>
-
-                            <label for="consultant-month-filter" class="text-sm font-medium text-gray-700 mr-2">Mês:</label>
-
-                            <select id="consultant-month-filter" class="rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"></select>
-
-                        </div>
-
-                        <div>
-
-                            <label for="consultant-year-filter" class="text-sm font-medium text-gray-700 mr-2">Ano:</label>
-
-                            <select id="consultant-year-filter" class="rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"></select>
-
-                        </div>
-
-                    </div>
-
-                </div>
-
-                <div class="overflow-x-auto">
-
-                    <table class="min-w-full text-left border-collapse">
-
-                        <thead>
-
-                            <tr class="bg-gray-200">
-
-                                <th class="p-4 rounded-tl-lg">Consultor</th>
-
-                                <th class="p-4 text-center">Vendas</th>
-
-                                <th class="p-4 text-center">Receita</th>
-
-                                <th class="p-4 text-center">Ticket Médio</th>
-
-                                <th class="p-4 rounded-tr-lg">Ações</th>
-
-                            </tr>
-
-                        </thead>
-
-                        <tbody id="consultants-performance-body">
-
-                            <!-- Conteúdo preenchido via JS -->
-
-                        </tbody>
-
-                    </table>
-
-                </div>
-
-            </div>
-
-        </div>
-
-
-
-        <!-- Nova seção para Vendas de Produtos -->
-
-        <div id="product-sales-content" class="hidden">
-
-            <div class="flex justify-between items-center mb-6">
-
-                <h2 class="text-2xl font-bold text-gray-800">Vendas de Produtos por Mês</h2>
-
-                <button id="back-to-dashboard-from-products-btn" class="px-4 py-2 bg-gray-600 text-white font-medium rounded-lg shadow-md hover:bg-gray-700">Voltar</button>
-
-            </div>
-
-            <div class="overflow-x-auto">
-
-                <table class="min-w-full text-left border-collapse">
-
-                    <thead>
-
-                        <tr class="bg-gray-200">
-
-                            <th class="p-4 rounded-tl-lg">Produto</th>
-
-                            <th class="p-4 text-center">Vendas Mês Atual</th>
-
-                            <th class="p-4 text-center rounded-tr-lg">Vendas Mês Anterior</th>
-
-                        </tr>
-
-                    </thead>
-
-                    <tbody id="product-sales-table-body">
-
-                        <!-- Conteúdo preenchido via JS -->
-
-                    </tbody>
-
-                </table>
-
-            </div>
-
-        </div>
-
-
-
-        <!-- Conteúdo de Gestão de Metas -->
-
-        <div id="goals-content" class="hidden">
-
-            <p class="text-gray-500 mb-6">Gerencie as metas mensais para os consultores.</p>
-
-            <div class="mb-4 flex flex-col sm:flex-row space-y-4 sm:space-y-0 sm:space-x-4">
-
-                <div class="w-full sm:w-1/2">
-
-                    <label for="goals-month" class="block text-sm font-medium text-gray-700">Mês</label>
-
-                    <select id="goals-month" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
-
-                    </select>
-
-                </div>
-
-                <div class="w-full sm:w-1/2">
-
-                    <label for="goals-year" class="block text-sm font-medium text-gray-700">Ano</label>
-
-                    <select id="goals-year" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
-
-                    </select>
-
-                </div>
-
-            </div>
-
-            <table class="min-w-full text-left border-collapse mb-6">
-
-                <thead>
-
-                    <tr class="bg-gray-200">
-
-                        <th class="p-4 rounded-tl-lg">Produto</th>
-
-                        <th class="p-4">Meta</th>
-
-                        <th class="p-4">Efetivado</th>
-
-                        <th class="p-4 rounded-tr-lg">Falta</th>
-
-                    </tr>
-
-                </thead>
-
-                <tbody id="goals-table-body">
-
-                </tbody>
-
-            </table>
-
-            <button id="save-goals-btn" class="w-full sm:w-auto px-4 py-2 bg-blue-600 text-white font-medium rounded-lg shadow-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2">
-
-                Salvar Metas
-
-            </button>
-
-            <div id="goals-message" class="hidden p-4 mt-4 text-sm rounded-lg" role="alert"></div>
-
-        </div>
-
-    </div>
-
-    
-
-    <!-- Seção de Visão de Consultor -->
-
-    <div id="consultant-view-section" class="container hidden">
-
-        <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 space-y-4 sm:space-y-0">
-
-            <h1 id="consultant-view-title" class="text-2xl sm:text-3xl font-bold text-gray-800"></h1>
-
-            <button id="back-to-dashboard-btn" class="px-4 py-2 bg-gray-600 text-white font-medium rounded-lg shadow-md hover:bg-gray-700">Voltar</button>
-
-        </div>
-
-        <div>
-
-            <h2 class="text-xl font-semibold mb-4">Seu Desempenho</h2>
-
-            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-
-                <div class="bg-indigo-50 p-5 rounded-lg shadow-sm">
-
-                    <p class="text-sm font-medium text-indigo-700">Receita Total</p>
-
-                    <p id="individual-total-revenue" class="mt-1 text-2xl font-bold text-indigo-900">R$ 0,00</p>
-
-                </div>
-
-                <div class="bg-purple-50 p-5 rounded-lg shadow-sm">
-
-                    <p class="text-sm font-medium text-purple-700">Comissão Estimada</p>
-
-                    <p id="individual-estimated-commission" class="mt-1 text-2xl font-bold text-purple-900">R$ 0,00</p>
-
-                </div>
-
-                <div class="bg-pink-50 p-5 rounded-lg shadow-sm">
-
-                    <p id="individual-current-tier-text" class="text-sm font-medium text-pink-700">Sua Faixa Atual</p>
-
-                    <p id="individual-current-tier" class="mt-1 text-2xl font-bold text-pink-900">Faixa 0</p>
-
-                </div>
-
-            </div>
-
-            <div class="mt-6">
-
-                <h3 id="individual-progress-text" class="text-lg font-medium text-gray-700 mb-2"></h3>
-
-                <div class="progress-bar">
-
-                    <div id="individual-progress-fill" class="progress-fill bg-blue-500" style="width: 0%;"></div>
-
-                </div>
-
-            </div>
-
-        </div>
-
-        <hr class="my-6">
-
-        <div class="mb-6">
-
-            <h2 class="text-xl font-semibold mb-4">Detalhes da Comissão</h2>
-
-            <div class="overflow-x-auto">
-
-                <table class="min-w-full text-left border-collapse">
-
-                    <thead>
-
-                        <tr class="bg-gray-200">
-
-                            <th class="p-4 rounded-tl-lg">Item</th>
-
-                            <th class="p-4">Valor</th>
-
-                            <th class="p-4 rounded-tr-lg">Faixa de Comissão</th>
-
-                        </tr>
-
-                    </thead>
-
-                    <tbody id="individual-commission-details-body">
-
-                    </tbody>
-
-                </table>
-
-            </div>
-
-        </div>
-
-        <hr class="my-6">
-
-        <!-- SEÇÃO: Lista de Vendas do Consultor -->
-
-        <div class="mb-6">
-
-            <h2 class="text-xl font-semibold mb-4">Vendas Registradas</h2>
-
-            <div class="overflow-x-auto">
-
-                <table class="min-w-full text-left border-collapse">
-
-                    <thead class="bg-gray-100">
-
-                        <tr>
-
-                            <th class="p-4 font-semibold text-sm text-gray-600 rounded-tl-lg">CNPJ</th>
-
-                            <th class="p-4 font-semibold text-sm text-gray-600">Empresa</th>
-
-                            <th class="p-4 font-semibold text-sm text-gray-600">Produtos</th>
-
-                            <th class="p-4 font-semibold text-sm text-gray-600">Data</th>
-
-                            <th class="p-4 font-semibold text-sm text-gray-600 text-right">Receita</th>
-
-                            <th class="p-4 font-semibold text-sm text-gray-600 text-center">Status</th>
-
-                            <th class="p-4 font-semibold text-sm text-gray-600 text-center rounded-tr-lg">Ações</th>
-
-                        </tr>
-
-                    </thead>
-
-                    <tbody id="consultant-sales-list-body">
-
-                        <!-- Conteúdo preenchido via JS -->
-
-                    </tbody>
-
-                </table>
-
-            </div>
-
-        </div>
-
-        <hr class="my-6">
-
-        <div class="mb-6">
-
-            <h3 class="text-lg font-semibold mb-4">Metas de Receita</h3>
-
-            <div class="overflow-x-auto">
-
-                <table class="w-full text-left border-collapse">
-
-                    <thead>
-
-                        <tr class="bg-gray-200">
-
-                            <th class="p-4 rounded-tl-lg">Meta</th>
-
-                            <th class="p-4 rounded-tr-lg">Status</th>
-
-                        </tr>
-
-                    </thead>
-
-                    <tbody id="individual-revenue-goals-body">
-
-                    </tbody>
-
-                </table>
-
-            </div>
-
-        </div>
-
-        <hr class="my-6">
-
-        <div>
-
-            <h3 class="text-lg font-semibold mb-4">Metas de Produto por Faixa</h3>
-
-            <div class="overflow-x-auto">
-
-                <table class="w-full text-left border-collapse">
-
-                    <thead>
-
-                        <tr class="bg-gray-200">
-
-                            <th class="p-4 rounded-tl-lg">Produto</th>
-
-                            <th class="p-4">Vendido</th>
-
-                            <th class="p-4">Meta Faixa 75</th>
-
-                            <th class="p-4">Meta Faixa 150</th>
-
-                            <th class="p-4 rounded-tr-lg">Meta Faixa 200</th>
-
-                        </tr>
-
-                    </thead>
-
-                    <tbody id="individual-product-goals-body">
-
-                    </tbody>
-
-                </table>
-
-            </div>
-
-        </div>
-
-    </div>
-
-
-
-    <!-- Modal para Edição de Venda -->
-
-    <div id="edit-sale-modal" class="modal-backdrop hidden">
-
-        <div class="modal-content max-w-lg">
-
-            <h3 class="text-lg font-semibold mb-4">Editar Venda</h3>
-
-            <div id="edit-sale-form" class="space-y-4 max-h-96 overflow-y-auto pr-2">
-
-                <div class="grid grid-cols-2 gap-4">
-
-                    <div>
-
-                        <label for="edit-client-name" class="block text-sm font-medium text-gray-700">Nome da Empresa</label>
-
-                        <input type="text" id="edit-client-name" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
-
-                    </div>
-
-                    <div>
-
-                        <label for="edit-client-cnpj" class="block text-sm font-medium text-gray-700">CNPJ</label>
-
-                        <input type="text" id="edit-client-cnpj" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
-
-                    </div>
-
-                </div>
-
-                <hr class="my-4">
-
-                <!-- Container para produtos -->
-
-                <div id="edit-products-container" class="space-y-3">
-
-                    <!-- Produtos serão adicionados dinamicamente aqui -->
-
-                </div>
-
-                <button id="add-product-btn" type="button" class="mt-2 text-sm text-blue-600 hover:text-blue-800">+ Adicionar Produto</button>
-
-            </div>
-
-            <div class="mt-2 text-right font-bold">
-
-                Receita Total: <span id="edit-total-revenue">R$ 0,00</span>
-
-            </div>
-
-            <div class="flex justify-end space-x-2 mt-6">
-
-                <button id="cancel-edit-btn" class="px-4 py-2 bg-gray-200 text-gray-800 font-medium rounded-lg shadow-md hover:bg-gray-300">Cancelar</button>
-
-                <button id="save-edit-btn" class="px-4 py-2 bg-blue-600 text-white font-medium rounded-lg shadow-md hover:bg-blue-700">Salvar Alterações</button>
-
-            </div>
-
-        </div>
-
-    </div>
-
-
-
-    <!-- Modal de Confirmação de Exclusão -->
-
-    <div id="delete-confirm-modal" class="modal-backdrop hidden">
-
-        <div class="modal-content max-w-sm">
-
-            <h3 class="text-lg font-semibold mb-4">Confirmar Exclusão</h3>
-
-            <p id="delete-confirm-message" class="text-gray-600 mb-6">Tem certeza de que deseja excluir esta venda? Esta ação não pode ser desfeita.</p>
-
-            <div class="flex justify-end space-x-2">
-
-                <button id="cancel-delete-btn" class="px-4 py-2 bg-gray-200 text-gray-800 font-medium rounded-lg shadow-md hover:bg-gray-300">Cancelar</button>
-
-                <button id="confirm-delete-btn" class="px-4 py-2 bg-red-600 text-white font-medium rounded-lg shadow-md hover:bg-red-700">Excluir</button>
-
-            </div>
-
-        </div>
-
-    </div>
-
-
-
-
-
-    <script type="module">
-
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
-
-        import { getAuth, signInWithEmailAndPassword, onAuthStateChanged, signOut, signInWithCustomToken } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
-
-        import { getFirestore, collection, onSnapshot, query, where, getDocs, doc, getDoc, setDoc, updateDoc, serverTimestamp, deleteDoc } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
-
-        
-
-        // Variáveis globais fornecidas pelo ambiente
-
-        const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
-
-        const firebaseConfig = typeof __firebase_config !== 'undefined' ? JSON.parse(__firebase_config) : {
-
-            apiKey: "AIzaSyC293ALvoMmnm6ygd-t9FecegMjln9lEkc",
-
-            authDomain: "calculadora-de-vendas.firebaseapp.com",
-
-            projectId: "calculadora-de-vendas",
-
-            storageBucket: "calculadora-de-vendas.firebasestorage.app",
-
-            messagingSenderId: "633108525289",
-
-            appId: "1:633108525289:web:0b4147c2aa4078"
-
-        };
-
-        const initialAuthToken = typeof __initial_auth_token !== 'undefined' ? __initial_auth_token : null;
-
-        
-
-        let app, db, auth, managerId, managerEmail;
-
-        
-
-        // Elementos DOM
-
-        const authSection = document.getElementById('auth-section');
-
-        const mainSection = document.getElementById('main-section');
-
-        const dashboardContent = document.getElementById('dashboard-content');
-
-        const goalsContent = document.getElementById('goals-content');
-
-        const productSalesContent = document.getElementById('product-sales-content');
-
-        const consultantViewSection = document.getElementById('consultant-view-section');
-
-        const authForm = document.getElementById('auth-form');
-
-        const authEmailInput = document.getElementById('auth-email');
-
-        const authPasswordInput = document.getElementById('auth-password');
-
-        const authMessageEl = document.getElementById('auth-message');
-
-        const logoutBtn = document.getElementById('logout-btn');
-
-        const consultantsPerformanceBody = document.getElementById('consultants-performance-body');
-
-        const backToDashboardBtn = document.getElementById('back-to-dashboard-btn');
-
-        const consultantViewTitleEl = document.getElementById('consultant-view-title');
-
-        const dashboardTabBtn = document.getElementById('dashboard-tab-btn');
-
-        const goalsTabBtn = document.getElementById('goals-tab-btn');
-
-        const mainTitle = document.getElementById('main-title');
-
-        const viewProductsBtn = document.getElementById('view-products-btn');
-
-        const backToDashboardFromProductsBtn = document.getElementById('back-to-dashboard-from-products-btn');
-
-        const dashboardMonthFilter = document.getElementById('dashboard-month-filter');
-
-        const dashboardYearFilter = document.getElementById('dashboard-year-filter');
-
-        
-
-        // Elementos dos Cards
-
-        const totalSalesCurrentEl = document.getElementById('total-sales-current');
-
-        const totalSalesPreviousEl = document.getElementById('total-sales-previous');
-
-        const totalRevenueCurrentEl = document.getElementById('total-revenue-current');
-
-        const totalRevenuePreviousEl = document.getElementById('total-revenue-previous');
-
-        const projectedTeamRevenueEl = document.getElementById('projected-team-revenue');
-
-        const pendingTeamRevenueEl = document.getElementById('pending-team-revenue');
-
-        const deniedSalesCountEl = document.getElementById('denied-sales-count');
-
-
-
-        // Elementos da Tabela de Vendas de Produtos
-
-        const productSalesTableBody = document.getElementById('product-sales-table-body');
-
-
-
-        // Elementos do Gráfico de Vendas Diárias
-
-        const productFilterSelect = document.getElementById('product-filter-select');
-
-        const consultantMonthFilter = document.getElementById('consultant-month-filter');
-
-        const consultantYearFilter = document.getElementById('consultant-year-filter');
-
-
-
-        // Elementos da Visão do Consultor
-
-        const individualTotalRevenueEl = document.getElementById('individual-total-revenue');
-
-        const individualEstimatedCommissionEl = document.getElementById('individual-estimated-commission');
-
-        const individualCurrentTierEl = document.getElementById('individual-current-tier');
-
-        const individualProgressTextEl = document.getElementById('individual-progress-text');
-
-        const individualProgressFillEl = document.getElementById('individual-progress-fill');
-
-        const individualCommissionDetailsBodyEl = document.getElementById('individual-commission-details-body');
-
-        const individualRevenueGoalsBodyEl = document.getElementById('individual-revenue-goals-body');
-
-        const individualProductGoalsBodyEl = document.getElementById('individual-product-goals-body');
-
-        const consultantSalesListBody = document.getElementById('consultant-sales-list-body');
-
-
-
-        // Elementos de Metas
-
-        const goalsMonthSelect = document.getElementById('goals-month');
-
-        const goalsYearSelect = document.getElementById('goals-year');
-
-        const goalsTableBody = document.getElementById('goals-table-body');
-
-        const saveGoalsBtn = document.getElementById('save-goals-btn');
-
-        const goalsMessageEl = document.getElementById('goals-message');
-
-
-
-        // Elementos do Modal de Edição
-
-        const editSaleModal = document.getElementById('edit-sale-modal');
-
-        const addProductBtn = document.getElementById('add-product-btn');
-
-        const cancelEditBtn = document.getElementById('cancel-edit-btn');
-
-        const saveEditBtn = document.getElementById('save-edit-btn');
-
-        let currentEditingSaleId = null;
-
-
-
-        // Elementos do Modal de Confirmação de Exclusão
-
-        const deleteConfirmModal = document.getElementById('delete-confirm-modal');
-
-        const cancelDeleteBtn = document.getElementById('cancel-delete-btn');
-
-        const confirmDeleteBtn = document.getElementById('confirm-delete-btn');
-
-        let saleIdToDelete = null;
-
-
-
-        // --- Gráficos e Dados ---
-
-        let collectiveChart, productsSoldChart, dailySalesChart;
-
-        let allSalesData = [];
-
-        let allConsultantsData = [];
-
-        const currentGoals = {};
-
-
-
-        // Dados de comissão, receita e metas
-
-        const commissionData = { 'Migração Up': [8, 8, 9, 10, 11, 12, 13, 14], 'Migração Mid': [4, 4, 5, 7, 7, 8, 9, 10], 'Migração Down': [2, 2, 3, 4, 5, 6, 7, 8], 'GPON': [20, 22, 25, 28, 31, 35, 40], 'Altas Portadas': [6, 8, 10, 12, 14, 16, 20], 'Altas Novas': [3, 4, 5, 6, 7, 8, 10], 'VVN': [10, 12, 14, 16, 18, 20, 22], 'Avançados': [15, 17, 19, 21, 23, 25, 28], 'Produtos de TI': [10, 11, 12, 13, 14, 15, 16], };
-
-        const availableProducts = Object.keys(commissionData);
-
-        const revenuePercentages = [11, 13, 16, 19, 22, 28, 35];
-
-        const goalData = { 'Receita (R$)': [750, 1500, 3000], 'GPON': [3, 6, 9], 'Altas Portadas': [5, 15, 30], 'Altas Novas': [5, 15, 30], 'Contratos (CNPJ\'s)': [1, 1.5, 2], 'VVN': [5, 15, 25], 'Aparelhos (R$)': [8000, 20000, 30000], 'Migração': [75, 150, 200], };
-
-        const productsForGoals = ['Migração', 'GPON', 'Altas Portadas', 'Altas Novas', 'VVN', 'Aparelhos (R$)'];
-
-        const goalProductsList = ['Migração', 'GPON', 'Altas Portadas', 'Altas Novas', 'VVN', 'Avançados', 'Produtos de TI'];
-
-
-
-
-
-        function displayAuthMessage(message, type) { authMessageEl.textContent = message; authMessageEl.className = `p-4 mb-4 text-sm rounded-lg ${type === 'success' ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'}`; authMessageEl.style.display = 'block'; }
-
-        function displayGoalsMessage(message, type) { goalsMessageEl.textContent = message; goalsMessageEl.className = `p-4 mt-4 text-sm rounded-lg ${type === 'success' ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'}`; goalsMessageEl.style.display = 'block'; setTimeout(() => { goalsMessageEl.style.display = 'none'; }, 5000); }
-
-
-
-        async function initializeFirebase() {
-
-            try {
-
-                if (Object.keys(firebaseConfig).length === 0) { displayAuthMessage("Erro: A configuração do Firebase está faltando.", "error"); console.error("Firebase config is missing."); return; }
-
-                app = initializeApp(firebaseConfig); auth = getAuth(app); db = getFirestore(app);
-
-                onAuthStateChanged(auth, async (user) => {
-
-                    if (user) {
-
-                        managerId = user.uid;
-
-                        managerEmail = user.email;
-
-                        const isManager = await checkManagerStatus(managerId);
-
-                        if (isManager) {
-
-                            authSection.classList.add('hidden'); mainSection.classList.remove('hidden'); dashboardContent.classList.remove('hidden'); goalsContent.classList.add('hidden'); productSalesContent.classList.add('hidden'); consultantViewSection.classList.add('hidden');
-
-                            listenToSalesAndConsultants(); populateGoalsSelectors(); populateConsultantFilters(); populateDashboardFilters(); loadAndRenderGoals();
-
-                        } else { await signOut(auth); displayAuthMessage('Acesso negado. Esta conta não é de um gerente.', 'error'); }
-
-                    } else { authSection.classList.remove('hidden'); mainSection.classList.add('hidden'); consultantViewSection.classList.add('hidden'); }
-
-                });
-
-                if (initialAuthToken) { await signInWithCustomToken(auth, initialAuthToken); }
-
-            } catch (e) { console.error("Erro ao inicializar Firebase: ", e); displayAuthMessage("Erro ao inicializar o aplicativo. Por favor, tente novamente.", "error"); }
-
-        }
-
-
-
-        async function checkManagerStatus(uid) { if (!db) return false; try { const managerRef = doc(db, `artifacts/${appId}/managers`, uid); const docSnap = await getDoc(managerRef); return docSnap.exists(); } catch (e) { console.error("Erro ao verificar status de gerente: ", e); return false; } }
-
-
-
-        function listenToSalesAndConsultants() {
-
-            if (!db) return;
-
-            const salesRef = collection(db, `artifacts/${appId}/public/data/sales`);
-
-            onSnapshot(salesRef, (snapshot) => { 
-
-                allSalesData = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })); 
-
-                updateDashboard(); 
-
-            }, (error) => { console.error("Erro ao ouvir vendas: ", error); });
-
-            const consultantsRef = collection(db, `artifacts/${appId}/users`);
-
-            onSnapshot(consultantsRef, (snapshot) => { 
-
-                allConsultantsData = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })); 
-
-                updateDashboard(); 
-
-            }, (error) => { console.error("Erro ao ouvir perfis de consultores: ", error); });
-
-        }
-
-        
-
-        function updateDashboard() {
-
-            if (!allSalesData || !allConsultantsData) return;
-
-
-
-            const selectedMonth = parseInt(dashboardMonthFilter.value);
-
-            const selectedYear = parseInt(dashboardYearFilter.value);
-
-
-
-            const previousMonth = selectedMonth === 0 ? 11 : selectedMonth - 1;
-
-            const previousMonthYear = selectedMonth === 0 ? selectedYear - 1 : selectedYear;
-
-
-
-            const currentMonthSales = allSalesData.filter(s => { const d = s.timestamp?.seconds ? new Date(s.timestamp.seconds * 1000) : null; return d && d.getMonth() === selectedMonth && d.getFullYear() === selectedYear; });
-
-            const previousMonthSales = allSalesData.filter(s => { const d = s.timestamp?.seconds ? new Date(s.timestamp.seconds * 1000) : null; return d && d.getMonth() === previousMonth && d.getFullYear() === previousMonthYear; });
-
-            
-
-            // Filtrar vendas por status
-
-            const realizedCurrentSales = currentMonthSales.filter(s => s.status === 'aceite realizado');
-
-            const realizedPreviousSales = previousMonthSales.filter(s => s.status === 'aceite realizado');
-
-            const pendingCurrentSales = currentMonthSales.filter(s => s.status === 'aceite enviado');
-
-            const deniedCurrentSales = currentMonthSales.filter(s => s.status === 'aceite negado');
-
-
-
-            const totalRevenueCurrent = realizedCurrentSales.reduce((sum, sale) => sum + (sale.totalRevenue || 0), 0);
-
-            const totalRevenuePrevious = realizedPreviousSales.reduce((sum, sale) => sum + (sale.totalRevenue || 0), 0);
-
-            const pendingRevenueCurrent = pendingCurrentSales.reduce((sum, sale) => sum + (sale.totalRevenue || 0), 0);
-
-
-
-            totalSalesCurrentEl.textContent = realizedCurrentSales.length;
-
-            totalSalesPreviousEl.textContent = realizedPreviousSales.length;
-
-            totalRevenueCurrentEl.textContent = `R$ ${totalRevenueCurrent.toFixed(2).replace('.', ',')}`;
-
-            totalRevenuePreviousEl.textContent = `R$ ${totalRevenuePrevious.toFixed(2).replace('.', ',')}`;
-
-            pendingTeamRevenueEl.textContent = `R$ ${pendingRevenueCurrent.toFixed(2).replace('.', ',')}`;
-
-            deniedSalesCountEl.textContent = deniedCurrentSales.length;
-
-
-
-            renderCollectiveChart(allSalesData, selectedYear, selectedMonth);
-
-            renderProductsSoldChart(realizedCurrentSales);
-
-            populateProductFilter(realizedCurrentSales);
-
-            renderDailySalesChart(realizedCurrentSales, realizedPreviousSales, selectedYear, selectedMonth, productFilterSelect.value);
-
-            calculateAndDisplayTeamProjection(allSalesData, selectedYear, selectedMonth);
-
-            renderConsultantsPerformance();
-
-            renderProductSalesTable(realizedCurrentSales, realizedPreviousSales);
-
-        }
-
-
-
-        function populateDashboardFilters() {
-
-            const today = new Date();
-
-            const months = ['Janeiro', 'Fevereiro', 'Março', 'Abril', 'Maio', 'Junho', 'Julho', 'Agosto', 'Setembro', 'Outubro', 'Novembro', 'Dezembro'];
-
-            dashboardMonthFilter.innerHTML = '';
-
-            months.forEach((month, index) => { 
-
-                const option = document.createElement('option'); 
-
-                option.value = index; 
-
-                option.textContent = month; 
-
-                if (index === today.getMonth()) { option.selected = true; } 
-
-                dashboardMonthFilter.appendChild(option); 
-
-            });
-
-            const currentYear = today.getFullYear();
-
-            dashboardYearFilter.innerHTML = '';
-
-            for (let i = 0; i < 5; i++) { 
-
-                const year = currentYear - i; 
-
-                const option = document.createElement('option'); 
-
-                option.value = year; 
-
-                option.textContent = year; 
-
-                if (year === currentYear) { option.selected = true; } 
-
-                dashboardYearFilter.appendChild(option); 
-
-            }
-
-        }
-
-
-
-        function populateProductFilter(sales) {
-
-            const productSet = new Set(['Todos', 'Receita']);
-
-            sales.forEach(sale => { try { const prods = JSON.parse(sale.products); prods.forEach(p => productSet.add(p.name)); } catch(e) {} });
-
-            if (!productSet.has('GPON')) { productSet.add('GPON'); }
-
-            const currentSelection = productFilterSelect.value;
-
-            productFilterSelect.innerHTML = '';
-
-            Array.from(productSet).sort().forEach(product => { const option = document.createElement('option'); option.value = product; option.textContent = product; productFilterSelect.appendChild(option); });
-
-            if (Array.from(productSet).includes(currentSelection)) { productFilterSelect.value = currentSelection; }
-
-        }
-
-
-
-        function renderDailySalesChart(currentSales, previousSales, year, month, selectedProduct = 'Todos') {
-
-            const daysInCurrentMonth = new Date(year, month + 1, 0).getDate();
-
-            const labels = Array.from({ length: daysInCurrentMonth }, (_, i) => i + 1);
-
-
-
-            const currentMonthData = new Array(daysInCurrentMonth).fill(0);
-
-            const previousMonthData = new Array(daysInCurrentMonth).fill(0);
-
-
-
-            const isRevenueView = selectedProduct === 'Receita';
-
-            const yAxisLabel = isRevenueView ? 'Receita (R$)' : 'Quantidade Vendida';
-
-
-
-            const processSalesForChart = (saleSet, dataArray) => {
-
-                saleSet.forEach(sale => {
-
-                    const saleDate = sale.timestamp?.seconds ? new Date(sale.timestamp.seconds * 1000) : null;
-
-                    if (saleDate) {
-
-                        const dayIndex = saleDate.getDate() - 1;
-
-                        if (isRevenueView) {
-
-                            dataArray[dayIndex] += (sale.totalRevenue || 0);
-
-                        } else {
-
-                            try {
-
-                                const products = JSON.parse(sale.products);
-
-                                products.forEach(p => { if (selectedProduct === 'Todos' || p.name === selectedProduct) { dataArray[dayIndex] += (p.quantity || 0); } });
-
-                            } catch (e) {}
-
-                        }
-
-                    }
-
-                });
-
-            };
-
-            processSalesForChart(currentSales, currentMonthData);
-
-            processSalesForChart(previousSales, previousMonthData);
-
-            
-
-            if (dailySalesChart) { dailySalesChart.destroy(); }
-
-            const ctx = document.getElementById('daily-sales-chart').getContext('2d');
-
-            dailySalesChart = new Chart(ctx, {
-
-                type: 'bar',
-
-                data: {
-
-                    labels: labels,
-
-                    datasets: [
-
-                        { label: `Mês Atual (${selectedProduct})`, data: currentMonthData, backgroundColor: 'rgba(54, 162, 235, 0.6)', borderColor: 'rgba(54, 162, 235, 1)', borderWidth: 1 },
-
-                        { label: `Mês Anterior (${selectedProduct})`, data: previousMonthData, backgroundColor: 'rgba(255, 99, 132, 0.6)', borderColor: 'rgba(255, 99, 132, 1)', borderWidth: 1 }
-
-                    ]
-
-                },
-
-                options: { responsive: true, maintainAspectRatio: false, scales: { y: { beginAtZero: true, title: { display: true, text: yAxisLabel } }, x: { title: { display: true, text: 'Dia do Mês' } } } }
-
-            });
-
-        }
-
-        
-
-        function populateConsultantFilters() {
-
-            const today = new Date();
-
-            const months = ['Janeiro', 'Fevereiro', 'Março', 'Abril', 'Maio', 'Junho', 'Julho', 'Agosto', 'Setembro', 'Outubro', 'Novembro', 'Dezembro'];
-
-            consultantMonthFilter.innerHTML = '';
-
-            months.forEach((month, index) => { const option = document.createElement('option'); option.value = index; option.textContent = month; if (index === today.getMonth()) { option.selected = true; } consultantMonthFilter.appendChild(option); });
-
-            const currentYear = today.getFullYear();
-
-            consultantYearFilter.innerHTML = '';
-
-            for (let i = 0; i < 5; i++) { const year = currentYear - i; const option = document.createElement('option'); option.value = year; option.textContent = year; if (year === currentYear) { option.selected = true; } consultantYearFilter.appendChild(option); }
-
-        }
-
-
-
-        function getPastMonths(count) { const months = []; const today = new Date(); for (let i = count - 1; i >= 0; i--) { const d = new Date(today.getFullYear(), today.getMonth() - i, 1); months.push(d); } return months; }
-
-        
-
-        function calculateAndDisplayTeamProjection(allSales, selectedYear, selectedMonth) {
-
-            const months = [];
-
-            for (let i = 5; i >= 0; i--) {
-
-                months.push(new Date(selectedYear, selectedMonth - i, 1));
-
-            }
-
-
-
-            const realizedSales = allSales.filter(s => s.status === 'aceite realizado');
-
-
-
-            const teamMonthlyRevenue = months.map(month =>
-
-                realizedSales.reduce((sum, sale) => {
-
-                    const saleDate = sale.timestamp ? new Date(sale.timestamp.seconds * 1000) : null;
-
-                    if (saleDate && saleDate.getMonth() === month.getMonth() && saleDate.getFullYear() === month.getFullYear()) {
-
-                        return sum + (sale.totalRevenue || 0);
-
-                    }
-
-                    return sum;
-
-                }, 0));
-
-            
-
-            let totalGrowth = 0; let countGrowth = 0;
-
-            for (let i = 1; i < teamMonthlyRevenue.length; i++) { if (teamMonthlyRevenue[i-1] > 0) { const growthRate = (teamMonthlyRevenue[i] - teamMonthlyRevenue[i-1]) / teamMonthlyRevenue[i-1]; totalGrowth += growthRate; countGrowth++; } }
-
-            const averageGrowth = countGrowth > 0 ? totalGrowth / countGrowth : 0;
-
-            const currentMonthRevenue = teamMonthlyRevenue.length > 0 ? teamMonthlyRevenue[teamMonthlyRevenue.length - 1] : 0;
-
-            const projectedTeamRevenue = currentMonthRevenue * (1 + averageGrowth);
-
-            projectedTeamRevenueEl.textContent = `R$ ${projectedTeamRevenue.toFixed(2).replace('.', ',')}`;
-
-        }
-
-
-
-        function renderProductsSoldChart(sales) {
-
-            const productCategories = {};
-
-            sales.forEach(sale => { try { const saleProducts = JSON.parse(sale.products); saleProducts.forEach(p => { const productName = p.name || 'Desconhecido'; productCategories[productName] = (productCategories[productName] || 0) + (p.quantity || 0); }); } catch (e) {} });
-
-            
-
-            const productNames = Object.keys(productCategories);
-
-            const productQuantities = Object.values(productCategories);
-
-            if (productsSoldChart) { productsSoldChart.destroy(); }
-
-            const ctx = document.getElementById('products-sold-chart').getContext('2d');
-
-            productsSoldChart = new Chart(ctx, { type: 'doughnut', data: { labels: productNames, datasets: [{ label: 'Quantidade Vendida', data: productQuantities, backgroundColor: [ 'rgba(255, 99, 132, 0.6)', 'rgba(54, 162, 235, 0.6)', 'rgba(255, 206, 86, 0.6)', 'rgba(75, 192, 192, 0.6)', 'rgba(153, 102, 255, 0.6)', 'rgba(255, 159, 64, 0.6)', 'rgba(199, 199, 199, 0.6)' ], borderWidth: 1 }] }, options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'top' } } } });
-
-        }
-
-        
-
-        function renderCollectiveChart(allSales, selectedYear, selectedMonth) {
-
-            const months = [];
-
-            for (let i = 5; i >= 0; i--) {
-
-                months.push(new Date(selectedYear, selectedMonth - i, 1));
-
-            }
-
-
-
-            const realizedSales = allSales.filter(s => s.status === 'aceite realizado');
-
-
-
-            const monthlyRevenue = months.map(month =>
-
-                realizedSales.reduce((sum, sale) => {
-
-                    const saleDate = sale.timestamp ? new Date(sale.timestamp.seconds * 1000) : null;
-
-                    if (saleDate && saleDate.getMonth() === month.getMonth() && saleDate.getFullYear() === month.getFullYear()) {
-
-                        return sum + (sale.totalRevenue || 0);
-
-                    }
-
-                    return sum;
-
-                }, 0));
-
-            if (collectiveChart) { collectiveChart.destroy(); }
-
-            const ctx = document.getElementById('collective-sales-chart').getContext('2d');
-
-            collectiveChart = new Chart(ctx, { type: 'bar', data: { labels: months.map(m => m.toLocaleString('pt-BR', { month: 'short', year: 'numeric' })), datasets: [{ label: 'Receita Total da Equipe (R$)', data: monthlyRevenue, backgroundColor: 'rgba(75, 192, 192, 0.6)', borderColor: 'rgba(75, 192, 192, 1)', borderWidth: 1 }] }, options: { responsive: true, maintainAspectRatio: false, scales: { y: { beginAtZero: true, title: { display: true, text: 'Receita (R$)' } } } } });
-
-        }
-
-
-
-        function renderConsultantsPerformance() {
-
-            if (!allSalesData || !allConsultantsData) return;
-
-            const selectedMonth = parseInt(consultantMonthFilter.value);
-
-            const selectedYear = parseInt(consultantYearFilter.value);
-
-            
-
-            // Filtra apenas por vendas realizadas para a performance geral
-
-            const filteredSales = allSalesData.filter(s => { 
-
-                const d = s.timestamp?.seconds ? new Date(s.timestamp.seconds * 1000) : null; 
-
-                return d && d.getMonth() === selectedMonth && d.getFullYear() === selectedYear && s.status === 'aceite realizado';
-
-            });
-
-
-
-            const performanceMap = {};
-
-            allConsultantsData.forEach(c => { performanceMap[c.id] = { name: c.consultantName || 'Consultor sem nome', salesCount: 0, totalRevenue: 0, }; });
-
-            filteredSales.forEach(sale => { const consultantId = sale.consultantId; if (consultantId && performanceMap[consultantId]) { performanceMap[consultantId].salesCount++; performanceMap[consultantId].totalRevenue += sale.totalRevenue || 0; } });
-
-            consultantsPerformanceBody.innerHTML = '';
-
-            const sortedConsultants = Object.keys(performanceMap).sort((a, b) => performanceMap[b].totalRevenue - performanceMap[a].totalRevenue);
-
-            if (sortedConsultants.length === 0 || filteredSales.length === 0) { consultantsPerformanceBody.innerHTML = `<tr><td colspan="5" class="p-4 text-center text-gray-500">Nenhum dado encontrado para o período selecionado.</td></tr>`; return; }
-
-            sortedConsultants.forEach(id => {
-
-                const data = performanceMap[id];
-
-                const averageTicket = data.salesCount > 0 ? data.totalRevenue / data.salesCount : 0;
-
-                const row = document.createElement('tr');
-
-                row.className = "border-t border-gray-200 hover:bg-gray-100";
-
-                row.innerHTML = `
-
-                    <td class="p-4">${data.name}</td>
-
-                    <td class="p-4 text-center">${data.salesCount}</td>
-
-                    <td class="p-4 text-center">R$ ${data.totalRevenue.toFixed(2).replace('.', ',')}</td>
-
-                    <td class="p-4 text-center">R$ ${averageTicket.toFixed(2).replace('.', ',')}</td>
-
-                    <td class="p-4 text-center"><button class="view-details-btn text-blue-500 hover:text-blue-700" data-consultant-id="${id}" data-consultant-name="${data.name}">Exibir</button></td>`;
-
-                consultantsPerformanceBody.appendChild(row);
-
-            });
-
-            document.querySelectorAll('.view-details-btn').forEach(button => { button.addEventListener('click', (e) => { const consultantId = e.target.getAttribute('data-consultant-id'); const consultantName = e.target.getAttribute('data-consultant-name'); renderConsultantView(consultantId, consultantName, allSalesData); }); });
-
-        }
-
-
-
-        function renderProductSalesTable(currentMonthSales, previousMonthSales) {
-
-            const products = {};
-
-            const processSales = (sales, period) => { sales.forEach(sale => { try { const prods = JSON.parse(sale.products); prods.forEach(p => { if (!products[p.name]) { products[p.name] = { current: 0, previous: 0 }; } products[p.name][period] += (p.quantity || 0); }); } catch(e) {} }); };
-
-            processSales(currentMonthSales, 'current');
-
-            processSales(previousMonthSales, 'previous');
-
-            productSalesTableBody.innerHTML = '';
-
-            Object.keys(products).sort().forEach(productName => {
-
-                const data = products[productName];
-
-                const row = document.createElement('tr');
-
-                row.className = "border-t border-gray-200 hover:bg-gray-100 even:bg-gray-50";
-
-                row.innerHTML = `<td class="p-4 font-medium">${productName}</td><td class="p-4 text-center">${data.current}</td><td class="p-4 text-center">${data.previous}</td>`;
-
-                productSalesTableBody.appendChild(row);
-
-            });
-
-        }
-
-
-
-        function populateGoalsSelectors() {
-
-            const today = new Date(); const months = ['Janeiro', 'Fevereiro', 'Março', 'Abril', 'Maio', 'Junho', 'Julho', 'Agosto', 'Setembro', 'Outubro', 'Novembro', 'Dezembro'];
-
-            months.forEach((month, index) => { const option = document.createElement('option'); option.value = index + 1; option.textContent = month; if (index === today.getMonth()) { option.selected = true; } goalsMonthSelect.appendChild(option); });
-
-            const currentYear = today.getFullYear();
-
-            for (let i = 0; i < 5; i++) { const year = currentYear + i; const option = document.createElement('option'); option.value = year; option.textContent = year; if (i === 0) { option.selected = true; } goalsYearSelect.appendChild(option); }
-
-        }
-
-
-
-        async function loadAndRenderGoals() {
-
-            if (!managerId) return;
-
-            const month = parseInt(goalsMonthSelect.value); const year = parseInt(goalsYearSelect.value);
-
-            const goalDocId = `${year}-${month}`;
-
-            let salesSummary = {};
-
-            const salesInPeriod = allSalesData.filter(sale => { const d = sale.timestamp?.seconds ? new Date(sale.timestamp.seconds * 1000) : null; return d && d.getMonth() + 1 === month && d.getFullYear() === year; });
-
-            salesInPeriod.forEach(sale => { try { const prods = JSON.parse(sale.products); prods.forEach(p => { const pName = p.name.includes('Migração') ? 'Migração' : p.name; salesSummary[pName] = (salesSummary[pName] || 0) + (p.quantity || 0); }); } catch (e) {} });
-
-
-
-            try {
-
-                const goalsRef = doc(db, `artifacts/${appId}/managers/${managerId}/manager_goals`, goalDocId);
-
-                const goalsSnap = await getDoc(goalsRef);
-
-                if (goalsSnap.exists()) { Object.assign(currentGoals, goalsSnap.data().goals); } else { Object.keys(currentGoals).forEach(key => delete currentGoals[key]); }
-
-            } catch (e) { console.error("Erro ao carregar metas:", e); displayGoalsMessage("Erro ao carregar as metas.", "error"); }
-
-            renderGoalsTable(salesSummary);
-
-        }
-
-
-
-        function renderGoalsTable(salesSummary) {
-
-            goalsTableBody.innerHTML = '';
-
-            goalProductsList.forEach(product => {
-
-                const currentGoal = currentGoals[product] || 0;
-
-                const effective = salesSummary[product] || 0;
-
-                const missing = Math.max(0, currentGoal - effective);
-
-                const row = document.createElement('tr');
-
-                row.className = "border-t border-gray-200";
-
-                row.innerHTML = `<td class="p-4">${product}</td><td class="p-4"><input type="number" data-product="${product}" value="${currentGoal}" min="0" class="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"></td><td class="p-4 text-center">${effective}</td><td class="p-4 text-center">${missing}</td>`;
-
-                goalsTableBody.appendChild(row);
-
-            });
-
-        }
-
-
-
-        async function saveGoals() {
-
-            if (!managerId) return;
-
-            const month = goalsMonthSelect.value; const year = goalsYearSelect.value;
-
-            const goalDocId = `${year}-${month}`;
-
-            const inputs = goalsTableBody.querySelectorAll('input');
-
-            const newGoals = {};
-
-            inputs.forEach(input => { newGoals[input.getAttribute('data-product')] = parseInt(input.value, 10) || 0; });
-
-            try {
-
-                const goalsRef = doc(db, `artifacts/${appId}/managers/${managerId}/manager_goals`, goalDocId);
-
-                await setDoc(goalsRef, { goals: newGoals });
-
-                displayGoalsMessage("Metas salvas com sucesso!", "success");
-
-            } catch (e) { console.error("Erro ao salvar metas:", e); displayGoalsMessage("Erro ao salvar as metas.", "error"); }
-
-        }
-
-        
-
-        function renderConsultantView(consultantId, consultantName, allSales) {
-
-            mainSection.classList.add('hidden');
-
-            consultantViewSection.classList.remove('hidden');
-
-            consultantViewTitleEl.textContent = `Visão do Consultor: ${consultantName}`;
-
-            
-
-            const selectedMonth = parseInt(consultantMonthFilter.value);
-
-            const selectedYear = parseInt(consultantYearFilter.value);
-
-            
-
-            const consultantSales = allSales.filter(sale => {
-
-                const saleDate = sale.timestamp?.seconds ? new Date(sale.timestamp.seconds * 1000) : null;
-
-                return sale.consultantId === consultantId && saleDate && saleDate.getMonth() === selectedMonth && saleDate.getFullYear() === selectedYear;
-
-            });
-
-            
-
-            // Para os cálculos, consideramos apenas as vendas realizadas
-
-            const realizedConsultantSales = consultantSales.filter(s => s.status === 'aceite realizado');
-
-
-
-            let totalRevenue = 0;
-
-            const productsSoldSummary = {};
-
-            let totalMigracaoSold = 0;
-
-            let totalAparelhosSoldValue = 0;
-
-            
-
-            realizedConsultantSales.forEach(sale => {
-
-                try {
-
-                    const saleProducts = JSON.parse(sale.products);
-
-                    saleProducts.forEach(p => {
-
-                        const productNameKey = p.name.includes('Migração') ? 'Migração' : p.name;
-
-                        if (productNameKey in productsSoldSummary) { productsSoldSummary[productNameKey] = (productsSoldSummary[productNameKey] || 0) + (p.quantity || 0); } else { productsSoldSummary[productNameKey] = (p.quantity || 0); }
-
-                        if (['Migração Up', 'Migração Mid', 'Migração Down'].includes(p.name)) { totalMigracaoSold += (p.quantity || 0); }
-
-                        if (p.name === 'Aparelhos (R$)') { totalAparelhosSoldValue += (p.revenue || 0); } else { totalRevenue += (p.revenue || 0); }
-
-                    });
-
-                } catch (e) { console.error("Erro ao analisar JSON de produtos na visão do consultor:", e); }
-
-            });
-
-
-
-            productsSoldSummary['Migração'] = totalMigracaoSold;
-
-            productsSoldSummary['Aparelhos (R$)'] = totalAparelhosSoldValue;
-
-            totalRevenue += totalAparelhosSoldValue * 0.01;
-
-
-
-            let currentTier = 0;
-
-            const revenueGoals = goalData['Receita (R$)'];
-
-            if (totalRevenue >= revenueGoals[0]) currentTier++; if (totalRevenue >= revenueGoals[1]) currentTier++; if (totalRevenue >= revenueGoals[2]) currentTier++;
-
-            productsForGoals.forEach(product => { const sold = productsSoldSummary[product] || 0; const goals = goalData[product] || []; if (goals.length > 0 && sold >= goals[0]) currentTier++; if (goals.length > 1 && sold >= goals[1]) currentTier++; if (goals.length > 2 && sold >= goals[2]) currentTier++; });
-
-            
-
-            let totalCommission = 0;
-
-            const commissionDetails = {};
-
-            let tierIndexForCommission = currentTier > 0 ? currentTier - 1 : 0;
-
-            tierIndexForCommission = Math.min(tierIndexForCommission, commissionData['Migração Mid'].length - 1);
-
-            
-
-            realizedConsultantSales.forEach(sale => { 
-
-                try {
-
-                    const saleProducts = JSON.parse(sale.products); 
-
-                    saleProducts.forEach(p => { 
-
-                        const commissionRate = commissionData[p.name] ? commissionData[p.name][tierIndexForCommission] : 0; 
-
-                        const productCommission = (p.quantity || 0) * commissionRate; 
-
-                        if (commissionDetails[p.name]) { 
-
-                            commissionDetails[p.name].value += productCommission; 
-
-                            commissionDetails[p.name].quantity += (p.quantity || 0); 
-
-                        } else { 
-
-                            commissionDetails[p.name] = { value: productCommission, quantity: (p.quantity || 0), rate: commissionRate }; 
-
-                        } 
-
-                    });
-
-                } catch(e) {}
-
-            });
-
-            const revenueCommission = totalRevenue * (revenuePercentages[tierIndexForCommission] / 100);
-
-            commissionDetails['Receita Total'] = { value: revenueCommission, rate: revenuePercentages[tierIndexForCommission] + '%' };
-
-            totalCommission = Object.values(commissionDetails).reduce((sum, item) => sum + item.value, 0);
-
-
-
-            individualTotalRevenueEl.textContent = `R$ ${totalRevenue.toFixed(2).replace('.', ',')}`;
-
-            individualEstimatedCommissionEl.textContent = `R$ ${totalCommission.toFixed(2).replace('.', ',')}`;
-
-            individualCurrentTierEl.textContent = `Faixa ${currentTier}`;
-
-            
-
-            let nextTierGoal = 0; let progressPercentage = 0;
-
-            const nextRevenueGoalIndex = revenueGoals.findIndex(goal => totalRevenue < goal);
-
-            if (nextRevenueGoalIndex !== -1) { 
-
-                nextTierGoal = revenueGoals[nextRevenueGoalIndex]; 
-
-                progressPercentage = Math.min(100, (totalRevenue / nextTierGoal) * 100); 
-
-                individualProgressTextEl.textContent = `Progresso para a Faixa ${currentTier + 1}:`; 
-
-            } else { 
-
-                progressPercentage = 100; 
-
-                individualProgressTextEl.textContent = 'Parabéns! Você alcançou a Faixa mais alta!'; 
-
-            }
-
-            individualProgressFillEl.style.width = `${progressPercentage}%`; 
-
-            individualProgressFillEl.className = `progress-fill ${progressPercentage >= 100 ? 'bg-green-500' : 'bg-blue-500'}`;
-
-            
-
-            renderIndividualCommissionDetails(commissionDetails);
-
-            renderIndividualRevenueGoals(totalRevenue);
-
-            renderIndividualProductGoals(productsSoldSummary);
-
-            renderConsultantSalesList(consultantSales); // Passa todas as vendas para a lista
-
-        }
-
-
-
-        function renderConsultantSalesList(sales) {
-
-            consultantSalesListBody.innerHTML = '';
-
-            if (sales.length === 0) {
-
-                consultantSalesListBody.innerHTML = `<tr><td colspan="7" class="p-4 text-center text-gray-500">Nenhuma venda encontrada para este período.</td></tr>`;
-
-                return;
-
-            }
-
-            sales.sort((a, b) => b.timestamp.seconds - a.timestamp.seconds);
-
-            sales.forEach(sale => {
-
-                const saleDate = sale.timestamp?.seconds ? new Date(sale.timestamp.seconds * 1000).toLocaleString('pt-BR') : 'Data inválida';
-
-                let productsHtml = 'Não informado';
-
-                try {
-
-                    const products = JSON.parse(sale.products);
-
-                    productsHtml = products.map(p => `Qt: ${p.quantity} - ${p.name} (R$ ${p.revenue.toFixed(2).replace('.',',')})`).join('<br>');
-
-                } catch (e) { console.error("Erro ao parsear produtos da venda:", e); }
-
-                
-
-                const statusText = sale.status || 'aceite enviado';
-
-                let statusBadge = '';
-
-                if (statusText === 'aceite realizado') {
-
-                    statusBadge = `<span class="px-2 py-1 text-xs font-semibold text-green-800 bg-green-100 rounded-full">Realizado</span>`;
-
-                } else if (statusText === 'aceite enviado') {
-
-                    statusBadge = `<span class="px-2 py-1 text-xs font-semibold text-yellow-800 bg-yellow-100 rounded-full">Enviado</span>`;
-
-                } else { // aceite negado
-
-                    statusBadge = `<span class="px-2 py-1 text-xs font-semibold text-red-800 bg-red-100 rounded-full">Negado</span>`;
-
-                }
-
-
-
-                const row = document.createElement('tr');
-
-                row.className = "border-t border-gray-200 hover:bg-gray-50";
-
-                if(sale.isEdited) {
-
-                    row.style.backgroundColor = '#fef9c3'; // Cor para vendas editadas (amarelo claro)
-
-                }
-
-                let editedInfo = '';
-
-                 if(sale.isEdited && sale.editedBy) {
-
-                    const editDate = sale.editedAt?.seconds ? new Date(sale.editedAt.seconds * 1000).toLocaleString('pt-BR') : '';
-
-                    editedInfo = ` (Editado por ${sale.editedBy} em ${editDate})`;
-
-                }
-
-
-
-                row.innerHTML = `
-
-                    <td class="p-4 align-top">${sale.cnpj || 'N/A'}</td>
-
-                    <td class="p-4 align-top">${sale.companyName || 'N/A'}</td>
-
-                    <td class="p-4 align-top text-sm">${productsHtml}</td>
-
-                    <td class="p-4 align-top">${saleDate}${editedInfo}</td>
-
-                    <td class="p-4 align-top text-right">R$ ${(sale.totalRevenue || 0).toFixed(2).replace('.', ',')}</td>
-
-                    <td class="p-4 align-top text-center">${statusBadge}</td>
-
-                    <td class="p-4 align-top text-center">
-
-                        <button class="edit-sale-btn text-blue-500 hover:text-blue-700 mr-2" data-sale-id="${sale.id}">Editar</button>
-
-                        <button class="delete-sale-btn text-red-500 hover:text-red-700" data-sale-id="${sale.id}">Excluir</button>
-
-                    </td>
-
-                `;
-
-                consultantSalesListBody.appendChild(row);
-
-            });
-
-            document.querySelectorAll('.edit-sale-btn').forEach(btn => {
-
-                btn.addEventListener('click', (e) => {
-
-                    openEditModal(e.target.dataset.saleId);
-
-                });
-
-            });
-
-            document.querySelectorAll('.delete-sale-btn').forEach(btn => {
-
-                 btn.addEventListener('click', (e) => {
-
-                    saleIdToDelete = e.target.dataset.saleId;
-
-                    deleteConfirmModal.classList.remove('hidden');
-
-                });
-
-            });
-
-        }
-
-        
-
-        async function deleteSale(saleId) {
-
-            if (!saleId) return;
-
-            const saleRef = doc(db, `artifacts/${appId}/public/data/sales`, saleId);
-
-            try {
-
-                await deleteDoc(saleRef);
-
-                // A UI será atualizada automaticamente pelo onSnapshot
-
-            } catch (error) {
-
-                console.error("Erro ao excluir a venda: ", error);
-
-            }
-
-        }
-
-        
-
-        function updateModalTotalRevenue() {
-
-            const container = document.getElementById('edit-products-container');
-
-            let totalRevenue = 0;
-
-            container.querySelectorAll('.p-2.border').forEach(row => {
-
-                const revenue = parseFloat(row.querySelector('.product-revenue-input').value) || 0;
-
-                totalRevenue += revenue;
-
-            });
-
-            document.getElementById('edit-total-revenue').textContent = `R$ ${totalRevenue.toFixed(2).replace('.', ',')}`;
-
-        }
-
-        
-
-        function createProductEditRow(product = { name: '', quantity: 1, revenue: 0 }) {
-
-            const productRow = document.createElement('div');
-
-            productRow.className = 'p-2 border rounded-md grid grid-cols-12 gap-2 items-center';
-
-            const selectContainer = document.createElement('div');
-
-            selectContainer.className = 'col-span-5';
-
-            const productSelect = document.createElement('select');
-
-            productSelect.className = 'product-name-input mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500';
-
-            availableProducts.forEach(pName => {
-
-                const option = document.createElement('option');
-
-                option.value = pName;
-
-                option.textContent = pName;
-
-                if (pName === product.name) { option.selected = true; }
-
-                productSelect.appendChild(option);
-
-            });
-
-            selectContainer.appendChild(productSelect);
-
-            const quantityContainer = document.createElement('div');
-
-            quantityContainer.className = 'col-span-2';
-
-            quantityContainer.innerHTML = `<input type="number" class="product-quantity-input mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500" value="${product.quantity}" min="1">`;
-
-            const revenueContainer = document.createElement('div');
-
-            revenueContainer.className = 'col-span-3';
-
-            revenueContainer.innerHTML = `<input type="number" step="0.01" class="product-revenue-input mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500" value="${product.revenue || 0}">`;
-
-            const deleteBtnContainer = document.createElement('div');
-
-            deleteBtnContainer.className = 'col-span-2 text-right';
-
-            const deleteBtn = document.createElement('button');
-
-            deleteBtn.type = 'button';
-
-            deleteBtn.className = 'remove-product-btn text-red-500 hover:text-red-700 p-1 text-xl leading-none';
-
-            deleteBtn.innerHTML = '&times;';
-
-            deleteBtn.onclick = () => { productRow.remove(); updateModalTotalRevenue(); };
-
-            deleteBtnContainer.appendChild(deleteBtn);
-
-            productRow.appendChild(selectContainer);
-
-            productRow.appendChild(quantityContainer);
-
-            productRow.appendChild(revenueContainer);
-
-            productRow.appendChild(deleteBtnContainer);
-
-            productRow.querySelectorAll('input').forEach(input => input.addEventListener('input', updateModalTotalRevenue));
-
-            return productRow;
-
-        }
-
-
-
-        function openEditModal(saleId) {
-
-            currentEditingSaleId = saleId;
-
-            const sale = allSalesData.find(s => s.id === saleId);
-
-            if (!sale) return;
-
-
-
-            document.getElementById('edit-client-name').value = sale.companyName || '';
-
-            document.getElementById('edit-client-cnpj').value = sale.cnpj || '';
-
-
-
-            const productsContainer = document.getElementById('edit-products-container');
-
-            productsContainer.innerHTML = '';
-
-            try {
-
-                const products = JSON.parse(sale.products);
-
-                products.forEach(p => { productsContainer.appendChild(createProductEditRow(p)); });
-
-            } catch (e) {
-
-                console.error("Erro ao parsear produtos para edição:", e);
-
-                productsContainer.appendChild(createProductEditRow());
-
-            }
-
-            updateModalTotalRevenue();
-
-            editSaleModal.classList.remove('hidden');
-
-        }
-
-
-
-        function closeEditModal() {
-
-            editSaleModal.classList.add('hidden');
-
-            currentEditingSaleId = null;
-
-        }
-
-
-
-        async function saveSaleEdit() {
-
-            if (!currentEditingSaleId) return;
-
-
-
-            const companyName = document.getElementById('edit-client-name').value;
-
-            const cnpj = document.getElementById('edit-client-cnpj').value;
-
-
-
-            const productsContainer = document.getElementById('edit-products-container');
-
-            const productRows = productsContainer.querySelectorAll('.p-2.border');
-
-            const updatedProducts = [];
-
-            let updatedTotalRevenue = 0;
-
-            productRows.forEach(row => {
-
-                const name = row.querySelector('.product-name-input').value;
-
-                const quantity = parseInt(row.querySelector('.product-quantity-input').value, 10) || 0;
-
-                const revenue = parseFloat(row.querySelector('.product-revenue-input').value) || 0;
-
-                if (name && quantity > 0) {
-
-                    updatedProducts.push({ name, quantity, revenue });
-
-                    updatedTotalRevenue += revenue;
-
-                }
-
-            });
-
-            if (updatedProducts.length === 0) {
-
-                console.error("Não é possível salvar uma venda sem produtos.");
-
-                return;
-
-            }
-
-            const saleRef = doc(db, `artifacts/${appId}/public/data/sales`, currentEditingSaleId);
-
-            try {
-
-                await updateDoc(saleRef, {
-
-                    companyName: companyName,
-
-                    cnpj: cnpj,
-
-                    products: JSON.stringify(updatedProducts),
-
-                    totalRevenue: updatedTotalRevenue,
-
-                    editedBy: managerEmail,
-
-                    editedAt: serverTimestamp(),
-
-                    isEdited: true
-
-                });
-
-                closeEditModal();
-
-            } catch (error) {
-
-                console.error("Erro ao salvar a edição da venda: ", error);
-
-            }
-
-        }
-
-
-
-        function renderIndividualCommissionDetails(details) {
-
-            individualCommissionDetailsBodyEl.innerHTML = '';
-
-            const sortedKeys = Object.keys(details).sort();
-
-            sortedKeys.forEach(key => {
-
-                const detail = details[key]; const row = document.createElement('tr'); row.className = "border-t border-gray-200"; let itemName = key; if (detail.quantity) { itemName = `${key} (${detail.quantity})`; }
-
-                row.innerHTML = `<td class="p-4">${itemName}</td><td class="p-4">R$ ${detail.value.toFixed(2).replace('.', ',')}</td><td class="p-4">${detail.rate}</td>`;
-
-                individualCommissionDetailsBodyEl.appendChild(row);
-
-            });
-
-        }
-
-        
-
-        function renderIndividualRevenueGoals(totalRevenue) {
-
-            individualRevenueGoalsBodyEl.innerHTML = '';
-
-            const goals = goalData['Receita (R$)'];
-
-            goals.forEach(goal => {
-
-                const isMet = totalRevenue >= goal; const status = isMet ? 'Atingida' : 'Ainda não'; const statusClass = isMet ? 'text-green-500' : 'text-gray-500';
-
-                const row = document.createElement('tr'); row.className = "border-t border-gray-200";
-
-                row.innerHTML = `<td class="p-4">R$ ${goal.toFixed(2).replace('.', ',')}</td><td class="p-4 ${statusClass}">${status}</td>`;
-
-                individualRevenueGoalsBodyEl.appendChild(row);
-
-            });
-
-        }
-
-
-
-        function renderIndividualProductGoals(productsSoldSummary) {
-
-            individualProductGoalsBodyEl.innerHTML = '';
-
-            productsForGoals.forEach(product => {
-
-                const sold = productsSoldSummary[product] || 0; const goals = goalData[product] || [0, 0, 0];
-
-                const row = document.createElement('tr'); row.className = "border-t border-gray-200";
-
-                const goal75Met = sold >= goals[0]; const goal150Met = sold >= goals[1]; const goal200Met = sold >= goals[2]; let soldValue = sold; if (product === 'Aparelhos (R$)') { soldValue = `R$ ${sold.toFixed(2).replace('.', ',')}`; }
-
-                row.innerHTML = `
-
-                    <td class="p-4">${product}</td><td class="p-4 text-center">${soldValue}</td>
-
-                    <td class="p-4 text-center ${goal75Met ? 'text-green-500 font-bold' : ''}">${product === 'Aparelhos (R$)' ? `R$ ${goals[0].toFixed(2).replace('.', ',')}` : goals[0]}</td>
-
-                    <td class="p-4 text-center ${goal150Met ? 'text-green-500 font-bold' : ''}">${product === 'Aparelhos (R$)' ? `R$ ${goals[1].toFixed(2).replace('.', ',')}` : goals[1]}</td>
-
-                    <td class="p-4 text-center ${goal200Met ? 'text-green-500 font-bold' : ''}">${product === 'Aparelhos (R$)' ? `R$ ${goals[2].toFixed(2).replace('.', ',')}` : goals[2]}</td>`;
-
-                individualProductGoalsBodyEl.appendChild(row);
-
-            });
-
-        }
-
-        
-
-        // --- Event Listeners ---
-
-        authForm.addEventListener('submit', async (e) => { e.preventDefault(); const email = authEmailInput.value; const password = authPasswordInput.value; authMessageEl.style.display = 'none'; try { await signInWithEmailAndPassword(auth, email, password); } catch (e) { console.error("Erro de autenticação: ", e.message); displayAuthMessage('Falha no login. Verifique suas credenciais.', 'error'); } });
-
-        logoutBtn.addEventListener('click', async () => { await signOut(auth); });
-
-        backToDashboardBtn.addEventListener('click', () => { consultantViewSection.classList.add('hidden'); mainSection.classList.remove('hidden'); });
-
-        dashboardTabBtn.addEventListener('click', () => { dashboardContent.classList.remove('hidden'); goalsContent.classList.add('hidden'); productSalesContent.classList.add('hidden'); dashboardTabBtn.classList.remove('bg-gray-200', 'text-gray-800'); dashboardTabBtn.classList.add('bg-blue-600', 'text-white'); goalsTabBtn.classList.remove('bg-blue-600', 'text-white'); goalsTabBtn.classList.add('bg-gray-200', 'text-gray-800'); mainTitle.textContent = 'Painel de Gerência'; });
-
-        viewProductsBtn.addEventListener('click', () => { dashboardContent.classList.add('hidden'); goalsContent.classList.add('hidden'); productSalesContent.classList.remove('hidden'); });
-
-        backToDashboardFromProductsBtn.addEventListener('click', () => { dashboardContent.classList.remove('hidden'); goalsContent.classList.add('hidden'); productSalesContent.classList.add('hidden'); });
-
-        productFilterSelect.addEventListener('change', (e) => renderDailySalesChart(allSalesData, e.target.value));
-
-        consultantMonthFilter.addEventListener('change', () => renderConsultantsPerformance());
-
-        consultantYearFilter.addEventListener('change', () => renderConsultantsPerformance());
-
-        goalsTabBtn.addEventListener('click', () => { goalsContent.classList.remove('hidden'); dashboardContent.classList.add('hidden'); productSalesContent.classList.add('hidden'); goalsTabBtn.classList.remove('bg-gray-200', 'text-gray-800'); goalsTabBtn.classList.add('bg-blue-600', 'text-white'); dashboardTabBtn.classList.remove('bg-blue-600', 'text-white'); dashboardTabBtn.classList.add('bg-gray-200', 'text-gray-800'); mainTitle.textContent = 'Gestão de Metas'; loadAndRenderGoals(); });
-
-        goalsMonthSelect.addEventListener('change', loadAndRenderGoals); goalsYearSelect.addEventListener('change', loadAndRenderGoals); saveGoalsBtn.addEventListener('click', saveGoals);
-
-        
-
-        // Listeners do Modal de Edição
-
-        cancelEditBtn.addEventListener('click', closeEditModal);
-
-        saveEditBtn.addEventListener('click', saveSaleEdit);
-
-        addProductBtn.addEventListener('click', () => {
-
-            const productsContainer = document.getElementById('edit-products-container');
-
-            const firstProduct = Object.keys(commissionData)[0];
-
-            productsContainer.appendChild(createProductEditRow({name: firstProduct, quantity: 1, revenue: 0}));
-
-        });
-
-        
-
-        dashboardMonthFilter.addEventListener('change', updateDashboard);
-
-        dashboardYearFilter.addEventListener('change', updateDashboard);
-
-        
-
-        initializeFirebase();
-
-    </script>
-
+    <div id="auth-section" class="container w-full max-w-md p-6 bg-white rounded-lg shadow-md">
+        <h2 class="text-2xl font-bold text-center mb-6 text-gray-800">Acesso de Gerência</h2>
+        <div id="auth-message" class="hidden p-4 mb-4 text-sm rounded-lg" role="alert"></div>
+        <form id="auth-form" class="space-y-4">
+            <div>
+                <label for="auth-email" class="block text-sm font-medium text-gray-700">E-mail</label>
+                <input type="email" id="auth-email" required class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
+            </div>
+            <div>
+                <label for="auth-password" class="block text-sm font-medium text-gray-700">Senha</label>
+                <input type="password" id="auth-password" required class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
+            </div>
+            <button type="submit" id="auth-btn" class="w-full px-4 py-2 bg-blue-600 text-white font-medium rounded-lg shadow-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2">
+                Entrar como Gerente
+            </button>
+        </form>
+    </div>
+
+    <div id="main-section" class="container hidden">
+        <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 space-y-4 sm:space-y-0">
+            <h1 id="main-title" class="text-2xl sm:text-3xl font-bold text-gray-800">Painel de Gerência</h1>
+            <div class="flex space-x-2">
+                <button id="dashboard-tab-btn" class="px-4 py-2 bg-blue-600 text-white font-medium rounded-lg shadow-md hover:bg-blue-700">Painel</button>
+                <button id="goals-tab-btn" class="px-4 py-2 bg-gray-200 text-gray-800 font-medium rounded-lg shadow-md hover:bg-gray-300">Metas</button>
+                <button id="logout-btn" class="px-4 py-2 bg-red-600 text-white font-medium rounded-lg shadow-md hover:bg-red-700">Sair</button>
+            </div>
+        </div>
+        
+        <!-- Conteúdo do Painel -->
+        <div id="dashboard-content">
+            <!-- FILTRO DE PERÍODO ADICIONADO -->
+            <div class="flex items-center gap-4 mb-6 bg-gray-50 p-4 rounded-lg shadow-sm">
+                <label for="dashboard-month-filter" class="text-sm font-medium text-gray-700">Visualizar Mês:</label>
+                <select id="dashboard-month-filter" class="rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"></select>
+                <label for="dashboard-year-filter" class="text-sm font-medium text-gray-700">Ano:</label>
+                <select id="dashboard-year-filter" class="rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"></select>
+            </div>
+
+            <div class="flex justify-between items-center mb-6">
+                <p class="text-gray-500">Visão consolidada da performance da equipe (baseada em vendas com "Aceite Realizado").</p>
+                <button id="view-products-btn" class="px-4 py-2 bg-teal-600 text-white font-medium rounded-lg shadow-md hover:bg-teal-700">Ver Vendas de Produtos</button>
+            </div>
+            
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-4 mb-6">
+                <!-- Cards de Vendas e Receita atualizados -->
+                <div class="bg-purple-50 p-5 rounded-lg shadow-sm">
+                    <p class="text-sm font-medium text-purple-700">Vendas Realizadas</p>
+                    <div class="mt-2 space-y-1">
+                        <p class="text-lg font-semibold text-purple-900">Mês Atual: <span id="total-sales-current">0</span></p>
+                        <p class="text-md text-gray-600">Mês Anterior: <span id="total-sales-previous">0</span></p>
+                    </div>
+                </div>
+                <div class="bg-pink-50 p-5 rounded-lg shadow-sm">
+                    <p class="text-sm font-medium text-pink-700">Receita Realizada</p>
+                    <div class="mt-2 space-y-1">
+                        <p class="text-lg font-semibold text-pink-900">Mês Atual: <span id="total-revenue-current">R$ 0,00</span></p>
+                        <p class="text-md text-gray-600">Mês Anterior: <span id="total-revenue-previous">R$ 0,00</span></p>
+                    </div>
+                </div>
+                <div class="bg-green-50 p-5 rounded-lg shadow-sm">
+                    <p class="text-sm font-medium text-green-700">Projeção (Realizado)</p>
+                    <p id="projected-team-revenue" class="mt-1 text-2xl font-bold text-green-900">R$ 0,00</p>
+                </div>
+                 <div class="bg-yellow-50 p-5 rounded-lg shadow-sm">
+                    <p class="text-sm font-medium text-yellow-700">Receita Pendente</p>
+                    <p id="pending-team-revenue" class="mt-1 text-2xl font-bold text-yellow-900">R$ 0,00</p>
+                </div>
+                <div class="bg-red-50 p-5 rounded-lg shadow-sm">
+                    <p class="text-sm font-medium text-red-700">Vendas Negadas</p>
+                    <p id="denied-sales-count" class="mt-1 text-2xl font-bold text-red-900">0</p>
+                </div>
+            </div>
+
+            <hr class="my-6">
+
+            <!-- Gráfico de Vendas Diárias -->
+            <div class="mb-6">
+                <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-4 gap-4">
+                    <h2 class="text-xl font-semibold">Vendas Diárias por Produto/Receita</h2>
+                    <div class="flex items-center gap-2">
+                        <label for="product-filter-select" class="text-sm font-medium text-gray-700">Filtrar por:</label>
+                        <select id="product-filter-select" class="rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"></select>
+                    </div>
+                </div>
+                <div class="bg-gray-50 p-4 rounded-lg shadow-sm">
+                    <canvas id="daily-sales-chart" class="h-72"></canvas>
+                </div>
+            </div>
+
+            <hr class="my-6">
+            
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
+                 <div class="w-full">
+                    <h2 class="text-xl font-semibold mb-4">Evolução Coletiva (Últimos 6 Meses)</h2>
+                    <div class="bg-gray-50 p-4 rounded-lg shadow-sm">
+                        <canvas id="collective-sales-chart"></canvas>
+                    </div>
+                </div>
+                <div class="w-full">
+                    <h2 class="text-xl font-semibold mb-4">Produtos Vendidos (Total do Mês Atual)</h2>
+                    <div class="bg-gray-50 p-4 rounded-lg shadow-sm">
+                        <canvas id="products-sold-chart" class="h-64"></canvas>
+                    </div>
+                </div>
+            </div>
+
+            <hr class="my-6">
+
+            <!-- Desempenho Individual de Consultores -->
+            <div class="mb-6">
+                <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-4 gap-4">
+                    <h2 class="text-xl font-semibold">Desempenho Individual de Consultores</h2>
+                    <div class="flex items-center gap-4">
+                        <div>
+                            <label for="consultant-month-filter" class="text-sm font-medium text-gray-700 mr-2">Mês:</label>
+                            <select id="consultant-month-filter" class="rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"></select>
+                        </div>
+                        <div>
+                            <label for="consultant-year-filter" class="text-sm font-medium text-gray-700 mr-2">Ano:</label>
+                            <select id="consultant-year-filter" class="rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"></select>
+                        </div>
+                    </div>
+                </div>
+                <div class="overflow-x-auto">
+                    <table class="min-w-full text-left border-collapse">
+                        <thead>
+                            <tr class="bg-gray-200">
+                                <th class="p-4 rounded-tl-lg">Consultor</th>
+                                <th class="p-4 text-center">Vendas</th>
+                                <th class="p-4 text-center">Receita</th>
+                                <th class="p-4 text-center">Ticket Médio</th>
+                                <th class="p-4 rounded-tr-lg">Ações</th>
+                            </tr>
+                        </thead>
+                        <tbody id="consultants-performance-body">
+                            <!-- Conteúdo preenchido via JS -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- Nova seção para Vendas de Produtos -->
+        <div id="product-sales-content" class="hidden">
+            <div class="flex justify-between items-center mb-6">
+                <h2 class="text-2xl font-bold text-gray-800">Vendas de Produtos por Mês</h2>
+                <button id="back-to-dashboard-from-products-btn" class="px-4 py-2 bg-gray-600 text-white font-medium rounded-lg shadow-md hover:bg-gray-700">Voltar</button>
+            </div>
+            <div class="overflow-x-auto">
+                <table class="min-w-full text-left border-collapse">
+                    <thead>
+                        <tr class="bg-gray-200">
+                            <th class="p-4 rounded-tl-lg">Produto</th>
+                            <th class="p-4 text-center">Vendas Mês Atual</th>
+                            <th class="p-4 text-center rounded-tr-lg">Vendas Mês Anterior</th>
+                        </tr>
+                    </thead>
+                    <tbody id="product-sales-table-body">
+                        <!-- Conteúdo preenchido via JS -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Conteúdo de Gestão de Metas -->
+        <div id="goals-content" class="hidden">
+            <p class="text-gray-500 mb-6">Gerencie as metas mensais para os consultores.</p>
+            <div class="mb-4 flex flex-col sm:flex-row space-y-4 sm:space-y-0 sm:space-x-4">
+                <div class="w-full sm:w-1/2">
+                    <label for="goals-month" class="block text-sm font-medium text-gray-700">Mês</label>
+                    <select id="goals-month" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
+                    </select>
+                </div>
+                <div class="w-full sm:w-1/2">
+                    <label for="goals-year" class="block text-sm font-medium text-gray-700">Ano</label>
+                    <select id="goals-year" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
+                    </select>
+                </div>
+            </div>
+            <table class="min-w-full text-left border-collapse mb-6">
+                <thead>
+                    <tr class="bg-gray-200">
+                        <th class="p-4 rounded-tl-lg">Produto</th>
+                        <th class="p-4">Meta</th>
+                        <th class="p-4">Efetivado</th>
+                        <th class="p-4 rounded-tr-lg">Falta</th>
+                    </tr>
+                </thead>
+                <tbody id="goals-table-body">
+                </tbody>
+            </table>
+            <button id="save-goals-btn" class="w-full sm:w-auto px-4 py-2 bg-blue-600 text-white font-medium rounded-lg shadow-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2">
+                Salvar Metas
+            </button>
+            <div id="goals-message" class="hidden p-4 mt-4 text-sm rounded-lg" role="alert"></div>
+        </div>
+    </div>
+    
+    <!-- Seção de Visão de Consultor -->
+    <div id="consultant-view-section" class="container hidden">
+        <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 space-y-4 sm:space-y-0">
+            <h1 id="consultant-view-title" class="text-2xl sm:text-3xl font-bold text-gray-800"></h1>
+            <button id="back-to-dashboard-btn" class="px-4 py-2 bg-gray-600 text-white font-medium rounded-lg shadow-md hover:bg-gray-700">Voltar</button>
+        </div>
+        <div>
+            <h2 class="text-xl font-semibold mb-4">Seu Desempenho</h2>
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                <div class="bg-indigo-50 p-5 rounded-lg shadow-sm">
+                    <p class="text-sm font-medium text-indigo-700">Receita Total</p>
+                    <p id="individual-total-revenue" class="mt-1 text-2xl font-bold text-indigo-900">R$ 0,00</p>
+                </div>
+                <div class="bg-purple-50 p-5 rounded-lg shadow-sm">
+                    <p class="text-sm font-medium text-purple-700">Comissão Estimada</p>
+                    <p id="individual-estimated-commission" class="mt-1 text-2xl font-bold text-purple-900">R$ 0,00</p>
+                </div>
+                <div class="bg-pink-50 p-5 rounded-lg shadow-sm">
+                    <p id="individual-current-tier-text" class="text-sm font-medium text-pink-700">Sua Faixa Atual</p>
+                    <p id="individual-current-tier" class="mt-1 text-2xl font-bold text-pink-900">Faixa 0</p>
+                </div>
+            </div>
+            <div class="mt-6">
+                <h3 id="individual-progress-text" class="text-lg font-medium text-gray-700 mb-2"></h3>
+                <div class="progress-bar">
+                    <div id="individual-progress-fill" class="progress-fill bg-blue-500" style="width: 0%;"></div>
+                </div>
+            </div>
+        </div>
+        <hr class="my-6">
+        <div class="mb-6">
+            <h2 class="text-xl font-semibold mb-4">Detalhes da Comissão</h2>
+            <div class="overflow-x-auto">
+                <table class="min-w-full text-left border-collapse">
+                    <thead>
+                        <tr class="bg-gray-200">
+                            <th class="p-4 rounded-tl-lg">Item</th>
+                            <th class="p-4">Valor</th>
+                            <th class="p-4 rounded-tr-lg">Faixa de Comissão</th>
+                        </tr>
+                    </thead>
+                    <tbody id="individual-commission-details-body">
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        <hr class="my-6">
+        <!-- SEÇÃO: Lista de Vendas do Consultor -->
+        <div class="mb-6">
+            <h2 class="text-xl font-semibold mb-4">Vendas Registradas</h2>
+            <div class="overflow-x-auto">
+                <table class="min-w-full text-left border-collapse">
+                    <thead class="bg-gray-100">
+                        <tr>
+                            <th class="p-4 font-semibold text-sm text-gray-600 rounded-tl-lg">CNPJ</th>
+                            <th class="p-4 font-semibold text-sm text-gray-600">Empresa</th>
+                            <th class="p-4 font-semibold text-sm text-gray-600">Produtos</th>
+                            <th class="p-4 font-semibold text-sm text-gray-600">Data</th>
+                            <th class="p-4 font-semibold text-sm text-gray-600 text-right">Receita</th>
+                            <th class="p-4 font-semibold text-sm text-gray-600 text-center">Status</th>
+                            <th class="p-4 font-semibold text-sm text-gray-600 text-center rounded-tr-lg">Ações</th>
+                        </tr>
+                    </thead>
+                    <tbody id="consultant-sales-list-body">
+                        <!-- Conteúdo preenchido via JS -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        <hr class="my-6">
+        <div class="mb-6">
+            <h3 class="text-lg font-semibold mb-4">Metas de Receita</h3>
+            <div class="overflow-x-auto">
+                <table class="w-full text-left border-collapse">
+                    <thead>
+                        <tr class="bg-gray-200">
+                            <th class="p-4 rounded-tl-lg">Meta</th>
+                            <th class="p-4 rounded-tr-lg">Status</th>
+                        </tr>
+                    </thead>
+                    <tbody id="individual-revenue-goals-body">
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        <hr class="my-6">
+        <div>
+            <h3 class="text-lg font-semibold mb-4">Metas de Produto por Faixa</h3>
+            <div class="overflow-x-auto">
+                <table class="w-full text-left border-collapse">
+                    <thead>
+                        <tr class="bg-gray-200">
+                            <th class="p-4 rounded-tl-lg">Produto</th>
+                            <th class="p-4">Vendido</th>
+                            <th class="p-4">Meta Faixa 75</th>
+                            <th class="p-4">Meta Faixa 150</th>
+                            <th class="p-4 rounded-tr-lg">Meta Faixa 200</th>
+                        </tr>
+                    </thead>
+                    <tbody id="individual-product-goals-body">
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal para Edição de Venda -->
+    <div id="edit-sale-modal" class="modal-backdrop hidden">
+        <div class="modal-content max-w-lg">
+            <h3 class="text-lg font-semibold mb-4">Editar Venda</h3>
+            <div id="edit-sale-form" class="space-y-4 max-h-96 overflow-y-auto pr-2">
+                <div class="grid grid-cols-2 gap-4">
+                    <div>
+                        <label for="edit-client-name" class="block text-sm font-medium text-gray-700">Nome da Empresa</label>
+                        <input type="text" id="edit-client-name" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
+                    </div>
+                    <div>
+                        <label for="edit-client-cnpj" class="block text-sm font-medium text-gray-700">CNPJ</label>
+                        <input type="text" id="edit-client-cnpj" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
+                    </div>
+                </div>
+                <hr class="my-4">
+                <!-- Container para produtos -->
+                <div id="edit-products-container" class="space-y-3">
+                    <!-- Produtos serão adicionados dinamicamente aqui -->
+                </div>
+                <button id="add-product-btn" type="button" class="mt-2 text-sm text-blue-600 hover:text-blue-800">+ Adicionar Produto</button>
+            </div>
+            <div class="mt-2 text-right font-bold">
+                Receita Total: <span id="edit-total-revenue">R$ 0,00</span>
+            </div>
+            <div class="flex justify-end space-x-2 mt-6">
+                <button id="cancel-edit-btn" class="px-4 py-2 bg-gray-200 text-gray-800 font-medium rounded-lg shadow-md hover:bg-gray-300">Cancelar</button>
+                <button id="save-edit-btn" class="px-4 py-2 bg-blue-600 text-white font-medium rounded-lg shadow-md hover:bg-blue-700">Salvar Alterações</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal de Confirmação de Exclusão -->
+    <div id="delete-confirm-modal" class="modal-backdrop hidden">
+        <div class="modal-content max-w-sm">
+            <h3 class="text-lg font-semibold mb-4">Confirmar Exclusão</h3>
+            <p id="delete-confirm-message" class="text-gray-600 mb-6">Tem certeza de que deseja excluir esta venda? Esta ação não pode ser desfeita.</p>
+            <div class="flex justify-end space-x-2">
+                <button id="cancel-delete-btn" class="px-4 py-2 bg-gray-200 text-gray-800 font-medium rounded-lg shadow-md hover:bg-gray-300">Cancelar</button>
+                <button id="confirm-delete-btn" class="px-4 py-2 bg-red-600 text-white font-medium rounded-lg shadow-md hover:bg-red-700">Excluir</button>
+            </div>
+        </div>
+    </div>
+
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+        import { getAuth, signInWithEmailAndPassword, onAuthStateChanged, signOut, signInWithCustomToken } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import { getFirestore, collection, onSnapshot, query, where, getDocs, doc, getDoc, setDoc, updateDoc, serverTimestamp, deleteDoc } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+        
+        // Variáveis globais fornecidas pelo ambiente
+        const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
+        const firebaseConfig = typeof __firebase_config !== 'undefined' ? JSON.parse(__firebase_config) : {
+            apiKey: "AIzaSyC293ALvoMmnm6ygd-t9FecegMjln9lEkc",
+            authDomain: "calculadora-de-vendas.firebaseapp.com",
+            projectId: "calculadora-de-vendas",
+            storageBucket: "calculadora-de-vendas.firebasestorage.app",
+            messagingSenderId: "633108525289",
+            appId: "1:633108525289:web:0b4147c2aa4078"
+        };
+        const initialAuthToken = typeof __initial_auth_token !== 'undefined' ? __initial_auth_token : null;
+        
+        let app, db, auth, managerId, managerEmail;
+        
+        // Elementos DOM
+        const authSection = document.getElementById('auth-section');
+        const mainSection = document.getElementById('main-section');
+        const dashboardContent = document.getElementById('dashboard-content');
+        const goalsContent = document.getElementById('goals-content');
+        const productSalesContent = document.getElementById('product-sales-content');
+        const consultantViewSection = document.getElementById('consultant-view-section');
+        const authForm = document.getElementById('auth-form');
+        const authEmailInput = document.getElementById('auth-email');
+        const authPasswordInput = document.getElementById('auth-password');
+        const authMessageEl = document.getElementById('auth-message');
+        const logoutBtn = document.getElementById('logout-btn');
+        const consultantsPerformanceBody = document.getElementById('consultants-performance-body');
+        const backToDashboardBtn = document.getElementById('back-to-dashboard-btn');
+        const consultantViewTitleEl = document.getElementById('consultant-view-title');
+        const dashboardTabBtn = document.getElementById('dashboard-tab-btn');
+        const goalsTabBtn = document.getElementById('goals-tab-btn');
+        const mainTitle = document.getElementById('main-title');
+        const viewProductsBtn = document.getElementById('view-products-btn');
+        const backToDashboardFromProductsBtn = document.getElementById('back-to-dashboard-from-products-btn');
+        const dashboardMonthFilter = document.getElementById('dashboard-month-filter');
+        const dashboardYearFilter = document.getElementById('dashboard-year-filter');
+        
+        // Elementos dos Cards
+        const totalSalesCurrentEl = document.getElementById('total-sales-current');
+        const totalSalesPreviousEl = document.getElementById('total-sales-previous');
+        const totalRevenueCurrentEl = document.getElementById('total-revenue-current');
+        const totalRevenuePreviousEl = document.getElementById('total-revenue-previous');
+        const projectedTeamRevenueEl = document.getElementById('projected-team-revenue');
+        const pendingTeamRevenueEl = document.getElementById('pending-team-revenue');
+        const deniedSalesCountEl = document.getElementById('denied-sales-count');
+
+        // Elementos da Tabela de Vendas de Produtos
+        const productSalesTableBody = document.getElementById('product-sales-table-body');
+
+        // Elementos do Gráfico de Vendas Diárias
+        const productFilterSelect = document.getElementById('product-filter-select');
+        const consultantMonthFilter = document.getElementById('consultant-month-filter');
+        const consultantYearFilter = document.getElementById('consultant-year-filter');
+
+        // Elementos da Visão do Consultor
+        const individualTotalRevenueEl = document.getElementById('individual-total-revenue');
+        const individualEstimatedCommissionEl = document.getElementById('individual-estimated-commission');
+        const individualCurrentTierEl = document.getElementById('individual-current-tier');
+        const individualProgressTextEl = document.getElementById('individual-progress-text');
+        const individualProgressFillEl = document.getElementById('individual-progress-fill');
+        const individualCommissionDetailsBodyEl = document.getElementById('individual-commission-details-body');
+        const individualRevenueGoalsBodyEl = document.getElementById('individual-revenue-goals-body');
+        const individualProductGoalsBodyEl = document.getElementById('individual-product-goals-body');
+        const consultantSalesListBody = document.getElementById('consultant-sales-list-body');
+
+        // Elementos de Metas
+        const goalsMonthSelect = document.getElementById('goals-month');
+        const goalsYearSelect = document.getElementById('goals-year');
+        const goalsTableBody = document.getElementById('goals-table-body');
+        const saveGoalsBtn = document.getElementById('save-goals-btn');
+        const goalsMessageEl = document.getElementById('goals-message');
+
+        // Elementos do Modal de Edição
+        const editSaleModal = document.getElementById('edit-sale-modal');
+        const addProductBtn = document.getElementById('add-product-btn');
+        const cancelEditBtn = document.getElementById('cancel-edit-btn');
+        const saveEditBtn = document.getElementById('save-edit-btn');
+        let currentEditingSaleId = null;
+
+        // Elementos do Modal de Confirmação de Exclusão
+        const deleteConfirmModal = document.getElementById('delete-confirm-modal');
+        const cancelDeleteBtn = document.getElementById('cancel-delete-btn');
+        const confirmDeleteBtn = document.getElementById('confirm-delete-btn');
+        let saleIdToDelete = null;
+
+        // --- Gráficos e Dados ---
+        let collectiveChart, productsSoldChart, dailySalesChart;
+        let allSalesData = [];
+        let allConsultantsData = [];
+        const currentGoals = {};
+
+        // Dados de comissão, receita e metas
+        const commissionData = { 'Migração Up': [8, 8, 9, 10, 11, 12, 13, 14], 'Migração Mid': [4, 4, 5, 7, 7, 8, 9, 10], 'Migração Down': [2, 2, 3, 4, 5, 6, 7, 8], 'GPON': [20, 22, 25, 28, 31, 35, 40], 'Altas Portadas': [6, 8, 10, 12, 14, 16, 20], 'Altas Novas': [3, 4, 5, 6, 7, 8, 10], 'VVN': [10, 12, 14, 16, 18, 20, 22], 'Avançados': [15, 17, 19, 21, 23, 25, 28], 'Produtos de TI': [10, 11, 12, 13, 14, 15, 16], };
+        const availableProducts = Object.keys(commissionData);
+        const revenuePercentages = [11, 13, 16, 19, 22, 28, 35];
+        const goalData = { 'Receita (R$)': [750, 1500, 3000], 'GPON': [3, 6, 9], 'Altas Portadas': [5, 15, 30], 'Altas Novas': [5, 15, 30], 'Contratos (CNPJ\'s)': [1, 1.5, 2], 'VVN': [5, 15, 25], 'Aparelhos (R$)': [8000, 20000, 30000], 'Migração': [75, 150, 200], };
+        const productsForGoals = ['Migração', 'GPON', 'Altas Portadas', 'Altas Novas', 'VVN', 'Aparelhos (R$)'];
+        const goalProductsList = ['Migração', 'GPON', 'Altas Portadas', 'Altas Novas', 'VVN', 'Avançados', 'Produtos de TI'];
+
+
+        function displayAuthMessage(message, type) { authMessageEl.textContent = message; authMessageEl.className = `p-4 mb-4 text-sm rounded-lg ${type === 'success' ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'}`; authMessageEl.style.display = 'block'; }
+        function displayGoalsMessage(message, type) { goalsMessageEl.textContent = message; goalsMessageEl.className = `p-4 mt-4 text-sm rounded-lg ${type === 'success' ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'}`; goalsMessageEl.style.display = 'block'; setTimeout(() => { goalsMessageEl.style.display = 'none'; }, 5000); }
+
+        async function initializeFirebase() {
+            try {
+                if (Object.keys(firebaseConfig).length === 0) { displayAuthMessage("Erro: A configuração do Firebase está faltando.", "error"); console.error("Firebase config is missing."); return; }
+                app = initializeApp(firebaseConfig); auth = getAuth(app); db = getFirestore(app);
+                onAuthStateChanged(auth, async (user) => {
+                    if (user) {
+                        managerId = user.uid;
+                        managerEmail = user.email;
+                        const isManager = await checkManagerStatus(managerId);
+                        if (isManager) {
+                            authSection.classList.add('hidden'); mainSection.classList.remove('hidden'); dashboardContent.classList.remove('hidden'); goalsContent.classList.add('hidden'); productSalesContent.classList.add('hidden'); consultantViewSection.classList.add('hidden');
+                            listenToSalesAndConsultants(); populateGoalsSelectors(); populateConsultantFilters(); populateDashboardFilters(); loadAndRenderGoals();
+                        } else { await signOut(auth); displayAuthMessage('Acesso negado. Esta conta não é de um gerente.', 'error'); }
+                    } else { authSection.classList.remove('hidden'); mainSection.classList.add('hidden'); consultantViewSection.classList.add('hidden'); }
+                });
+                if (initialAuthToken) { await signInWithCustomToken(auth, initialAuthToken); }
+            } catch (e) { console.error("Erro ao inicializar Firebase: ", e); displayAuthMessage("Erro ao inicializar o aplicativo. Por favor, tente novamente.", "error"); }
+        }
+
+        async function checkManagerStatus(uid) { if (!db) return false; try { const managerRef = doc(db, `artifacts/${appId}/managers`, uid); const docSnap = await getDoc(managerRef); return docSnap.exists(); } catch (e) { console.error("Erro ao verificar status de gerente: ", e); return false; } }
+
+        function listenToSalesAndConsultants() {
+            if (!db) return;
+            const salesRef = collection(db, `artifacts/${appId}/public/data/sales`);
+            onSnapshot(salesRef, (snapshot) => { 
+                allSalesData = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })); 
+                updateDashboard(); 
+            }, (error) => { console.error("Erro ao ouvir vendas: ", error); });
+            const consultantsRef = collection(db, `artifacts/${appId}/users`);
+            onSnapshot(consultantsRef, (snapshot) => { 
+                allConsultantsData = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })); 
+                updateDashboard(); 
+            }, (error) => { console.error("Erro ao ouvir perfis de consultores: ", error); });
+        }
+        
+        function updateDashboard() {
+            if (!allSalesData || !allConsultantsData) return;
+
+            const selectedMonth = parseInt(dashboardMonthFilter.value);
+            const selectedYear = parseInt(dashboardYearFilter.value);
+
+            const previousMonth = selectedMonth === 0 ? 11 : selectedMonth - 1;
+            const previousMonthYear = selectedMonth === 0 ? selectedYear - 1 : selectedYear;
+
+            const currentMonthSales = allSalesData.filter(s => { const d = s.timestamp?.seconds ? new Date(s.timestamp.seconds * 1000) : null; return d && d.getMonth() === selectedMonth && d.getFullYear() === selectedYear; });
+            const previousMonthSales = allSalesData.filter(s => { const d = s.timestamp?.seconds ? new Date(s.timestamp.seconds * 1000) : null; return d && d.getMonth() === previousMonth && d.getFullYear() === previousMonthYear; });
+            
+            // Filtrar vendas por status
+            const realizedCurrentSales = currentMonthSales.filter(s => s.status === 'aceite realizado');
+            const realizedPreviousSales = previousMonthSales.filter(s => s.status === 'aceite realizado');
+            const pendingCurrentSales = currentMonthSales.filter(s => s.status === 'aceite enviado');
+            const deniedCurrentSales = currentMonthSales.filter(s => s.status === 'aceite negado');
+
+            const totalRevenueCurrent = realizedCurrentSales.reduce((sum, sale) => sum + (sale.totalRevenue || 0), 0);
+            const totalRevenuePrevious = realizedPreviousSales.reduce((sum, sale) => sum + (sale.totalRevenue || 0), 0);
+            const pendingRevenueCurrent = pendingCurrentSales.reduce((sum, sale) => sum + (sale.totalRevenue || 0), 0);
+
+            totalSalesCurrentEl.textContent = realizedCurrentSales.length;
+            totalSalesPreviousEl.textContent = realizedPreviousSales.length;
+            totalRevenueCurrentEl.textContent = `R$ ${totalRevenueCurrent.toFixed(2).replace('.', ',')}`;
+            totalRevenuePreviousEl.textContent = `R$ ${totalRevenuePrevious.toFixed(2).replace('.', ',')}`;
+            pendingTeamRevenueEl.textContent = `R$ ${pendingRevenueCurrent.toFixed(2).replace('.', ',')}`;
+            deniedSalesCountEl.textContent = deniedCurrentSales.length;
+
+            renderCollectiveChart(allSalesData, selectedYear, selectedMonth);
+            renderProductsSoldChart(realizedCurrentSales);
+            populateProductFilter(realizedCurrentSales);
+            renderDailySalesChart(realizedCurrentSales, realizedPreviousSales, selectedYear, selectedMonth, productFilterSelect.value);
+            calculateAndDisplayTeamProjection(allSalesData, selectedYear, selectedMonth);
+            renderConsultantsPerformance();
+            renderProductSalesTable(realizedCurrentSales, realizedPreviousSales);
+        }
+
+        function populateDashboardFilters() {
+            const today = new Date();
+            const months = ['Janeiro', 'Fevereiro', 'Março', 'Abril', 'Maio', 'Junho', 'Julho', 'Agosto', 'Setembro', 'Outubro', 'Novembro', 'Dezembro'];
+            dashboardMonthFilter.innerHTML = '';
+            months.forEach((month, index) => { 
+                const option = document.createElement('option'); 
+                option.value = index; 
+                option.textContent = month; 
+                if (index === today.getMonth()) { option.selected = true; } 
+                dashboardMonthFilter.appendChild(option); 
+            });
+            const currentYear = today.getFullYear();
+            dashboardYearFilter.innerHTML = '';
+            for (let i = 0; i < 5; i++) { 
+                const year = currentYear - i; 
+                const option = document.createElement('option'); 
+                option.value = year; 
+                option.textContent = year; 
+                if (year === currentYear) { option.selected = true; } 
+                dashboardYearFilter.appendChild(option); 
+            }
+        }
+
+        function populateProductFilter(sales) {
+            const productSet = new Set(['Todos', 'Receita']);
+            sales.forEach(sale => { try { const prods = JSON.parse(sale.products); prods.forEach(p => productSet.add(p.name)); } catch(e) {} });
+            if (!productSet.has('GPON')) { productSet.add('GPON'); }
+            const currentSelection = productFilterSelect.value;
+            productFilterSelect.innerHTML = '';
+            Array.from(productSet).sort().forEach(product => { const option = document.createElement('option'); option.value = product; option.textContent = product; productFilterSelect.appendChild(option); });
+            if (Array.from(productSet).includes(currentSelection)) { productFilterSelect.value = currentSelection; }
+        }
+
+        function renderDailySalesChart(currentSales, previousSales, year, month, selectedProduct = 'Todos') {
+            const daysInCurrentMonth = new Date(year, month + 1, 0).getDate();
+            const labels = Array.from({ length: daysInCurrentMonth }, (_, i) => i + 1);
+
+            const currentMonthData = new Array(daysInCurrentMonth).fill(0);
+            const previousMonthData = new Array(daysInCurrentMonth).fill(0);
+
+            const isRevenueView = selectedProduct === 'Receita';
+            const yAxisLabel = isRevenueView ? 'Receita (R$)' : 'Quantidade Vendida';
+
+            const processSalesForChart = (saleSet, dataArray) => {
+                saleSet.forEach(sale => {
+                    const saleDate = sale.timestamp?.seconds ? new Date(sale.timestamp.seconds * 1000) : null;
+                    if (saleDate) {
+                        const dayIndex = saleDate.getDate() - 1;
+                        if (isRevenueView) {
+                            dataArray[dayIndex] += (sale.totalRevenue || 0);
+                        } else {
+                            try {
+                                const products = JSON.parse(sale.products);
+                                products.forEach(p => { if (selectedProduct === 'Todos' || p.name === selectedProduct) { dataArray[dayIndex] += (p.quantity || 0); } });
+                            } catch (e) {}
+                        }
+                    }
+                });
+            };
+            processSalesForChart(currentSales, currentMonthData);
+            processSalesForChart(previousSales, previousMonthData);
+            
+            if (dailySalesChart) { dailySalesChart.destroy(); }
+            const ctx = document.getElementById('daily-sales-chart').getContext('2d');
+            dailySalesChart = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: labels,
+                    datasets: [
+                        { label: `Mês Atual (${selectedProduct})`, data: currentMonthData, backgroundColor: 'rgba(54, 162, 235, 0.6)', borderColor: 'rgba(54, 162, 235, 1)', borderWidth: 1 },
+                        { label: `Mês Anterior (${selectedProduct})`, data: previousMonthData, backgroundColor: 'rgba(255, 99, 132, 0.6)', borderColor: 'rgba(255, 99, 132, 1)', borderWidth: 1 }
+                    ]
+                },
+                options: { responsive: true, maintainAspectRatio: false, scales: { y: { beginAtZero: true, title: { display: true, text: yAxisLabel } }, x: { title: { display: true, text: 'Dia do Mês' } } } }
+            });
+        }
+        
+        function populateConsultantFilters() {
+            const today = new Date();
+            const months = ['Janeiro', 'Fevereiro', 'Março', 'Abril', 'Maio', 'Junho', 'Julho', 'Agosto', 'Setembro', 'Outubro', 'Novembro', 'Dezembro'];
+            consultantMonthFilter.innerHTML = '';
+            months.forEach((month, index) => { const option = document.createElement('option'); option.value = index; option.textContent = month; if (index === today.getMonth()) { option.selected = true; } consultantMonthFilter.appendChild(option); });
+            const currentYear = today.getFullYear();
+            consultantYearFilter.innerHTML = '';
+            for (let i = 0; i < 5; i++) { const year = currentYear - i; const option = document.createElement('option'); option.value = year; option.textContent = year; if (year === currentYear) { option.selected = true; } consultantYearFilter.appendChild(option); }
+        }
+
+        function getPastMonths(count) { const months = []; const today = new Date(); for (let i = count - 1; i >= 0; i--) { const d = new Date(today.getFullYear(), today.getMonth() - i, 1); months.push(d); } return months; }
+        
+        function calculateAndDisplayTeamProjection(allSales, selectedYear, selectedMonth) {
+            const months = [];
+            for (let i = 5; i >= 0; i--) {
+                months.push(new Date(selectedYear, selectedMonth - i, 1));
+            }
+
+            const realizedSales = allSales.filter(s => s.status === 'aceite realizado');
+
+            const teamMonthlyRevenue = months.map(month =>
+                realizedSales.reduce((sum, sale) => {
+                    const saleDate = sale.timestamp ? new Date(sale.timestamp.seconds * 1000) : null;
+                    if (saleDate && saleDate.getMonth() === month.getMonth() && saleDate.getFullYear() === month.getFullYear()) {
+                        return sum + (sale.totalRevenue || 0);
+                    }
+                    return sum;
+                }, 0));
+            
+            let totalGrowth = 0; let countGrowth = 0;
+            for (let i = 1; i < teamMonthlyRevenue.length; i++) { if (teamMonthlyRevenue[i-1] > 0) { const growthRate = (teamMonthlyRevenue[i] - teamMonthlyRevenue[i-1]) / teamMonthlyRevenue[i-1]; totalGrowth += growthRate; countGrowth++; } }
+            const averageGrowth = countGrowth > 0 ? totalGrowth / countGrowth : 0;
+            const currentMonthRevenue = teamMonthlyRevenue.length > 0 ? teamMonthlyRevenue[teamMonthlyRevenue.length - 1] : 0;
+            const projectedTeamRevenue = currentMonthRevenue * (1 + averageGrowth);
+            projectedTeamRevenueEl.textContent = `R$ ${projectedTeamRevenue.toFixed(2).replace('.', ',')}`;
+        }
+
+        function renderProductsSoldChart(sales) {
+            const productCategories = {};
+            sales.forEach(sale => { try { const saleProducts = JSON.parse(sale.products); saleProducts.forEach(p => { const productName = p.name || 'Desconhecido'; productCategories[productName] = (productCategories[productName] || 0) + (p.quantity || 0); }); } catch (e) {} });
+            
+            const productNames = Object.keys(productCategories);
+            const productQuantities = Object.values(productCategories);
+            if (productsSoldChart) { productsSoldChart.destroy(); }
+            const ctx = document.getElementById('products-sold-chart').getContext('2d');
+            productsSoldChart = new Chart(ctx, { type: 'doughnut', data: { labels: productNames, datasets: [{ label: 'Quantidade Vendida', data: productQuantities, backgroundColor: [ 'rgba(255, 99, 132, 0.6)', 'rgba(54, 162, 235, 0.6)', 'rgba(255, 206, 86, 0.6)', 'rgba(75, 192, 192, 0.6)', 'rgba(153, 102, 255, 0.6)', 'rgba(255, 159, 64, 0.6)', 'rgba(199, 199, 199, 0.6)' ], borderWidth: 1 }] }, options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'top' } } } });
+        }
+        
+        function renderCollectiveChart(allSales, selectedYear, selectedMonth) {
+            const months = [];
+            for (let i = 5; i >= 0; i--) {
+                months.push(new Date(selectedYear, selectedMonth - i, 1));
+            }
+
+            const realizedSales = allSales.filter(s => s.status === 'aceite realizado');
+
+            const monthlyRevenue = months.map(month =>
+                realizedSales.reduce((sum, sale) => {
+                    const saleDate = sale.timestamp ? new Date(sale.timestamp.seconds * 1000) : null;
+                    if (saleDate && saleDate.getMonth() === month.getMonth() && saleDate.getFullYear() === month.getFullYear()) {
+                        return sum + (sale.totalRevenue || 0);
+                    }
+                    return sum;
+                }, 0));
+            if (collectiveChart) { collectiveChart.destroy(); }
+            const ctx = document.getElementById('collective-sales-chart').getContext('2d');
+            collectiveChart = new Chart(ctx, { type: 'bar', data: { labels: months.map(m => m.toLocaleString('pt-BR', { month: 'short', year: 'numeric' })), datasets: [{ label: 'Receita Total da Equipe (R$)', data: monthlyRevenue, backgroundColor: 'rgba(75, 192, 192, 0.6)', borderColor: 'rgba(75, 192, 192, 1)', borderWidth: 1 }] }, options: { responsive: true, maintainAspectRatio: false, scales: { y: { beginAtZero: true, title: { display: true, text: 'Receita (R$)' } } } } });
+        }
+
+        function renderConsultantsPerformance() {
+            if (!allSalesData || !allConsultantsData) return;
+            const selectedMonth = parseInt(consultantMonthFilter.value);
+            const selectedYear = parseInt(consultantYearFilter.value);
+            
+            // Filtra apenas por vendas realizadas para a performance geral
+            const filteredSales = allSalesData.filter(s => { 
+                const d = s.timestamp?.seconds ? new Date(s.timestamp.seconds * 1000) : null; 
+                return d && d.getMonth() === selectedMonth && d.getFullYear() === selectedYear && s.status === 'aceite realizado';
+            });
+
+            const performanceMap = {};
+            allConsultantsData.forEach(c => { performanceMap[c.id] = { name: c.consultantName || 'Consultor sem nome', salesCount: 0, totalRevenue: 0, }; });
+            filteredSales.forEach(sale => { const consultantId = sale.consultantId; if (consultantId && performanceMap[consultantId]) { performanceMap[consultantId].salesCount++; performanceMap[consultantId].totalRevenue += sale.totalRevenue || 0; } });
+            consultantsPerformanceBody.innerHTML = '';
+            const sortedConsultants = Object.keys(performanceMap).sort((a, b) => performanceMap[b].totalRevenue - performanceMap[a].totalRevenue);
+            if (sortedConsultants.length === 0 || filteredSales.length === 0) { consultantsPerformanceBody.innerHTML = `<tr><td colspan="5" class="p-4 text-center text-gray-500">Nenhum dado encontrado para o período selecionado.</td></tr>`; return; }
+            sortedConsultants.forEach(id => {
+                const data = performanceMap[id];
+                const averageTicket = data.salesCount > 0 ? data.totalRevenue / data.salesCount : 0;
+                const row = document.createElement('tr');
+                row.className = "border-t border-gray-200 hover:bg-gray-100";
+                row.innerHTML = `
+                    <td class="p-4">${data.name}</td>
+                    <td class="p-4 text-center">${data.salesCount}</td>
+                    <td class="p-4 text-center">R$ ${data.totalRevenue.toFixed(2).replace('.', ',')}</td>
+                    <td class="p-4 text-center">R$ ${averageTicket.toFixed(2).replace('.', ',')}</td>
+                    <td class="p-4 text-center"><button class="view-details-btn text-blue-500 hover:text-blue-700" data-consultant-id="${id}" data-consultant-name="${data.name}">Exibir</button></td>`;
+                consultantsPerformanceBody.appendChild(row);
+            });
+            document.querySelectorAll('.view-details-btn').forEach(button => { button.addEventListener('click', (e) => { const consultantId = e.target.getAttribute('data-consultant-id'); const consultantName = e.target.getAttribute('data-consultant-name'); renderConsultantView(consultantId, consultantName, allSalesData); }); });
+        }
+
+        function renderProductSalesTable(currentMonthSales, previousMonthSales) {
+            const products = {};
+            const processSales = (sales, period) => { sales.forEach(sale => { try { const prods = JSON.parse(sale.products); prods.forEach(p => { if (!products[p.name]) { products[p.name] = { current: 0, previous: 0 }; } products[p.name][period] += (p.quantity || 0); }); } catch(e) {} }); };
+            processSales(currentMonthSales, 'current');
+            processSales(previousMonthSales, 'previous');
+            productSalesTableBody.innerHTML = '';
+            Object.keys(products).sort().forEach(productName => {
+                const data = products[productName];
+                const row = document.createElement('tr');
+                row.className = "border-t border-gray-200 hover:bg-gray-100 even:bg-gray-50";
+                row.innerHTML = `<td class="p-4 font-medium">${productName}</td><td class="p-4 text-center">${data.current}</td><td class="p-4 text-center">${data.previous}</td>`;
+                productSalesTableBody.appendChild(row);
+            });
+        }
+
+        function populateGoalsSelectors() {
+            const today = new Date(); const months = ['Janeiro', 'Fevereiro', 'Março', 'Abril', 'Maio', 'Junho', 'Julho', 'Agosto', 'Setembro', 'Outubro', 'Novembro', 'Dezembro'];
+            months.forEach((month, index) => { const option = document.createElement('option'); option.value = index + 1; option.textContent = month; if (index === today.getMonth()) { option.selected = true; } goalsMonthSelect.appendChild(option); });
+            const currentYear = today.getFullYear();
+            for (let i = 0; i < 5; i++) { const year = currentYear + i; const option = document.createElement('option'); option.value = year; option.textContent = year; if (i === 0) { option.selected = true; } goalsYearSelect.appendChild(option); }
+        }
+
+        async function loadAndRenderGoals() {
+            if (!managerId) return;
+            const month = parseInt(goalsMonthSelect.value); const year = parseInt(goalsYearSelect.value);
+            const goalDocId = `${year}-${month}`;
+            let salesSummary = {};
+            const salesInPeriod = allSalesData.filter(sale => { const d = sale.timestamp?.seconds ? new Date(sale.timestamp.seconds * 1000) : null; return d && d.getMonth() + 1 === month && d.getFullYear() === year; });
+            salesInPeriod.forEach(sale => { try { const prods = JSON.parse(sale.products); prods.forEach(p => { const pName = p.name.includes('Migração') ? 'Migração' : p.name; salesSummary[pName] = (salesSummary[pName] || 0) + (p.quantity || 0); }); } catch (e) {} });
+
+            try {
+                const goalsRef = doc(db, `artifacts/${appId}/managers/${managerId}/manager_goals`, goalDocId);
+                const goalsSnap = await getDoc(goalsRef);
+                if (goalsSnap.exists()) { Object.assign(currentGoals, goalsSnap.data().goals); } else { Object.keys(currentGoals).forEach(key => delete currentGoals[key]); }
+            } catch (e) { console.error("Erro ao carregar metas:", e); displayGoalsMessage("Erro ao carregar as metas.", "error"); }
+            renderGoalsTable(salesSummary);
+        }
+
+        function renderGoalsTable(salesSummary) {
+            goalsTableBody.innerHTML = '';
+            goalProductsList.forEach(product => {
+                const currentGoal = currentGoals[product] || 0;
+                const effective = salesSummary[product] || 0;
+                const missing = Math.max(0, currentGoal - effective);
+                const row = document.createElement('tr');
+                row.className = "border-t border-gray-200";
+                row.innerHTML = `<td class="p-4">${product}</td><td class="p-4"><input type="number" data-product="${product}" value="${currentGoal}" min="0" class="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"></td><td class="p-4 text-center">${effective}</td><td class="p-4 text-center">${missing}</td>`;
+                goalsTableBody.appendChild(row);
+            });
+        }
+
+        async function saveGoals() {
+            if (!managerId) return;
+            const month = goalsMonthSelect.value; const year = goalsYearSelect.value;
+            const goalDocId = `${year}-${month}`;
+            const inputs = goalsTableBody.querySelectorAll('input');
+            const newGoals = {};
+            inputs.forEach(input => { newGoals[input.getAttribute('data-product')] = parseInt(input.value, 10) || 0; });
+            try {
+                const goalsRef = doc(db, `artifacts/${appId}/managers/${managerId}/manager_goals`, goalDocId);
+                await setDoc(goalsRef, { goals: newGoals });
+                displayGoalsMessage("Metas salvas com sucesso!", "success");
+            } catch (e) { console.error("Erro ao salvar metas:", e); displayGoalsMessage("Erro ao salvar as metas.", "error"); }
+        }
+        
+        function renderConsultantView(consultantId, consultantName, allSales) {
+            mainSection.classList.add('hidden');
+            consultantViewSection.classList.remove('hidden');
+            consultantViewTitleEl.textContent = `Visão do Consultor: ${consultantName}`;
+            
+            const selectedMonth = parseInt(consultantMonthFilter.value);
+            const selectedYear = parseInt(consultantYearFilter.value);
+            
+            const consultantSales = allSales.filter(sale => {
+                const saleDate = sale.timestamp?.seconds ? new Date(sale.timestamp.seconds * 1000) : null;
+                return sale.consultantId === consultantId && saleDate && saleDate.getMonth() === selectedMonth && saleDate.getFullYear() === selectedYear;
+            });
+            
+            // Para os cálculos, consideramos apenas as vendas realizadas
+            const realizedConsultantSales = consultantSales.filter(s => s.status === 'aceite realizado');
+
+            let totalRevenue = 0;
+            const productsSoldSummary = {};
+            let totalMigracaoSold = 0;
+            let totalAparelhosSoldValue = 0;
+            
+            realizedConsultantSales.forEach(sale => {
+                try {
+                    const saleProducts = JSON.parse(sale.products);
+                    saleProducts.forEach(p => {
+                        const productNameKey = p.name.includes('Migração') ? 'Migração' : p.name;
+                        if (productNameKey in productsSoldSummary) { productsSoldSummary[productNameKey] = (productsSoldSummary[productNameKey] || 0) + (p.quantity || 0); } else { productsSoldSummary[productNameKey] = (p.quantity || 0); }
+                        if (['Migração Up', 'Migração Mid', 'Migração Down'].includes(p.name)) { totalMigracaoSold += (p.quantity || 0); }
+                        if (p.name === 'Aparelhos (R$)') { totalAparelhosSoldValue += (p.revenue || 0); } else { totalRevenue += (p.revenue || 0); }
+                    });
+                } catch (e) { console.error("Erro ao analisar JSON de produtos na visão do consultor:", e); }
+            });
+
+            productsSoldSummary['Migração'] = totalMigracaoSold;
+            productsSoldSummary['Aparelhos (R$)'] = totalAparelhosSoldValue;
+            totalRevenue += totalAparelhosSoldValue * 0.01;
+
+            let currentTier = 0;
+            const revenueGoals = goalData['Receita (R$)'];
+            if (totalRevenue >= revenueGoals[0]) currentTier++; if (totalRevenue >= revenueGoals[1]) currentTier++; if (totalRevenue >= revenueGoals[2]) currentTier++;
+            productsForGoals.forEach(product => { const sold = productsSoldSummary[product] || 0; const goals = goalData[product] || []; if (goals.length > 0 && sold >= goals[0]) currentTier++; if (goals.length > 1 && sold >= goals[1]) currentTier++; if (goals.length > 2 && sold >= goals[2]) currentTier++; });
+            
+            let totalCommission = 0;
+            const commissionDetails = {};
+            let tierIndexForCommission = currentTier > 0 ? currentTier - 1 : 0;
+            tierIndexForCommission = Math.min(tierIndexForCommission, commissionData['Migração Mid'].length - 1);
+            
+            realizedConsultantSales.forEach(sale => { 
+                try {
+                    const saleProducts = JSON.parse(sale.products); 
+                    saleProducts.forEach(p => { 
+                        const commissionRate = commissionData[p.name] ? commissionData[p.name][tierIndexForCommission] : 0; 
+                        const productCommission = (p.quantity || 0) * commissionRate; 
+                        if (commissionDetails[p.name]) { 
+                            commissionDetails[p.name].value += productCommission; 
+                            commissionDetails[p.name].quantity += (p.quantity || 0); 
+                        } else { 
+                            commissionDetails[p.name] = { value: productCommission, quantity: (p.quantity || 0), rate: commissionRate }; 
+                        } 
+                    });
+                } catch(e) {}
+            });
+            const revenueCommission = totalRevenue * (revenuePercentages[tierIndexForCommission] / 100);
+            commissionDetails['Receita Total'] = { value: revenueCommission, rate: revenuePercentages[tierIndexForCommission] + '%' };
+            totalCommission = Object.values(commissionDetails).reduce((sum, item) => sum + item.value, 0);
+
+            individualTotalRevenueEl.textContent = `R$ ${totalRevenue.toFixed(2).replace('.', ',')}`;
+            individualEstimatedCommissionEl.textContent = `R$ ${totalCommission.toFixed(2).replace('.', ',')}`;
+            individualCurrentTierEl.textContent = `Faixa ${currentTier}`;
+            
+            let nextTierGoal = 0; let progressPercentage = 0;
+            const nextRevenueGoalIndex = revenueGoals.findIndex(goal => totalRevenue < goal);
+            if (nextRevenueGoalIndex !== -1) { 
+                nextTierGoal = revenueGoals[nextRevenueGoalIndex]; 
+                progressPercentage = Math.min(100, (totalRevenue / nextTierGoal) * 100); 
+                individualProgressTextEl.textContent = `Progresso para a Faixa ${currentTier + 1}:`; 
+            } else { 
+                progressPercentage = 100; 
+                individualProgressTextEl.textContent = 'Parabéns! Você alcançou a Faixa mais alta!'; 
+            }
+            individualProgressFillEl.style.width = `${progressPercentage}%`; 
+            individualProgressFillEl.className = `progress-fill ${progressPercentage >= 100 ? 'bg-green-500' : 'bg-blue-500'}`;
+            
+            renderIndividualCommissionDetails(commissionDetails);
+            renderIndividualRevenueGoals(totalRevenue);
+            renderIndividualProductGoals(productsSoldSummary);
+            renderConsultantSalesList(consultantSales); // Passa todas as vendas para a lista
+        }
+
+        function renderConsultantSalesList(sales) {
+            consultantSalesListBody.innerHTML = '';
+            if (sales.length === 0) {
+                consultantSalesListBody.innerHTML = `<tr><td colspan="7" class="p-4 text-center text-gray-500">Nenhuma venda encontrada para este período.</td></tr>`;
+                return;
+            }
+            sales.sort((a, b) => b.timestamp.seconds - a.timestamp.seconds);
+            sales.forEach(sale => {
+                const saleDate = sale.timestamp?.seconds ? new Date(sale.timestamp.seconds * 1000).toLocaleString('pt-BR') : 'Data inválida';
+                let productsHtml = 'Não informado';
+                try {
+                    const products = JSON.parse(sale.products);
+                    productsHtml = products.map(p => `Qt: ${p.quantity} - ${p.name} (R$ ${p.revenue.toFixed(2).replace('.',',')})`).join('<br>');
+                } catch (e) { console.error("Erro ao parsear produtos da venda:", e); }
+                
+                const statusText = sale.status || 'aceite enviado';
+                let statusBadge = '';
+                if (statusText === 'aceite realizado') {
+                    statusBadge = `<span class="px-2 py-1 text-xs font-semibold text-green-800 bg-green-100 rounded-full">Realizado</span>`;
+                } else if (statusText === 'aceite enviado') {
+                    statusBadge = `<span class="px-2 py-1 text-xs font-semibold text-yellow-800 bg-yellow-100 rounded-full">Enviado</span>`;
+                } else { // aceite negado
+                    statusBadge = `<span class="px-2 py-1 text-xs font-semibold text-red-800 bg-red-100 rounded-full">Negado</span>`;
+                }
+
+                const row = document.createElement('tr');
+                row.className = "border-t border-gray-200 hover:bg-gray-50";
+                if(sale.isEdited) {
+                    row.style.backgroundColor = '#fef9c3'; // Cor para vendas editadas (amarelo claro)
+                }
+                let editedInfo = '';
+                 if(sale.isEdited && sale.editedBy) {
+                    const editDate = sale.editedAt?.seconds ? new Date(sale.editedAt.seconds * 1000).toLocaleString('pt-BR') : '';
+                    editedInfo = ` (Editado por ${sale.editedBy} em ${editDate})`;
+                }
+
+                row.innerHTML = `
+                    <td class="p-4 align-top">${sale.cnpj || 'N/A'}</td>
+                    <td class="p-4 align-top">${sale.companyName || 'N/A'}</td>
+                    <td class="p-4 align-top text-sm">${productsHtml}</td>
+                    <td class="p-4 align-top">${saleDate}${editedInfo}</td>
+                    <td class="p-4 align-top text-right">R$ ${(sale.totalRevenue || 0).toFixed(2).replace('.', ',')}</td>
+                    <td class="p-4 align-top text-center">${statusBadge}</td>
+                    <td class="p-4 align-top text-center">
+                        <button class="edit-sale-btn text-blue-500 hover:text-blue-700 mr-2" data-sale-id="${sale.id}">Editar</button>
+                        <button class="delete-sale-btn text-red-500 hover:text-red-700" data-sale-id="${sale.id}">Excluir</button>
+                    </td>
+                `;
+                consultantSalesListBody.appendChild(row);
+            });
+            document.querySelectorAll('.edit-sale-btn').forEach(btn => {
+                btn.addEventListener('click', (e) => {
+                    openEditModal(e.target.dataset.saleId);
+                });
+            });
+            document.querySelectorAll('.delete-sale-btn').forEach(btn => {
+                 btn.addEventListener('click', (e) => {
+                    saleIdToDelete = e.target.dataset.saleId;
+                    deleteConfirmModal.classList.remove('hidden');
+                });
+            });
+        }
+        
+        async function deleteSale(saleId) {
+            if (!saleId) return;
+            const saleRef = doc(db, `artifacts/${appId}/public/data/sales`, saleId);
+            try {
+                await deleteDoc(saleRef);
+                // A UI será atualizada automaticamente pelo onSnapshot
+            } catch (error) {
+                console.error("Erro ao excluir a venda: ", error);
+            }
+        }
+        
+        function updateModalTotalRevenue() {
+            const container = document.getElementById('edit-products-container');
+            let totalRevenue = 0;
+            container.querySelectorAll('.p-2.border').forEach(row => {
+                const revenue = parseFloat(row.querySelector('.product-revenue-input').value) || 0;
+                totalRevenue += revenue;
+            });
+            document.getElementById('edit-total-revenue').textContent = `R$ ${totalRevenue.toFixed(2).replace('.', ',')}`;
+        }
+        
+        function createProductEditRow(product = { name: '', quantity: 1, revenue: 0 }) {
+            const productRow = document.createElement('div');
+            productRow.className = 'p-2 border rounded-md grid grid-cols-12 gap-2 items-center';
+            const selectContainer = document.createElement('div');
+            selectContainer.className = 'col-span-5';
+            const productSelect = document.createElement('select');
+            productSelect.className = 'product-name-input mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500';
+            availableProducts.forEach(pName => {
+                const option = document.createElement('option');
+                option.value = pName;
+                option.textContent = pName;
+                if (pName === product.name) { option.selected = true; }
+                productSelect.appendChild(option);
+            });
+            selectContainer.appendChild(productSelect);
+            const quantityContainer = document.createElement('div');
+            quantityContainer.className = 'col-span-2';
+            quantityContainer.innerHTML = `<input type="number" class="product-quantity-input mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500" value="${product.quantity}" min="1">`;
+            const revenueContainer = document.createElement('div');
+            revenueContainer.className = 'col-span-3';
+            revenueContainer.innerHTML = `<input type="number" step="0.01" class="product-revenue-input mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500" value="${product.revenue || 0}">`;
+            const deleteBtnContainer = document.createElement('div');
+            deleteBtnContainer.className = 'col-span-2 text-right';
+            const deleteBtn = document.createElement('button');
+            deleteBtn.type = 'button';
+            deleteBtn.className = 'remove-product-btn text-red-500 hover:text-red-700 p-1 text-xl leading-none';
+            deleteBtn.innerHTML = '&times;';
+            deleteBtn.onclick = () => { productRow.remove(); updateModalTotalRevenue(); };
+            deleteBtnContainer.appendChild(deleteBtn);
+            productRow.appendChild(selectContainer);
+            productRow.appendChild(quantityContainer);
+            productRow.appendChild(revenueContainer);
+            productRow.appendChild(deleteBtnContainer);
+            productRow.querySelectorAll('input').forEach(input => input.addEventListener('input', updateModalTotalRevenue));
+            return productRow;
+        }
+
+        function openEditModal(saleId) {
+            currentEditingSaleId = saleId;
+            const sale = allSalesData.find(s => s.id === saleId);
+            if (!sale) return;
+
+            document.getElementById('edit-client-name').value = sale.companyName || '';
+            document.getElementById('edit-client-cnpj').value = sale.cnpj || '';
+
+            const productsContainer = document.getElementById('edit-products-container');
+            productsContainer.innerHTML = '';
+            try {
+                const products = JSON.parse(sale.products);
+                products.forEach(p => { productsContainer.appendChild(createProductEditRow(p)); });
+            } catch (e) {
+                console.error("Erro ao parsear produtos para edição:", e);
+                productsContainer.appendChild(createProductEditRow());
+            }
+            updateModalTotalRevenue();
+            editSaleModal.classList.remove('hidden');
+        }
+
+        function closeEditModal() {
+            editSaleModal.classList.add('hidden');
+            currentEditingSaleId = null;
+        }
+
+        async function saveSaleEdit() {
+            if (!currentEditingSaleId) return;
+
+            const companyName = document.getElementById('edit-client-name').value;
+            const cnpj = document.getElementById('edit-client-cnpj').value;
+
+            const productsContainer = document.getElementById('edit-products-container');
+            const productRows = productsContainer.querySelectorAll('.p-2.border');
+            const updatedProducts = [];
+            let updatedTotalRevenue = 0;
+            productRows.forEach(row => {
+                const name = row.querySelector('.product-name-input').value;
+                const quantity = parseInt(row.querySelector('.product-quantity-input').value, 10) || 0;
+                const revenue = parseFloat(row.querySelector('.product-revenue-input').value) || 0;
+                if (name && quantity > 0) {
+                    updatedProducts.push({ name, quantity, revenue });
+                    updatedTotalRevenue += revenue;
+                }
+            });
+            if (updatedProducts.length === 0) {
+                console.error("Não é possível salvar uma venda sem produtos.");
+                return;
+            }
+            const saleRef = doc(db, `artifacts/${appId}/public/data/sales`, currentEditingSaleId);
+            try {
+                await updateDoc(saleRef, {
+                    companyName: companyName,
+                    cnpj: cnpj,
+                    products: JSON.stringify(updatedProducts),
+                    totalRevenue: updatedTotalRevenue,
+                    editedBy: managerEmail,
+                    editedAt: serverTimestamp(),
+                    isEdited: true
+                });
+                closeEditModal();
+            } catch (error) {
+                console.error("Erro ao salvar a edição da venda: ", error);
+            }
+        }
+
+        function renderIndividualCommissionDetails(details) {
+            individualCommissionDetailsBodyEl.innerHTML = '';
+            const sortedKeys = Object.keys(details).sort();
+            sortedKeys.forEach(key => {
+                const detail = details[key]; const row = document.createElement('tr'); row.className = "border-t border-gray-200"; let itemName = key; if (detail.quantity) { itemName = `${key} (${detail.quantity})`; }
+                row.innerHTML = `<td class="p-4">${itemName}</td><td class="p-4">R$ ${detail.value.toFixed(2).replace('.', ',')}</td><td class="p-4">${detail.rate}</td>`;
+                individualCommissionDetailsBodyEl.appendChild(row);
+            });
+        }
+        
+        function renderIndividualRevenueGoals(totalRevenue) {
+            individualRevenueGoalsBodyEl.innerHTML = '';
+            const goals = goalData['Receita (R$)'];
+            goals.forEach(goal => {
+                const isMet = totalRevenue >= goal; const status = isMet ? 'Atingida' : 'Ainda não'; const statusClass = isMet ? 'text-green-500' : 'text-gray-500';
+                const row = document.createElement('tr'); row.className = "border-t border-gray-200";
+                row.innerHTML = `<td class="p-4">R$ ${goal.toFixed(2).replace('.', ',')}</td><td class="p-4 ${statusClass}">${status}</td>`;
+                individualRevenueGoalsBodyEl.appendChild(row);
+            });
+        }
+
+        function renderIndividualProductGoals(productsSoldSummary) {
+            individualProductGoalsBodyEl.innerHTML = '';
+            productsForGoals.forEach(product => {
+                const sold = productsSoldSummary[product] || 0; const goals = goalData[product] || [0, 0, 0];
+                const row = document.createElement('tr'); row.className = "border-t border-gray-200";
+                const goal75Met = sold >= goals[0]; const goal150Met = sold >= goals[1]; const goal200Met = sold >= goals[2]; let soldValue = sold; if (product === 'Aparelhos (R$)') { soldValue = `R$ ${sold.toFixed(2).replace('.', ',')}`; }
+                row.innerHTML = `
+                    <td class="p-4">${product}</td><td class="p-4 text-center">${soldValue}</td>
+                    <td class="p-4 text-center ${goal75Met ? 'text-green-500 font-bold' : ''}">${product === 'Aparelhos (R$)' ? `R$ ${goals[0].toFixed(2).replace('.', ',')}` : goals[0]}</td>
+                    <td class="p-4 text-center ${goal150Met ? 'text-green-500 font-bold' : ''}">${product === 'Aparelhos (R$)' ? `R$ ${goals[1].toFixed(2).replace('.', ',')}` : goals[1]}</td>
+                    <td class="p-4 text-center ${goal200Met ? 'text-green-500 font-bold' : ''}">${product === 'Aparelhos (R$)' ? `R$ ${goals[2].toFixed(2).replace('.', ',')}` : goals[2]}</td>`;
+                individualProductGoalsBodyEl.appendChild(row);
+            });
+        }
+        
+        // --- Event Listeners ---
+        authForm.addEventListener('submit', async (e) => { e.preventDefault(); const email = authEmailInput.value; const password = authPasswordInput.value; authMessageEl.style.display = 'none'; try { await signInWithEmailAndPassword(auth, email, password); } catch (e) { console.error("Erro de autenticação: ", e.message); displayAuthMessage('Falha no login. Verifique suas credenciais.', 'error'); } });
+        logoutBtn.addEventListener('click', async () => { await signOut(auth); });
+        backToDashboardBtn.addEventListener('click', () => { consultantViewSection.classList.add('hidden'); mainSection.classList.remove('hidden'); });
+        dashboardTabBtn.addEventListener('click', () => { dashboardContent.classList.remove('hidden'); goalsContent.classList.add('hidden'); productSalesContent.classList.add('hidden'); dashboardTabBtn.classList.remove('bg-gray-200', 'text-gray-800'); dashboardTabBtn.classList.add('bg-blue-600', 'text-white'); goalsTabBtn.classList.remove('bg-blue-600', 'text-white'); goalsTabBtn.classList.add('bg-gray-200', 'text-gray-800'); mainTitle.textContent = 'Painel de Gerência'; });
+        viewProductsBtn.addEventListener('click', () => { dashboardContent.classList.add('hidden'); goalsContent.classList.add('hidden'); productSalesContent.classList.remove('hidden'); });
+        backToDashboardFromProductsBtn.addEventListener('click', () => { dashboardContent.classList.remove('hidden'); goalsContent.classList.add('hidden'); productSalesContent.classList.add('hidden'); });
+        productFilterSelect.addEventListener('change', (e) => renderDailySalesChart(allSalesData, e.target.value));
+        consultantMonthFilter.addEventListener('change', () => renderConsultantsPerformance());
+        consultantYearFilter.addEventListener('change', () => renderConsultantsPerformance());
+        goalsTabBtn.addEventListener('click', () => { goalsContent.classList.remove('hidden'); dashboardContent.classList.add('hidden'); productSalesContent.classList.add('hidden'); goalsTabBtn.classList.remove('bg-gray-200', 'text-gray-800'); goalsTabBtn.classList.add('bg-blue-600', 'text-white'); dashboardTabBtn.classList.remove('bg-blue-600', 'text-white'); dashboardTabBtn.classList.add('bg-gray-200', 'text-gray-800'); mainTitle.textContent = 'Gestão de Metas'; loadAndRenderGoals(); });
+        goalsMonthSelect.addEventListener('change', loadAndRenderGoals); goalsYearSelect.addEventListener('change', loadAndRenderGoals); saveGoalsBtn.addEventListener('click', saveGoals);
+        
+        // Listeners do Modal de Edição
+        cancelEditBtn.addEventListener('click', closeEditModal);
+        saveEditBtn.addEventListener('click', saveSaleEdit);
+        addProductBtn.addEventListener('click', () => {
+            const productsContainer = document.getElementById('edit-products-container');
+            const firstProduct = Object.keys(commissionData)[0];
+            productsContainer.appendChild(createProductEditRow({name: firstProduct, quantity: 1, revenue: 0}));
+        });
+        
+        dashboardMonthFilter.addEventListener('change', updateDashboard);
+        dashboardYearFilter.addEventListener('change', updateDashboard);
+        
+        initializeFirebase();
+    </script>
 </body>
-
 </html>
+
 
